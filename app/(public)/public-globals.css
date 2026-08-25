@@ -1,0 +1,26 @@
+@import "tailwindcss";
+
+:root {
+  /* Public site background and foreground base colors */
+  --public-background: rgb(38, 41, 43); 
+  --public-foreground: #f1f0e8; 
+}
+
+@theme inline {
+  --color-background: var(--public-background);
+  --color-foreground: var(--public-foreground);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-geist-mono);
+  
+  /* Modern Architectural Palette Tokens */
+  --color-brand-dark: #26292b;       /* Page Base Background */
+  --color-brand-cream: #f1f0e8;      /* Light Cream Accents / Navbar Bg */
+  --color-brand-muted-dark: #505559; /* Muted Dark Gray for subtext/borders */
+  --color-brand-accent: #e63925;     /* High-Visibility Vermillion Red */
+}
+
+/* Base body styling specifically for public pages */
+.public-body {
+  background: var(--public-background);
+  color: var(--public-foreground);
+}

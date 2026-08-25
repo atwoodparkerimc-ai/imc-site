@@ -1,0 +1,305 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/utils/supabase/client";
+import { motion, AnimatePresence } from "framer-motion";
+
+// --- CENTRAL DATA SERVICE IMPORT ---
+import { 
+  getEmployeeProfile,
+  getPeerProfiles, 
+  submitSafeActReport, 
+  UserProfile 
+} from "@/lib/db/operations";
+
+type MinimalUserRecord = Pick<UserProfile, 'id' | 'first_name' | 'nickname'>;
+
+export default function ReportingPage() {
+  const router = useRouter();
+  const [supabase] = useState(() => createClient());
+
+  const [users, setUsers] = useState<MinimalUserRecord[]>([]);
+  const [selectedUser, setSelectedUser] = useState<string>("");
+  const [report, setReport] = useState<string>("");
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [showCelebration, setShowCelebration] = useState<boolean>(false);
+  const [recipientBonusGranted, setRecipientBonusGranted] = useState<boolean>(false);
+  const [formFeedback, setFormFeedback] = useState<{ message: string; isError: boolean } | null>(null);
+
+  useEffect(() => {
+    async function fetchUsers() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      
+      // 1. Fetch current user profile to determine active site location
+      const profile = await getEmployeeProfile(supabase, user.id);
+      
+      // 2. Fetch peers strictly assigned to the same active location
+      const peerList = await getPeerProfiles(supabase, user.id, profile?.location);
+      setUsers(peerList);
+    }
+    fetchUsers();
+  }, [supabase]);
+
+  const handleSubmit = async () => {
+    if (!selectedUser || !report || isSubmitting) return;
+    
+    setIsSubmitting(true);
+    setFormFeedback(null);
+    
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user?.id) {
+      setFormFeedback({ message: "Authentication validation failure. Re-login required.", isError: true });
+      setIsSubmitting(false);
+      return;
+    }
+    
+    const result = await submitSafeActReport(supabase, {
+      reporterId: user.id,
+      recipientId: selectedUser,
+      reason: report
+    });
+
+    if (!result.success) {
+      if (result.alreadyReportedToday) {
+        setFormFeedback({ message: "Transaction Denied: You have already filed a Safe Act today.", isError: true });
+      } else {
+        setFormFeedback({ message: `Database Exception: ${result.error}`, isError: true });
+      }
+      setIsSubmitting(false);
+      return;
+    }
+
+    // Success route trigger & track if multi-recognition bonus applied
+    setRecipientBonusGranted(!!result.recipientBonusGranted);
+    setShowCelebration(true);
+    setTimeout(() => {
+      router.push("/dashboard");
+    }, 2500);
+  };
+
+  const inputStyle = {
+    backgroundColor: "var(--color-brand-bg)",
+    borderColor: "var(--color-brand-border)",
+  };
+
+  const handleInputFocus = (e: React.FocusEvent<HTMLSelectElement | HTMLTextAreaElement>) => {
+    e.currentTarget.style.borderColor = "var(--color-brand-blue)";
+    e.currentTarget.style.boxShadow = "0 0 10px color-mix(in srgb, var(--color-brand-blue) 30%, transparent)";
+  };
+
+  const handleInputBlur = (e: React.FocusEvent<HTMLSelectElement | HTMLTextAreaElement>) => {
+    e.currentTarget.style.borderColor = "var(--color-brand-border)";
+    e.currentTarget.style.boxShadow = "none";
+  };
+
+  return (
+    <div className="w-full relative min-h-[calc(100vh-4rem)] flex flex-col justify-center py-6 sm:py-12 font-mono text-slate-100">
+      {/* Blueprint Grid Background Overlay */}
+      <div className="absolute inset-0 pointer-events-none opacity-5 bg-[linear-gradient(to_right,var(--color-brand-border)_1px,transparent_1px),linear-gradient(to_bottom,var(--color-brand-border)_1px,transparent_1px)] bg-[size:32px_32px] z-0" />
+
+      <div className="flex-1 p-4 sm:p-6 max-w-6xl mx-auto w-full relative z-10 flex flex-col justify-center">
+        
+        {/* PAGE HEADER BANNER */}
+        <motion.header 
+          initial={{ opacity: 0, y: -20 }} 
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6 border border-[var(--color-brand-border)] tactical-card p-6 rounded-sm relative overflow-hidden shadow-lg"
+        >
+          <div className="absolute top-0 left-0 w-full h-[2px] bg-[var(--color-brand-blue)]" />
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-black text-slate-100 uppercase tracking-tighter flex items-center gap-2">
+                <span className="w-2 h-2 bg-[var(--color-brand-blue)] animate-pulse rounded-none" />
+                Report Safe Act
+              </h1>
+              <p className="text-slate-400 text-xs font-bold uppercase tracking-[0.2em] mt-1">
+                Peer Safety Recognition & Rewards Terminal
+              </p>
+            </div>
+            <div className="inline-block self-start sm:self-auto px-3 py-1 bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] text-xs font-bold text-[var(--color-brand-blue)] uppercase tracking-wider rounded-sm">
+              Status: [Active Stream]
+            </div>
+          </div>
+        </motion.header>
+
+        {/* MAIN SPLIT CONTENT GRID */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          {/* LEFT 2 COLS: SAFE ACT FORM */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="lg:col-span-2 border p-6 sm:p-8 rounded-sm shadow-xl relative overflow-hidden flex flex-col justify-between"
+            style={{
+              backgroundColor: "var(--color-brand-card)",
+              borderColor: "var(--color-brand-border)"
+            }}
+          >
+            <div className="absolute top-0 left-0 w-full h-1 bg-[var(--color-brand-blue)]" />
+
+            <div>
+              <h2 className="text-slate-200 font-bold uppercase tracking-widest text-xs mb-6 border-b pb-4 border-[var(--color-brand-border)] flex items-center justify-between">
+                <span>Safe Observation Details</span>
+                <span className="text-[10px] text-slate-400">LOCATION SENSITIVE</span>
+              </h2>
+
+              {formFeedback && (
+                <div 
+                  className="mb-6 p-3 text-[10px] font-bold uppercase tracking-wider border rounded-sm"
+                  style={{
+                    backgroundColor: "color-mix(in srgb, var(--color-brand-red, #f87171) 10%, transparent)",
+                    borderColor: "color-mix(in srgb, var(--color-brand-red, #f87171) 40%, transparent)",
+                    color: "var(--color-brand-red, #f87171)"
+                  }}
+                >
+                  [TRANSACTION FAULT] {formFeedback.message}
+                </div>
+              )}
+
+              <div className="space-y-6">
+                <div>
+                  <label className="text-slate-300 text-xs font-bold uppercase tracking-wider block mb-2">
+                    Select Coworker <span className="text-slate-500 text-[10px]">(Assigned to your location)</span>
+                  </label>
+                  <div className="relative">
+                    <select 
+                      className="w-full border p-3.5 text-slate-100 uppercase font-bold text-sm outline-none cursor-pointer appearance-none rounded-sm transition-colors"
+                      style={inputStyle}
+                      onFocus={handleInputFocus}
+                      onBlur={handleInputBlur}
+                      onChange={(e) => setSelectedUser(e.target.value)}
+                      value={selectedUser}
+                    >
+                      <option value="" style={{ backgroundColor: "var(--color-brand-card)" }}>Choose a team member...</option>
+                      {users.map(u => (
+                        <option key={u.id} value={u.id} style={{ backgroundColor: "var(--color-brand-card)" }}>
+                          {u.nickname || u.first_name}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400">
+                      <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
+                        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-slate-300 text-xs font-bold uppercase tracking-wider block mb-2">
+                    Observation Description
+                  </label>
+                  <textarea 
+                    className="w-full border p-4 text-slate-100 h-40 outline-none resize-none text-sm leading-relaxed rounded-sm font-sans transition-colors"
+                    style={inputStyle}
+                    onFocus={handleInputFocus}
+                    onBlur={handleInputBlur}
+                    placeholder="Describe the safe behavior, hazard mitigation, or peer assistance observed on site..."
+                    onChange={(e) => setReport(e.target.value)}
+                    value={report}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <button 
+              onClick={handleSubmit}
+              disabled={!selectedUser || !report || isSubmitting}
+              className="w-full mt-8 py-4 font-black uppercase tracking-[0.2em] text-xs disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300 cursor-pointer rounded-sm shadow-md border outline-none bg-[var(--color-brand-blue)] border-[var(--color-brand-blue)] text-white hover:bg-white hover:text-black shadow-[0_0_20px_rgba(0,136,255,0.3)]"
+            >
+              {isSubmitting ? "Submitting Ledger Entry..." : "Submit & Award Points ↗"}
+            </button>
+          </motion.div>
+
+          {/* RIGHT COL: RECOGNITION RULES & TELEMETRY PANEL */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="border p-6 rounded-sm shadow-xl relative overflow-hidden flex flex-col justify-between bg-[var(--color-brand-card)] border-[var(--color-brand-border)]"
+          >
+            <div className="absolute top-0 left-0 w-full h-1 bg-[var(--color-brand-border)]" />
+            
+            <div className="space-y-6">
+              <h2 className="text-slate-200 font-bold uppercase tracking-widest text-xs border-b pb-4 border-[var(--color-brand-border)]">
+                Peer Recognition Telemetry
+              </h2>
+
+              <div className="p-4 border rounded-sm bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] space-y-1">
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">REPORTER INCENTIVE</p>
+                <p className="text-3xl font-black text-[var(--color-brand-blue)] tabular-nums">+5 PTS</p>
+                <p className="text-[11px] text-slate-300 mt-2 leading-relaxed">
+                  Earned immediately upon filing a verified peer safe act report.
+                </p>
+              </div>
+
+              <div className="p-4 border rounded-sm bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] space-y-1">
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">RECIPIENT INCENTIVE</p>
+                <p className="text-3xl font-black text-[var(--color-metric-meetings,#10b981)] tabular-nums">+10 PTS</p>
+                <p className="text-[11px] text-slate-300 mt-2 leading-relaxed">
+                  Granted directly to your recognized peer's reward balance.
+                </p>
+              </div>
+
+              <div className="p-4 border rounded-sm bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] space-y-2">
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">DAILY LIMIT</p>
+                <p className="text-xs font-bold text-slate-200">
+                  1 Safe Act report permitted per employee per calendar day.
+                </p>
+              </div>
+            </div>
+
+            <div className="pt-6 border-t border-[var(--color-brand-border)]">
+              <p className="text-[9px] text-slate-500 uppercase tracking-widest font-mono text-center">
+                INDUSTRIAL SAFETY SYSTEM // v4.2
+              </p>
+            </div>
+          </motion.div>
+
+        </div>
+      </div>
+
+      <AnimatePresence>
+        {showCelebration && (
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm"
+          >
+            <motion.div 
+              initial={{ scale: 0.5 }} 
+              animate={{ scale: 1 }} 
+              className="text-center p-8 border rounded-sm shadow-2xl max-w-sm w-full bg-[var(--color-brand-card)] border-[var(--color-metric-meetings,#10b981)]"
+            >
+              <h2 className="text-5xl font-black uppercase tracking-tighter drop-shadow-md text-[var(--color-metric-meetings,#10b981)]">
+                AWARDED
+              </h2>
+              
+              <div className="mt-6 space-y-2 font-mono">
+                <p className="text-slate-100 font-bold tracking-widest uppercase text-sm">
+                  {recipientBonusGranted 
+                    ? "Recipient: +5 PTS (Multi-Recognition Bonus)" 
+                    : "Recipient: +10 PTS"}
+                </p>
+                <p className="text-slate-100 font-bold tracking-widest uppercase text-sm">
+                  Reporter: +5 PTS
+                </p>
+              </div>
+
+              <div className="mt-8 w-48 h-1 mx-auto rounded-full overflow-hidden bg-[var(--color-brand-border)]">
+                <motion.div 
+                  animate={{ width: "100%" }} 
+                  transition={{ duration: 2.5, ease: "linear" }} 
+                  className="h-full bg-[var(--color-metric-meetings,#10b981)]" 
+                />
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
