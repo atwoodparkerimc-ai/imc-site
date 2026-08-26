@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
 import { createClient } from "@/utils/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import UnreadRecognitionModal from "./dashboard/_components/UnreadRecognitionModal";
@@ -73,13 +75,13 @@ const supabase = createClient();
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
+  const currentYear = new Date().getFullYear();
   
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(true);
   const [isMobileOpen, setIsMobileOpen] = useState<boolean>(false);
   const [isManager, setIsManager] = useState<boolean>(false); 
   const [notification, setNotification] = useState<NotificationRecord | null>(null); 
   
-  // Explicit type configuration for Realtime socket channel references
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   useEffect(() => {
@@ -169,7 +171,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         )}
       </AnimatePresence>
 
-      {/* The Collapsible Sidebar */}
+      {/* Collapsible Sidebar */}
       <motion.nav 
         animate={{ width: isSidebarOpen ? 240 : 80 }}
         className={`sidebar-nav-container fixed md:relative inset-y-0 left-0 z-50 h-full flex flex-col flex-shrink-0 transition-transform duration-300 ${
@@ -179,15 +181,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="sidebar-header-bar h-16 flex items-center px-6 justify-between">
           <AnimatePresence>
             {isSidebarOpen && (
-              <motion.span 
+              <motion.div 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="font-black text-slate-100 uppercase tracking-[0.25em] text-xs flex items-center gap-2"
+                className="flex items-center gap-2"
               >
-                <span className="sidebar-logo-accent w-2 h-2 rounded-none animate-pulse" />
-                Portal
-              </motion.span>
+                <Image 
+                  src="/imclogo.svg" 
+                  alt="IMC Logo" 
+                  width={110} 
+                  height={30} 
+                  className="h-7 w-auto object-contain"
+                  priority
+                />
+              </motion.div>
             )}
           </AnimatePresence>
           
@@ -244,7 +252,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             );
           })}
 
-          {/* Conditional Command Center Action Toggle Router */}
+          {/* Conditional Command Center Action Toggle */}
           {isManager && (
             <a 
               href="/manager"
@@ -267,7 +275,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     exit={{ opacity: 0, x: -10 }}
                     className="uppercase text-xs font-bold tracking-wider whitespace-nowrap"
                   >
-                    Command Center
+                    Admin Portal
                   </motion.span>
                 )}
               </AnimatePresence>
@@ -333,14 +341,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </motion.nav>
 
       {/* Main Content Area Wrapper */}
-      <main className="flex-1 relative overflow-y-auto overflow-x-hidden flex flex-col bg-brand-bg">
+      <main className="flex-1 relative overflow-y-auto overflow-x-hidden flex flex-col justify-between bg-brand-bg">
         
         {/* Mobile Top Header */}
         <div className="sidebar-header-bar md:hidden flex-shrink-0 h-16 bg-brand-card flex items-center justify-between px-6 relative z-30">
-          <span className="font-black text-slate-100 uppercase tracking-[0.2em] text-xs flex items-center gap-2">
-            <span className="sidebar-logo-accent w-2 h-2 rounded-none animate-pulse" />
-            Portal
-          </span>
+          <div className="flex items-center gap-2">
+            <Image 
+              src="/imclogo.svg" 
+              alt="IMC Logo" 
+              width={100} 
+              height={28} 
+              className="h-6 w-auto object-contain"
+              priority
+            />
+          </div>
           <button 
             onClick={() => {
               setIsMobileOpen(true);
@@ -369,6 +383,66 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="relative z-10 flex-1 flex flex-col">
           {children}
         </div>
+
+        {/* RESPONSIVE PORTAL FOOTER */}
+        <footer className="relative z-10 border-t border-[var(--color-brand-border)] bg-[#030914]/95 backdrop-blur-md px-6 sm:px-8 py-6 font-mono text-slate-300">
+          <div className="w-full flex flex-col lg:flex-row items-center justify-between gap-5 lg:gap-6">
+            
+            {/* Left: Copyright */}
+            <div className="w-full lg:w-auto lg:flex-1 flex items-center justify-center lg:justify-start">
+              <p className="text-xs sm:text-sm text-slate-400 font-medium text-center lg:text-left">
+                &copy; {currentYear} Interwest Mechanical Contractors. All Rights Reserved.
+              </p>
+            </div>
+
+            {/* Center: Scaled-Up Builders of Industry Lockup */}
+            <div className="flex-shrink-0 flex items-center justify-center my-1 lg:my-0">
+              <div className="inline-flex items-center gap-3 font-black uppercase text-white text-base sm:text-lg leading-none">
+                <span className="tracking-[0.22em]">BUILDERS</span>
+                <span className="w-7 h-7 rounded-full border-2 border-slate-300 text-white text-[11px] font-sans font-black flex items-center justify-center shrink-0 shadow-sm leading-none pl-[0.5px]">
+                  OF
+                </span>
+                <span className="text-[#ea1f27] tracking-[0.22em] -mr-[0.22em]">
+                  INDUSTRY
+                </span>
+              </div>
+            </div>
+
+            {/* Right: Legal Links, Employee Terms, & ID. Attribution */}
+            <div className="w-full lg:w-auto lg:flex-1 flex flex-wrap items-center justify-center lg:justify-end gap-x-3 sm:gap-x-4 gap-y-2 text-xs sm:text-sm font-bold tracking-wider">
+              <Link href="/privacy-policy" className="hover:text-white text-slate-300 transition-colors whitespace-nowrap">
+                PRIVACY POLICY
+              </Link>
+              <span className="text-slate-700">|</span>
+              <Link href="/terms-of-service" className="hover:text-white text-slate-300 transition-colors whitespace-nowrap">
+                TERMS OF SERVICE
+              </Link>
+              <span className="text-slate-700">|</span>
+              <Link href="/employee-terms" className="hover:text-white text-slate-300 transition-colors whitespace-nowrap">
+                EMPLOYEE TERMS OF USE
+              </Link>
+              <span className="text-slate-700">|</span>
+              <span className="inline-flex items-center gap-1.5 text-slate-300 whitespace-nowrap">
+                Design by{" "}
+                <a 
+                  href="https://identityflowcreative.com/index.php" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-baseline tracking-tight hover:opacity-80 transition-opacity ml-0.5"
+                >
+                  <span 
+                    className="font-black text-white text-[16px] leading-none" 
+                    style={{ fontFamily: 'Playfair Display, "Times New Roman", Georgia, serif' }}
+                  >
+                    ID
+                  </span>
+                  <span className="w-[5px] h-[5px] rounded-full bg-[#c4f000] inline-block ml-[2px] align-baseline shadow-[0_0_6px_rgba(196,240,0,0.6)]" />
+                </a>
+              </span>
+            </div>
+
+          </div>
+        </footer>
 
       </main>
     </div>

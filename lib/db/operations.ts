@@ -15,6 +15,7 @@ export interface UserProfile {
   must_change_password?: boolean;
   last_safety_check?: string;
   last_safe_act_date?: string;
+  terms_accepted_at?: string | null;
 }
 
 export interface InventoryItem {
@@ -71,12 +72,31 @@ export async function getEmployeeProfile(
 ): Promise<UserProfile | null> {
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, first_name, nickname, role, points_balance, location, must_change_password, last_safety_check, last_safe_act_date')
+    .select('id, first_name, nickname, role, points_balance, location, must_change_password, last_safety_check, last_safe_act_date, terms_accepted_at')
     .eq('id', userId)
     .single();
 
   if (error || !data) return null;
   return data as UserProfile;
+}
+
+/** Record user acceptance of the Employee Incentive Program Terms */
+export async function acceptEmployeeTerms(
+  supabase: SupabaseClient, 
+  userId: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { error } = await supabase
+      .from('profiles')
+      .update({ terms_accepted_at: new Date().toISOString() })
+      .eq('id', userId);
+
+    if (error) throw error;
+    return { success: true };
+  } catch (err: any) {
+    console.error("Failed to record terms acceptance:", err);
+    return { success: false, error: err.message };
+  }
 }
 
 /** Fetch a user's current points balance */
@@ -734,8 +754,10 @@ export interface EvaluatedCert {
 // Master list of certifications based on user role
 export const BASE_EMPLOYEE_CERTS = [
   { key: 'scissor_lift', title: 'Scissor Lift Operator' },
-  { key: 'forklift', title: 'Forklift Safety' },
+  { key: 'boom_lift', title: 'Boom Lift Operator' },
+  { key: 'forklift', title: 'Forklift Operator' },
   { key: 'confined_space', title: 'Confined Space Entry' },
+  { key: 'arc_flash', title: 'Arc Flash Safety' },
   { key: 'osha_10', title: 'OSHA 10-Hour General Industry' },
 ];
 
@@ -746,9 +768,21 @@ export const MANAGER_ADDITIONAL_CERTS = [
 ];
 
 /** Evaluate certification status against the 90-day warning threshold */
-export function calculateCertStatus(expirationDateStr: string | null): { status: CertStatus; daysRemaining: number | null } {
-  if (!expirationDateStr) return { status: 'NOT_TRAINED', daysRemaining: null };
+export function calculateCertStatus(
+  issueDateStr: string | null,
+  expirationDateStr: string | null
+): { status: CertStatus; daysRemaining: number | null } {
+  // 1. If no dates exist at all, they haven't completed training
+  if (!issueDateStr && !expirationDateStr) {
+    return { status: 'NOT_TRAINED', daysRemaining: null };
+  }
 
+  // 2. If it has an issue date but never expires (e.g. OSHA 10)
+  if (!expirationDateStr) {
+    return { status: 'VALID', daysRemaining: null };
+  }
+
+  // 3. If an expiration date exists, calculate the timeline
   const now = new Date();
   const exp = new Date(expirationDateStr);
   const diffTime = exp.getTime() - now.getTime();
@@ -782,18 +816,51 @@ export async function getEmployeeCertifications(
 
   return allowedCerts.map((cert) => {
     const record = certMap.get(cert.key);
+    const issueDate = record?.issue_date || null;
     const expDate = record?.expiration_date || null;
-    const { status, daysRemaining } = calculateCertStatus(expDate);
+    const { status, daysRemaining } = calculateCertStatus(issueDate, expDate);
 
     return {
       typeKey: cert.key,
       title: cert.title,
       status,
-      issueDate: record?.issue_date || null,
+      issueDate,
       expirationDate: expDate,
       daysRemaining
     };
   });
+}
+
+/** Upsert an employee certification record */
+export async function upsertEmployeeCertification(
+  supabase: SupabaseClient,
+  payload: {
+    employee_id: string;
+    cert_type: string;
+    issue_date: string | null;
+    expiration_date: string | null;
+  }
+) {
+  const { data, error } = await supabase
+    .from('employee_certifications')
+    .upsert(
+      {
+        employee_id: payload.employee_id,
+        cert_type: payload.cert_type,
+        issue_date: payload.issue_date || null,
+        expiration_date: payload.expiration_date || null,
+        updated_at: new Date().toISOString()
+      },
+      { onConflict: 'employee_id,cert_type' }
+    )
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error updating certification:', error);
+    return { success: false, error: error.message };
+  }
+  return { success: true, data };
 }
 
 /** Fetch required daily paperwork URL for a given location */
@@ -869,5 +936,158 @@ export async function saveEmployeeCertification(
     );
 
   if (error) return { success: false, error: error.message };
+  return { success: true };
+}
+
+// ==========================================
+// 8. ORDER FULFILLMENT & LOGISTICS
+// ==========================================
+
+export interface RedemptionRecord {
+  id: string;
+  created_at: string;
+  employee_id: string;
+  item_id: string;
+  points_spent: number;
+  status: 'pending_pickup' | 'in_progress' | 'ordered' | 'fulfilled' | 'cancelled';
+  assigned_manager_id?: string | null;
+  
+  // Joined Data
+  employee?: { first_name: string; nickname: string | null; location: string | null };
+  item?: { item_name: string; image_url: string | null; images: string[] | null };
+  manager?: { first_name: string; nickname: string | null };
+}
+
+/** Fetch all redemption orders with joined employee and item data */
+export async function getFulfillmentOrders(
+  supabase: SupabaseClient
+): Promise<RedemptionRecord[]> {
+  const { data, error } = await supabase
+    .from('redemptions')
+    .select(`
+      *,
+      employee:profiles!employee_id(first_name, nickname, location),
+      item:inventory!item_id(item_name, image_url, images),
+      manager:profiles!assigned_manager_id(first_name, nickname)
+    `)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error("Failed to fetch fulfillment orders:", error.message);
+    return [];
+  }
+  
+  return data as unknown as RedemptionRecord[];
+}
+
+/** Update the status and assignment of a specific order */
+export async function updateOrderStatus(
+  supabase: SupabaseClient,
+  redemptionId: string,
+  status: string,
+  managerId: string | null
+): Promise<{ success: boolean; error?: string }> {
+  const { error } = await supabase
+    .from('redemptions')
+    .update({ 
+      status: status,
+      assigned_manager_id: managerId
+    })
+    .eq('id', redemptionId);
+
+  if (error) return { success: false, error: error.message };
+  return { success: true };
+}
+
+/** Cancel an order, return points to the employee, replenish stock, and notify the user */
+export async function cancelAndRefundOrder(
+  supabase: SupabaseClient,
+  order: RedemptionRecord,
+  managerId: string | null
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { error: cancelErr } = await supabase
+      .from('redemptions')
+      .update({ 
+        status: 'cancelled',
+        assigned_manager_id: managerId
+      })
+      .eq('id', order.id);
+
+    if (cancelErr) throw cancelErr;
+
+    const itemName = order.item?.item_name || 'Store Item';
+    const { error: ledgerErr } = await supabase
+      .from('point_ledger')
+      .insert([
+        {
+          sender_id: managerId || order.employee_id,
+          receiver_id: order.employee_id,
+          amount: order.points_spent,
+          reason: `REFUND: REQUISITION CANCELLED (${itemName.toUpperCase()})`
+        }
+      ]);
+
+    if (ledgerErr) throw ledgerErr;
+
+    const { data: itemData } = await supabase
+      .from('inventory')
+      .select('quantity_in_stock')
+      .eq('id', order.item_id)
+      .single();
+
+    if (itemData) {
+      await supabase
+        .from('inventory')
+        .update({ quantity_in_stock: (itemData.quantity_in_stock || 0) + 1 })
+        .eq('id', order.item_id);
+    }
+
+    await supabase.from('notifications').insert([
+      {
+        user_id: order.employee_id,
+        message: `Your order for "${itemName}" was cancelled and ${order.points_spent} PTS have been refunded to your account.`,
+        is_read: false
+      }
+    ]);
+
+    return { success: true };
+  } catch (err: any) {
+    console.error("Order cancellation failed:", err);
+    return { success: false, error: err.message || "Failed to cancel order." };
+  }
+}
+
+/** Update an existing catalog inventory item */
+export async function updateInventoryItem(
+  supabase: SupabaseClient,
+  id: string,
+  payload: {
+    itemName: string;
+    costInPoints: number;
+    quantityInStock: number;
+    description?: string;
+    category?: string;
+    images?: string[];
+    isFeatured?: boolean;
+  }
+): Promise<{ success: boolean; error?: string }> {
+  const { error } = await supabase
+    .from('inventory')
+    .update({
+      item_name: payload.itemName,
+      cost_in_points: payload.costInPoints,
+      quantity_in_stock: payload.quantityInStock,
+      description: payload.description || null,
+      category: payload.category || 'General',
+      images: payload.images && payload.images.length > 0 ? payload.images : null,
+      image_url: payload.images && payload.images.length > 0 ? payload.images[0] : null,
+      is_featured: payload.isFeatured || false
+    })
+    .eq('id', id);
+
+  if (error) {
+    return { success: false, error: error.message };
+  }
   return { success: true };
 }

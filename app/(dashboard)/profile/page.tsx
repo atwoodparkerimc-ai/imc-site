@@ -299,7 +299,7 @@ export default function ProfilePage() {
             <div className="flex justify-between items-center mb-6">
               <div>
                 <h2 className="text-slate-100 font-black uppercase tracking-widest text-sm">Safety Certifications & Credentials</h2>
-                <p className="text-[11px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">Managed & Verified By Safety Operations</p>
+                <p className="text-[11px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">Managed & Verified By IMC Safety.</p>
               </div>
             </div>
 

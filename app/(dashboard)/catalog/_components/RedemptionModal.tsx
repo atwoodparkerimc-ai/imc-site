@@ -79,7 +79,7 @@ export default function RedemptionModal({
                 Clearance Granted
               </h2>
               <p className="text-slate-300 mt-3 text-xs font-semibold uppercase tracking-widest">
-                Requisition Log Confirmed & Sent to Management
+                Order Confirmed & Sent to Management
               </p>
             </div>
           ) : (
@@ -93,7 +93,7 @@ export default function RedemptionModal({
                   style={{ color: canAfford ? "var(--color-brand-green)" : "var(--color-brand-blue)" }}
                 >
                   <span className="w-2 h-2 rounded-none animate-pulse bg-current" />
-                  Product Requisition Specification
+                  Product Details
                 </span>
 
                 <button 
@@ -164,7 +164,7 @@ export default function RedemptionModal({
                     </span>
                   </div>
                   <div className="flex justify-between pt-1">
-                    <span className="text-slate-300 uppercase font-bold tracking-wider">Balance After Requisition:</span>
+                    <span className="text-slate-300 uppercase font-bold tracking-wider">Balance After Purchase:</span>
                     <span className="text-slate-100 font-black tabular-nums">{points - selectedItem.cost_in_points} PTS</span>
                   </div>
                 </div>
@@ -212,7 +212,7 @@ export default function RedemptionModal({
                   {isProcessing 
                     ? "Authorizing..." 
                     : canAfford 
-                    ? "Confirm Requisition ↗" 
+                    ? "Confirm order ↗" 
                     : "Insufficient Points 🔒"}
                 </button>
               </div>

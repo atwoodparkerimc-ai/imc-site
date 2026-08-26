@@ -24,9 +24,11 @@ import TelemetryBreakdown from "./_components/TelemetryBreakdown";
 import ComplianceTracker from "./_components/ComplianceTracker";
 import SafeActTracker from "./_components/SafeActTracker";
 import PrizeInventory from "./_components/PrizeInventory";
+import FulfillmentBoard from "./_components/FulfillmentBoard";
 import DailyAuditSheet from "./_components/DailyAuditSheet";
 import HazardControlPanel from "./_components/HazardControlPanel";
 import CrewLocationManager from "./_components/CrewLocationManager";
+import EmployeeCertManager from "./_components/EmployeeCertManager";
 import AddEmployeeModal from "../dashboard/_components/AddEmployeeModal";
 
 interface DataBucket {
@@ -192,6 +194,7 @@ export default function ManagerDashboard() {
   const [activeTab, setActiveTab] = useState<string>("safety"); 
   const [employees, setEmployees] = useState<UserProfile[]>([]); 
   const [allUsers, setAllUsers] = useState<UserProfile[]>([]); 
+  const [currentUserId, setCurrentUserId] = useState<string>("");
   const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
   const [locations, setLocations] = useState<string[]>([]);
   const [selectedLocation, setSelectedLocation] = useState<string>("ALL");
@@ -222,6 +225,7 @@ export default function ManagerDashboard() {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) { router.push("/login"); return; }
 
+        setCurrentUserId(user.id);
         setCurrentUserEmail(user.email || null);
 
         const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
@@ -570,7 +574,7 @@ export default function ManagerDashboard() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between md:justify-start gap-3 sm:gap-4">
               <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-100 uppercase tracking-tighter flex items-center gap-2.5">
                 <span className="w-2 h-2 rounded-none animate-pulse bg-[var(--color-brand-blue)]" />
-                Operations Suite
+                Admin Portal
               </h1>
               
               {/* STRICTLY PROVISION BUTTON FOR SUPER ADMIN */}
@@ -610,8 +614,10 @@ export default function ManagerDashboard() {
           <div className="flex gap-2 sm:gap-4 pb-px overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0 border-b border-[var(--color-brand-border)]">
             {[
               { id: 'safety', label: 'Safety & Hazards' }, 
-              { id: 'telemetry', label: 'Awards & Telemetry' }, 
+              { id: 'users', label: 'Manage Users' }, 
+              { id: 'telemetry', label: 'Insights' }, 
               { id: 'inventory', label: 'Prize Inventory' }, 
+              { id: 'fulfillment', label: 'Order Fulfillment' },
               { id: 'audit', label: 'Daily Roll Call' }
             ].map(tab => (
               <button 
@@ -633,32 +639,36 @@ export default function ManagerDashboard() {
           {/* LOCATION-AWARE HAZARD CONTROL PANEL */}
           <HazardControlPanel selectedLocation={selectedLocation} />
 
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-            <div className="xl:col-span-2 space-y-6">
-              <RecognitionForm 
-                employees={allUsers} 
-                onAwardSuccess={async () => {
-                  const { data: { user } } = await supabase.auth.getUser();
-                  if (user) await fetchMasterData(user.id);
-                }} 
-                itemVariants={itemVariants} 
-              />
-
-              {/* CREW LOCATION TRANSFER MANAGER */}
-              <CrewLocationManager
-                supabase={supabase}
-                allUsers={allUsers}
-                locations={locations}
-                onLocationUpdated={async () => {
-                  const { data: { user } } = await supabase.auth.getUser();
-                  if (user) await fetchMasterData(user.id);
-                }}
-              />
-            </div>
-          </div>
+          {/* INITIATE RECOGNITION (FULL-WIDTH) */}
+          <RecognitionForm 
+            employees={allUsers} 
+            onAwardSuccess={async () => {
+              const { data: { user } } = await supabase.auth.getUser();
+              if (user) await fetchMasterData(user.id);
+            }} 
+            itemVariants={itemVariants} 
+          />
         </div>
 
-        {/* TAB 2: TELEMETRY ENGINE & ANALYTICS */}
+        {/* TAB 2: MANAGE USERS (TRAININGS & CREW TRANSFERS) */}
+        <div className={activeTab === 'users' ? 'block print:hidden space-y-6' : 'hidden'}>
+          <EmployeeCertManager 
+            supabase={supabase} 
+            allUsers={allUsers} 
+          />
+
+          <CrewLocationManager
+            supabase={supabase}
+            allUsers={allUsers}
+            locations={locations}
+            onLocationUpdated={async () => {
+              const { data: { user } } = await supabase.auth.getUser();
+              if (user) await fetchMasterData(user.id);
+            }}
+          />
+        </div>
+
+        {/* TAB 3: TELEMETRY ENGINE & ANALYTICS */}
         <div className={activeTab === 'telemetry' ? 'block print:hidden space-y-6' : 'hidden'}>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
             {[
@@ -722,7 +732,7 @@ export default function ManagerDashboard() {
           />
         </div>
 
-        {/* TAB 3: INVENTORY LOGISTICS HUB */}
+        {/* TAB 4: INVENTORY LOGISTICS HUB */}
         <div className={activeTab === 'inventory' ? 'block print:hidden' : 'hidden'}>
           <PrizeInventory 
             inventory={inventory} 
@@ -731,7 +741,15 @@ export default function ManagerDashboard() {
           />
         </div>
 
-        {/* TAB 4: CLIPBOARD AUDIT LOG SHEET */}
+        {/* TAB 5: ORDER FULFILLMENT BOARD */}
+        <div className={activeTab === 'fulfillment' ? 'block print:hidden' : 'hidden'}>
+          <FulfillmentBoard 
+            managers={allUsers.filter(u => u.role === 'manager')}
+            itemVariants={itemVariants} 
+          />
+        </div>
+
+        {/* TAB 6: CLIPBOARD AUDIT LOG SHEET */}
         <div className={activeTab === 'audit' ? 'block' : 'hidden print:block'}>
           <DailyAuditSheet 
             employees={employees} 

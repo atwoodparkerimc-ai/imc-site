@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { motion, Variants } from "framer-motion";
+import Image from "next/image";
 
 // --- CENTRAL SERVICE IMPORT ---
 import { 
@@ -145,21 +146,30 @@ export default function CatalogPage() {
             style={{ backgroundColor: "var(--color-brand-blue)" }}
           />
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-            <div>
-              <h1 className="text-3xl sm:text-4xl font-black text-slate-100 uppercase tracking-tighter flex items-center gap-2.5">
-                <span 
-                  className="w-2 h-2 animate-pulse rounded-none" 
-                  style={{ backgroundColor: "var(--color-brand-blue)" }}
-                />
-                Quartermaster
-              </h1>
-              <p className="text-slate-400 text-xs font-bold uppercase tracking-[0.25em] mt-1">
-                Authorized Requisition Terminal
-              </p>
+            
+            {/* Logo + Side-by-Side Large Title */}
+            <div className="flex items-center gap-5 sm:gap-6">
+              <Image
+                src="/imclogo.svg"
+                alt="IMC Logo"
+                width={200}
+                height={56}
+                className="h-12 sm:h-14 w-auto object-contain flex-shrink-0"
+                priority
+              />
+              <div className="h-10 sm:h-12 w-[2px] bg-[var(--color-brand-border)] hidden sm:block" />
+              <div>
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-100 uppercase tracking-tight flex items-center gap-2.5">
+                  <span className="w-2 h-2 rounded-none animate-pulse bg-[var(--color-brand-blue)] hidden sm:inline-block" />
+                  Safety Point Store
+                </h1>
+                
+              </div>
             </div>
 
+            {/* Available Funds Card */}
             <div 
-              className="border p-4 flex items-center gap-6 shadow-xl rounded-sm min-w-[220px]"
+              className="border p-4 flex items-center gap-6 shadow-xl rounded-sm min-w-[220px] w-full sm:w-auto"
               style={{
                 backgroundColor: "var(--color-brand-bg)",
                 borderColor: "var(--color-brand-border)"

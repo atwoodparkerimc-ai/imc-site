@@ -220,7 +220,7 @@ export default function CatalogGrid({
                       : 'bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] text-slate-200 hover:border-[var(--color-brand-blue)] hover:text-white'
                   }`}
                 >
-                  {canAfford ? "View Details & Requisition ↗" : "View Details & Specs 🔒"}
+                  {canAfford ? "View Details to Purchase ↗" : "View Details 🔒"}
                 </button>
               </div>
 

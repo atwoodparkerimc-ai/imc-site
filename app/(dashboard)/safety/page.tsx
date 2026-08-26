@@ -1,12 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 
 // --- CENTRAL DATA SERVICE IMPORT ---
-import { completeDailySafetyBriefing } from "@/lib/db/operations";
+import { 
+  getEmployeeProfile, 
+  completeDailySafetyBriefing 
+} from "@/lib/db/operations";
 
 interface ChecklistItem {
   id: number;
@@ -17,7 +20,7 @@ const checks: ChecklistItem[] = [
   { id: 1, text: "I have inspected my PPE for defects." },
   { id: 2, text: "I have verified all paperwork." },
   { id: 3, text: "I have reviewed the daily safety meeting." },
-  { id: 4, text: "I am fit for duty and alert." },
+  { id: 4, text: "I am fit for work" },
 ];
 
 export default function SafetyMeetingPage() {
@@ -26,11 +29,36 @@ export default function SafetyMeetingPage() {
 
   const [acknowledged, setAcknowledged] = useState<number[]>([]);
   const [isSigning, setIsSigning] = useState<boolean>(false);
+  const [hasCompletedToday, setHasCompletedToday] = useState<boolean>(false);
+  const [isLoadingStatus, setIsLoadingStatus] = useState<boolean>(true);
   const [showCelebration, setShowCelebration] = useState<boolean>(false);
   const [terminalFeedback, setTerminalFeedback] = useState<{ message: string; isError: boolean } | null>(null);
 
+  useEffect(() => {
+    async function checkTodayStatus() {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const userProfile = await getEmployeeProfile(supabase, user.id);
+        const todayDate = new Date().toISOString().split('T')[0];
+
+        if (userProfile?.last_safety_check === todayDate) {
+          setHasCompletedToday(true);
+          setAcknowledged(checks.map(c => c.id));
+        }
+      } catch (err) {
+        console.error("Failed to check daily safety status:", err);
+      } finally {
+        setIsLoadingStatus(false);
+      }
+    }
+
+    checkTodayStatus();
+  }, [supabase]);
+
   const handleSign = async () => {
-    if (acknowledged.length !== checks.length || isSigning) return;
+    if (acknowledged.length !== checks.length || isSigning || hasCompletedToday) return;
 
     setIsSigning(true);
     setTerminalFeedback(null);
@@ -43,12 +71,13 @@ export default function SafetyMeetingPage() {
         return;
       }
 
-      // Execute central data pipeline operation
       const result = await completeDailySafetyBriefing(supabase, user.id);
 
       if (!result.success) {
         if (result.alreadyCheckedIn) {
-          setTerminalFeedback({ message: "Transaction Denied: Briefing signature already logged for today.", isError: true });
+          setHasCompletedToday(true);
+          setAcknowledged(checks.map(c => c.id));
+          setTerminalFeedback({ message: "Briefing signature already logged for today.", isError: false });
         } else {
           setTerminalFeedback({ message: `Database Exception: ${result.error}`, isError: true });
         }
@@ -56,6 +85,7 @@ export default function SafetyMeetingPage() {
         return;
       }
 
+      setHasCompletedToday(true);
       setShowCelebration(true);
       setTimeout(() => {
         router.push("/dashboard");
@@ -85,22 +115,40 @@ export default function SafetyMeetingPage() {
         <motion.header 
           initial={{ opacity: 0, y: -20 }} 
           animate={{ opacity: 1, y: 0 }}
-          className="mb-6 border border-[var(--color-brand-border)] tactical-card p-6 rounded-sm relative overflow-hidden shadow-lg"
+          className="mb-6 border border-[var(--color-brand-border)] p-6 rounded-sm relative overflow-hidden shadow-lg bg-[var(--color-brand-card)]"
         >
-          <div className="absolute top-0 left-0 w-full h-[2px] bg-[var(--color-brand-blue)]" />
+          <div 
+            className="absolute top-0 left-0 w-full h-[2px] transition-colors duration-300"
+            style={{ backgroundColor: hasCompletedToday ? "var(--color-metric-meetings, #10b981)" : "var(--color-brand-blue)" }}
+          />
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
               <h1 className="text-2xl sm:text-3xl font-black text-slate-100 uppercase tracking-tighter flex items-center gap-2">
-                <span className="w-2 h-2 bg-[var(--color-brand-blue)] animate-pulse rounded-none" />
+                <span 
+                  className="w-2 h-2 animate-pulse rounded-none" 
+                  style={{ backgroundColor: hasCompletedToday ? "var(--color-metric-meetings, #10b981)" : "var(--color-brand-blue)" }}
+                />
                 Daily Safety Checklist
               </h1>
               <p className="text-slate-400 text-xs font-bold uppercase tracking-[0.2em] mt-1">
-                Mandatory Pre-Shift Verification Protocol
+                Mandatory Pre-Shift Verification
               </p>
             </div>
-            <div className="inline-block self-start sm:self-auto px-3 py-1 bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] text-xs font-bold text-[var(--color-brand-blue)] uppercase tracking-wider rounded-sm">
-              Status: [Pending]
-            </div>
+
+            {/* DYNAMIC STATUS BADGE */}
+            {isLoadingStatus ? (
+              <div className="inline-block self-start sm:self-auto px-3 py-1 bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] text-xs font-bold text-slate-400 uppercase tracking-wider rounded-sm animate-pulse">
+                Checking...
+              </div>
+            ) : hasCompletedToday ? (
+              <div className="inline-block self-start sm:self-auto px-3 py-1 bg-emerald-950/40 border border-[var(--color-metric-meetings,#10b981)] text-xs font-black text-[var(--color-metric-meetings,#10b981)] uppercase tracking-wider rounded-sm shadow-[0_0_10px_rgba(16,185,129,0.2)]">
+                [COMPLETED TODAY]
+              </div>
+            ) : (
+              <div className="inline-block self-start sm:self-auto px-3 py-1 bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] text-xs font-bold text-[var(--color-brand-blue)] uppercase tracking-wider rounded-sm">
+                Status: [Pending]
+              </div>
+            )}
           </div>
         </motion.header>
 
@@ -111,13 +159,12 @@ export default function SafetyMeetingPage() {
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="lg:col-span-2 border p-6 sm:p-8 rounded-sm shadow-xl relative overflow-hidden flex flex-col justify-between"
-            style={{
-              backgroundColor: "var(--color-brand-card)",
-              borderColor: "var(--color-brand-border)"
-            }}
+            className="lg:col-span-2 border p-6 sm:p-8 rounded-sm shadow-xl relative overflow-hidden flex flex-col justify-between bg-[var(--color-brand-card)] border-[var(--color-brand-border)]"
           >
-            <div className="absolute top-0 left-0 w-full h-1 bg-[var(--color-brand-blue)]" />
+            <div 
+              className="absolute top-0 left-0 w-full h-1" 
+              style={{ backgroundColor: hasCompletedToday ? "var(--color-metric-meetings, #10b981)" : "var(--color-brand-blue)" }}
+            />
             
             <div>
               <h2 className="text-slate-200 font-bold uppercase tracking-widest text-xs mb-6 border-b pb-4 border-[var(--color-brand-border)] flex items-center justify-between">
@@ -126,8 +173,12 @@ export default function SafetyMeetingPage() {
               </h2>
 
               {terminalFeedback && (
-                <div className="mb-6 p-3 font-mono text-[10px] font-bold uppercase tracking-wider border rounded-sm bg-[var(--color-brand-red)]/10 border-[var(--color-brand-red)]/40 text-[var(--color-brand-red)]">
-                  [VERIFICATION FAULT] {terminalFeedback.message}
+                <div className={`mb-6 p-3 font-mono text-[10px] font-bold uppercase tracking-wider border rounded-sm ${
+                  terminalFeedback.isError 
+                    ? "bg-[var(--color-brand-red)]/10 border-[var(--color-brand-red)]/40 text-[var(--color-brand-red)]"
+                    : "bg-emerald-950/30 border-emerald-500/50 text-[var(--color-metric-meetings)]"
+                }`}>
+                  [{terminalFeedback.isError ? "VERIFICATION FAULT" : "VERIFIED"}] {terminalFeedback.message}
                 </div>
               )}
               
@@ -137,8 +188,12 @@ export default function SafetyMeetingPage() {
                   return (
                     <button
                       key={check.id}
-                      onClick={() => setAcknowledged(prev => isChecked ? prev.filter(i => i !== check.id) : [...prev, check.id])}
-                      className="w-full p-4.5 border transition-all duration-200 flex items-center gap-4 text-left cursor-pointer rounded-sm outline-none"
+                      disabled={hasCompletedToday}
+                      onClick={() => {
+                        if (hasCompletedToday) return;
+                        setAcknowledged(prev => isChecked ? prev.filter(i => i !== check.id) : [...prev, check.id]);
+                      }}
+                      className="w-full p-4.5 border transition-all duration-200 flex items-center gap-4 text-left rounded-sm outline-none disabled:cursor-default cursor-pointer"
                       style={{
                         backgroundColor: isChecked 
                           ? "color-mix(in srgb, var(--color-metric-meetings, #10b981) 12%, transparent)" 
@@ -171,22 +226,28 @@ export default function SafetyMeetingPage() {
               </div>
             </div>
 
-            <button 
-              onClick={handleSign}
-              disabled={!allChecksComplete || isSigning}
-              className={`w-full mt-8 py-4 font-bold uppercase tracking-[0.2em] text-xs transition-all duration-300 flex justify-center items-center cursor-pointer rounded-sm border outline-none disabled:opacity-40 disabled:cursor-not-allowed ${
-                allChecksComplete 
-                  ? "bg-[var(--color-brand-blue)] border-[var(--color-brand-blue)] text-white shadow-[0_0_20px_rgba(0,136,255,0.4)] hover:bg-white hover:text-black" 
-                  : "bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] text-slate-500"
-              }`}
-            >
-              {isSigning ? (
-                <span className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
-                  Verifying Credentials...
-                </span>
-              ) : "Sign & Earn 10 Points ↗"}
-            </button>
+            {hasCompletedToday ? (
+              <div className="w-full mt-8 py-4 font-bold uppercase tracking-[0.2em] text-xs flex justify-center items-center rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] text-slate-400">
+                ✓ SIGNATURE RECORDED FOR TODAY
+              </div>
+            ) : (
+              <button 
+                onClick={handleSign}
+                disabled={!allChecksComplete || isSigning}
+                className={`w-full mt-8 py-4 font-bold uppercase tracking-[0.2em] text-xs transition-all duration-300 flex justify-center items-center cursor-pointer rounded-sm border outline-none disabled:opacity-40 disabled:cursor-not-allowed ${
+                  allChecksComplete 
+                    ? "bg-[var(--color-brand-blue)] border-[var(--color-brand-blue)] text-white shadow-[0_0_20px_rgba(0,136,255,0.4)] hover:bg-white hover:text-black" 
+                    : "bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] text-slate-500"
+                }`}
+              >
+                {isSigning ? (
+                  <span className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+                    Verifying Credentials...
+                  </span>
+                ) : "Sign & Earn 10 Points ↗"}
+              </button>
+            )}
           </motion.div>
 
           {/* RIGHT COL: TELEMETRY & INCENTIVE PANEL */}
@@ -199,28 +260,28 @@ export default function SafetyMeetingPage() {
             
             <div className="space-y-6">
               <h2 className="text-slate-200 font-bold uppercase tracking-widest text-xs border-b pb-4 border-[var(--color-brand-border)]">
-                Daily Reward Telemetry
+                Daily Reward breakdown
               </h2>
 
               <div className="p-4 border rounded-sm bg-[var(--color-brand-bg)] border-[var(--color-brand-border)]">
                 <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">COMPLETION AWARD</p>
                 <p className="text-3xl font-black text-[var(--color-metric-meetings,#10b981)] tabular-nums mt-1">+10 PTS</p>
                 <p className="text-[11px] text-slate-300 mt-2 leading-relaxed">
-                  Submitting your daily check-in logs your compliance status directly to the job site master safety log.
+                  Submitting your daily check-in logs your compliance status directly to the job site safety log.
                 </p>
               </div>
 
               <div className="p-4 border rounded-sm bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] space-y-2">
                 <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">COMPLIANCE RULE</p>
                 <p className="text-xs font-bold text-slate-200">
-                  Must be signed daily prior to starting field operations.
+                  Must be signed daily prior to starting work.
                 </p>
               </div>
             </div>
 
             <div className="pt-6 border-t border-[var(--color-brand-border)]">
               <p className="text-[9px] text-slate-500 uppercase tracking-widest font-mono text-center">
-                INDUSTRIAL SAFETY SYSTEM // v4.2
+                INDUSTRIAL SAFETY SYSTEM
               </p>
             </div>
           </motion.div>

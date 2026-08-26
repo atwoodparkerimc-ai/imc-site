@@ -747,7 +747,7 @@ export function BlueprintAnimation() {
   return (
     <div className="w-full h-full cursor-grab active:cursor-grabbing relative overflow-visible">
       <Canvas
-        camera={{ position: [24, 3, 24], fov: 16 }}
+        camera={{ position: [24, 3, 24], fov: 45 }}
         gl={{ antialias: true, alpha: true }}
       >
         {/* Scene lighting pulled directly from your new Master Controls */}

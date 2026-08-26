@@ -19,31 +19,48 @@ export default function ReportingPage() {
   const router = useRouter();
   const [supabase] = useState(() => createClient());
 
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [users, setUsers] = useState<MinimalUserRecord[]>([]);
   const [selectedUser, setSelectedUser] = useState<string>("");
   const [report, setReport] = useState<string>("");
+  const [hasCompletedToday, setHasCompletedToday] = useState<boolean>(false);
+  const [isLoadingStatus, setIsLoadingStatus] = useState<boolean>(true);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [showCelebration, setShowCelebration] = useState<boolean>(false);
   const [recipientBonusGranted, setRecipientBonusGranted] = useState<boolean>(false);
   const [formFeedback, setFormFeedback] = useState<{ message: string; isError: boolean } | null>(null);
 
   useEffect(() => {
-    async function fetchUsers() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      
-      // 1. Fetch current user profile to determine active site location
-      const profile = await getEmployeeProfile(supabase, user.id);
-      
-      // 2. Fetch peers strictly assigned to the same active location
-      const peerList = await getPeerProfiles(supabase, user.id, profile?.location);
-      setUsers(peerList);
+    async function fetchUserData() {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        
+        // 1. Fetch current user profile to determine active site location & today's status
+        const userProfile = await getEmployeeProfile(supabase, user.id);
+        if (userProfile) {
+          setProfile(userProfile);
+          
+          const todayDate = new Date().toISOString().split('T')[0];
+          if (userProfile.last_safe_act_date === todayDate) {
+            setHasCompletedToday(true);
+          }
+        }
+        
+        // 2. Fetch peers strictly assigned to the same active location
+        const peerList = await getPeerProfiles(supabase, user.id, userProfile?.location);
+        setUsers(peerList);
+      } catch (err) {
+        console.error("Failed to load user reporting profile:", err);
+      } finally {
+        setIsLoadingStatus(false);
+      }
     }
-    fetchUsers();
+    fetchUserData();
   }, [supabase]);
 
   const handleSubmit = async () => {
-    if (!selectedUser || !report || isSubmitting) return;
+    if (!selectedUser || !report || isSubmitting || hasCompletedToday) return;
     
     setIsSubmitting(true);
     setFormFeedback(null);
@@ -64,6 +81,7 @@ export default function ReportingPage() {
 
     if (!result.success) {
       if (result.alreadyReportedToday) {
+        setHasCompletedToday(true);
         setFormFeedback({ message: "Transaction Denied: You have already filed a Safe Act today.", isError: true });
       } else {
         setFormFeedback({ message: `Database Exception: ${result.error}`, isError: true });
@@ -72,7 +90,7 @@ export default function ReportingPage() {
       return;
     }
 
-    // Success route trigger & track if multi-recognition bonus applied
+    setHasCompletedToday(true);
     setRecipientBonusGranted(!!result.recipientBonusGranted);
     setShowCelebration(true);
     setTimeout(() => {
@@ -86,6 +104,7 @@ export default function ReportingPage() {
   };
 
   const handleInputFocus = (e: React.FocusEvent<HTMLSelectElement | HTMLTextAreaElement>) => {
+    if (hasCompletedToday) return;
     e.currentTarget.style.borderColor = "var(--color-brand-blue)";
     e.currentTarget.style.boxShadow = "0 0 10px color-mix(in srgb, var(--color-brand-blue) 30%, transparent)";
   };
@@ -108,20 +127,38 @@ export default function ReportingPage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-6 border border-[var(--color-brand-border)] tactical-card p-6 rounded-sm relative overflow-hidden shadow-lg"
         >
-          <div className="absolute top-0 left-0 w-full h-[2px] bg-[var(--color-brand-blue)]" />
+          <div 
+            className="absolute top-0 left-0 w-full h-[2px] transition-colors duration-300" 
+            style={{ backgroundColor: hasCompletedToday ? "var(--color-metric-meetings, #10b981)" : "var(--color-brand-blue)" }}
+          />
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
               <h1 className="text-2xl sm:text-3xl font-black text-slate-100 uppercase tracking-tighter flex items-center gap-2">
-                <span className="w-2 h-2 bg-[var(--color-brand-blue)] animate-pulse rounded-none" />
+                <span 
+                  className="w-2 h-2 animate-pulse rounded-none" 
+                  style={{ backgroundColor: hasCompletedToday ? "var(--color-metric-meetings, #10b981)" : "var(--color-brand-blue)" }}
+                />
                 Report Safe Act
               </h1>
               <p className="text-slate-400 text-xs font-bold uppercase tracking-[0.2em] mt-1">
-                Peer Safety Recognition & Rewards Terminal
+                Peer Safety Recognition.
               </p>
             </div>
-            <div className="inline-block self-start sm:self-auto px-3 py-1 bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] text-xs font-bold text-[var(--color-brand-blue)] uppercase tracking-wider rounded-sm">
-              Status: [Active Stream]
-            </div>
+
+            {/* DYNAMIC STATUS BADGE */}
+            {isLoadingStatus ? (
+              <div className="inline-block self-start sm:self-auto px-3 py-1 bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] text-xs font-bold text-slate-400 uppercase tracking-wider rounded-sm animate-pulse">
+                Checking...
+              </div>
+            ) : hasCompletedToday ? (
+              <div className="inline-block self-start sm:self-auto px-3 py-1 bg-emerald-950/40 border border-[var(--color-metric-meetings,#10b981)] text-xs font-black text-[var(--color-metric-meetings,#10b981)] uppercase tracking-wider rounded-sm shadow-[0_0_10px_rgba(16,185,129,0.2)]">
+                [COMPLETED TODAY]
+              </div>
+            ) : (
+              <div className="inline-block self-start sm:self-auto px-3 py-1 bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] text-xs font-bold text-[var(--color-brand-blue)] uppercase tracking-wider rounded-sm">
+                Status: [Pending]
+              </div>
+            )}
           </div>
         </motion.header>
 
@@ -138,12 +175,17 @@ export default function ReportingPage() {
               borderColor: "var(--color-brand-border)"
             }}
           >
-            <div className="absolute top-0 left-0 w-full h-1 bg-[var(--color-brand-blue)]" />
+            <div 
+              className="absolute top-0 left-0 w-full h-1" 
+              style={{ backgroundColor: hasCompletedToday ? "var(--color-metric-meetings, #10b981)" : "var(--color-brand-blue)" }}
+            />
 
             <div>
               <h2 className="text-slate-200 font-bold uppercase tracking-widest text-xs mb-6 border-b pb-4 border-[var(--color-brand-border)] flex items-center justify-between">
                 <span>Safe Observation Details</span>
-                <span className="text-[10px] text-slate-400">LOCATION SENSITIVE</span>
+                <span className="text-[10px] text-[var(--color-brand-blue)] font-black uppercase tracking-wider">
+                  {profile?.location ? profile.location.toUpperCase() : "SPRINGVILLE SHOP"}
+                </span>
               </h2>
 
               {formFeedback && (
@@ -166,14 +208,17 @@ export default function ReportingPage() {
                   </label>
                   <div className="relative">
                     <select 
-                      className="w-full border p-3.5 text-slate-100 uppercase font-bold text-sm outline-none cursor-pointer appearance-none rounded-sm transition-colors"
+                      disabled={hasCompletedToday}
+                      className="w-full border p-3.5 text-slate-100 uppercase font-bold text-sm outline-none cursor-pointer appearance-none rounded-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       style={inputStyle}
                       onFocus={handleInputFocus}
                       onBlur={handleInputBlur}
                       onChange={(e) => setSelectedUser(e.target.value)}
                       value={selectedUser}
                     >
-                      <option value="" style={{ backgroundColor: "var(--color-brand-card)" }}>Choose a team member...</option>
+                      <option value="" style={{ backgroundColor: "var(--color-brand-card)" }}>
+                        {hasCompletedToday ? "Safe Act Logged for Today" : "Choose a team member..."}
+                      </option>
                       {users.map(u => (
                         <option key={u.id} value={u.id} style={{ backgroundColor: "var(--color-brand-card)" }}>
                           {u.nickname || u.first_name}
@@ -193,11 +238,12 @@ export default function ReportingPage() {
                     Observation Description
                   </label>
                   <textarea 
-                    className="w-full border p-4 text-slate-100 h-40 outline-none resize-none text-sm leading-relaxed rounded-sm font-sans transition-colors"
+                    disabled={hasCompletedToday}
+                    className="w-full border p-4 text-slate-100 h-40 outline-none resize-none text-sm leading-relaxed rounded-sm font-sans transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     style={inputStyle}
                     onFocus={handleInputFocus}
                     onBlur={handleInputBlur}
-                    placeholder="Describe the safe behavior, hazard mitigation, or peer assistance observed on site..."
+                    placeholder={hasCompletedToday ? "You have completed your peer safe act submission for today." : "Describe the safe behavior, hazard mitigation, or peer assistance observed on site..."}
                     onChange={(e) => setReport(e.target.value)}
                     value={report}
                   />
@@ -205,13 +251,19 @@ export default function ReportingPage() {
               </div>
             </div>
 
-            <button 
-              onClick={handleSubmit}
-              disabled={!selectedUser || !report || isSubmitting}
-              className="w-full mt-8 py-4 font-black uppercase tracking-[0.2em] text-xs disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300 cursor-pointer rounded-sm shadow-md border outline-none bg-[var(--color-brand-blue)] border-[var(--color-brand-blue)] text-white hover:bg-white hover:text-black shadow-[0_0_20px_rgba(0,136,255,0.3)]"
-            >
-              {isSubmitting ? "Submitting Ledger Entry..." : "Submit & Award Points ↗"}
-            </button>
+            {hasCompletedToday ? (
+              <div className="w-full mt-8 py-4 font-bold uppercase tracking-[0.2em] text-xs flex justify-center items-center rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] text-slate-400">
+                ✓ REPORT LOGGED FOR TODAY
+              </div>
+            ) : (
+              <button 
+                onClick={handleSubmit}
+                disabled={!selectedUser || !report || isSubmitting}
+                className="w-full mt-8 py-4 font-black uppercase tracking-[0.2em] text-xs disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300 cursor-pointer rounded-sm shadow-md border outline-none bg-[var(--color-brand-blue)] border-[var(--color-brand-blue)] text-white hover:bg-white hover:text-black shadow-[0_0_20px_rgba(0,136,255,0.3)]"
+              >
+                {isSubmitting ? "Submitting Ledger Entry..." : "Submit & Award Points ↗"}
+              </button>
+            )}
           </motion.div>
 
           {/* RIGHT COL: RECOGNITION RULES & TELEMETRY PANEL */}
@@ -253,7 +305,7 @@ export default function ReportingPage() {
 
             <div className="pt-6 border-t border-[var(--color-brand-border)]">
               <p className="text-[9px] text-slate-500 uppercase tracking-widest font-mono text-center">
-                INDUSTRIAL SAFETY SYSTEM // v4.2
+                INDUSTRIAL SAFETY SYSTEM 
               </p>
             </div>
           </motion.div>

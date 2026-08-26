@@ -7,6 +7,7 @@ import { motion, Variants } from "framer-motion";
 // --- CENTRAL DATA SERVICE IMPORT ---
 import { 
   addInventoryItem, 
+  updateInventoryItem,
   deleteInventoryItemById, 
   InventoryItem 
 } from "@/lib/db/operations";
@@ -17,96 +18,164 @@ interface PrizeInventoryProps {
   itemVariants: Variants;
 }
 
-const CATEGORIES = ["Outdoor", "Apparel", "Tools", "Family", "Electronics",];
+const CATEGORIES = ["Outdoor", "Apparel", "Tools", "Family", "Electronics"];
 
 export default function PrizeInventory({ inventory = [], fetchInventory, itemVariants }: PrizeInventoryProps) {
   const [supabase] = useState(() => createClient());
-  const [newItemName, setNewItemName] = useState<string>("");
-  const [newItemCost, setNewItemCost] = useState<string>("");
-  const [newItemStock, setNewItemStock] = useState<string>("");
-  const [newItemCategory, setNewItemCategory] = useState<string>("Apparel");
-  const [newItemDescription, setNewItemDescription] = useState<string>("");
-  const [newItemImages, setNewItemImages] = useState<string[]>([""]);
+
+  // Editing vs Adding Mode State
+  const [editingId, setEditingId] = useState<string | null>(null);
+
+  // Form State
+  const [itemName, setItemName] = useState<string>("");
+  const [itemCost, setItemCost] = useState<string>("");
+  const [itemStock, setItemStock] = useState<string>("");
+  const [itemCategory, setItemCategory] = useState<string>("Apparel");
+  const [itemDescription, setItemDescription] = useState<string>("");
+  const [itemImages, setItemImages] = useState<string[]>([""]);
   const [isFeatured, setIsFeatured] = useState<boolean>(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+
+  // Load item into form for editing
+  const startEditing = (item: InventoryItem) => {
+    setEditingId(item.id);
+    setItemName(item.item_name || "");
+    setItemCost(String(item.cost_in_points || 0));
+    setItemStock(String(item.quantity_in_stock || 0));
+    setItemCategory(item.category || "General");
+    setItemDescription(item.description || "");
+    setIsFeatured(Boolean(item.is_featured));
+    
+    if (item.images && item.images.length > 0) {
+      setItemImages(item.images);
+    } else if (item.image_url) {
+      setItemImages([item.image_url]);
+    } else {
+      setItemImages([""]);
+    }
+    setFormError(null);
+  };
+
+  // Reset form back to "Add" mode
+  const cancelEditing = () => {
+    setEditingId(null);
+    setItemName("");
+    setItemCost("");
+    setItemStock("");
+    setItemCategory("Apparel");
+    setItemDescription("");
+    setItemImages([""]);
+    setIsFeatured(false);
+    setFormError(null);
+  };
 
   // Dynamic Image URL Handler
   const handleImageChange = (index: number, value: string) => {
-    const updated = [...newItemImages];
+    const updated = [...itemImages];
     updated[index] = value;
-    setNewItemImages(updated);
+    setItemImages(updated);
   };
 
   const addImageField = () => {
-    setNewItemImages([...newItemImages, ""]);
+    setItemImages([...itemImages, ""]);
   };
 
   const removeImageField = (index: number) => {
-    if (newItemImages.length === 1) {
-      setNewItemImages([""]);
+    if (itemImages.length === 1) {
+      setItemImages([""]);
       return;
     }
-    setNewItemImages(newItemImages.filter((_, i) => i !== index));
+    setItemImages(itemImages.filter((_, i) => i !== index));
   };
 
-  const handleAddInventory = async (e: React.FormEvent) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
+    setIsSubmitting(true);
 
-    // Filter out empty string image inputs
-    const cleanImages = newItemImages.map(img => img.trim()).filter(img => img.length > 0);
+    const cleanImages = itemImages.map(img => img.trim()).filter(img => img.length > 0);
 
-    const result = await addInventoryItem(supabase, {
-      itemName: newItemName,
-      costInPoints: parseInt(newItemCost, 10),
-      quantityInStock: parseInt(newItemStock, 10),
-      category: newItemCategory,
-      description: newItemDescription,
+    const payload = {
+      itemName,
+      costInPoints: parseInt(itemCost, 10),
+      quantityInStock: parseInt(itemStock, 10),
+      category: itemCategory,
+      description: itemDescription,
       images: cleanImages,
       isFeatured
-    });
-    
-    if (result.success) { 
-      await fetchInventory(); 
-      setNewItemName(""); 
-      setNewItemCost(""); 
-      setNewItemStock(""); 
-      setNewItemDescription("");
-      setNewItemImages([""]);
-      setIsFeatured(false);
+    };
+
+    if (editingId) {
+      // UPDATE EXISTING ITEM
+      const result = await updateInventoryItem(supabase, editingId, payload);
+      if (result.success) {
+        await fetchInventory();
+        cancelEditing();
+      } else {
+        console.error("Failed to update inventory record:", result.error);
+        setFormError(`Update Refused: ${result.error || "Unable to modify catalog item."}`);
+      }
     } else {
-      console.error("Failed to commit inventory record:", result.error);
-      setFormError(`Transaction Refused: ${result.error || "Unable to index catalog item."}`);
+      // ADD NEW ITEM
+      const result = await addInventoryItem(supabase, payload);
+      if (result.success) { 
+        await fetchInventory(); 
+        cancelEditing();
+      } else {
+        console.error("Failed to commit inventory record:", result.error);
+        setFormError(`Transaction Refused: ${result.error || "Unable to index catalog item."}`);
+      }
     }
+    setIsSubmitting(false);
   };
   
   const handleDeleteItem = async (id: string) => {
+    if (!confirm("Are you sure you want to permanently delete this catalog item?")) return;
+    
     const result = await deleteInventoryItemById(supabase, id);
     if (result.success) {
+      if (editingId === id) cancelEditing();
       await fetchInventory();
     } else {
       console.error("Failed to delete inventory item:", result.error);
+      alert(`Delete Failed: ${result.error}`);
     }
   };
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 font-mono text-slate-100">
-      {/* Add Catalog Item Form */}
+      {/* Form: Add or Edit Store Item */}
       <motion.div 
         variants={itemVariants} 
         className="border p-4 sm:p-6 shadow-2xl relative overflow-hidden group rounded-sm bg-[var(--color-brand-card)] border-[var(--color-brand-border)]"
       >
-        {/* Top Accent Line */}
-        <div className="absolute top-0 left-0 w-full h-[2px] bg-[var(--color-brand-border)] group-hover:bg-[var(--color-brand-blue)] transition-colors duration-300" />
+        {/* Top Accent Line (Amber when editing, Blue when creating) */}
+        <div 
+          className={`absolute top-0 left-0 w-full h-[2px] transition-colors duration-300 ${
+            editingId ? "bg-amber-400" : "bg-[var(--color-brand-blue)]"
+          }`} 
+        />
         
-        <div className="mb-6 border-b pb-4 border-[var(--color-brand-border)]">
-          <h2 className="text-slate-100 font-black uppercase tracking-widest text-sm sm:text-base flex items-center gap-2">
-            <span className="w-2 h-2 bg-[var(--color-brand-blue)] animate-pulse rounded-none" />
-            Provision Store Item
-          </h2>
-          <p className="text-[11px] sm:text-xs text-slate-400 font-bold uppercase tracking-wider mt-0.5">
-            Add Rich Product Details, Gallery Photos & Specs
-          </p>
+        <div className="mb-6 border-b pb-4 border-[var(--color-brand-border)] flex justify-between items-start">
+          <div>
+            <h2 className="text-slate-100 font-black uppercase tracking-widest text-sm sm:text-base flex items-center gap-2">
+              <span className={`w-2 h-2 rounded-none animate-pulse ${editingId ? "bg-amber-400" : "bg-[var(--color-brand-blue)]"}`} />
+              {editingId ? "Edit Catalog Item" : "Provision Store Item"}
+            </h2>
+            <p className="text-[11px] sm:text-xs text-slate-400 font-bold uppercase tracking-wider mt-0.5">
+              {editingId ? "Update Valuation, Inventory Stock & Media Assets" : "Add Rich Product Details, Gallery Photos & Specs"}
+            </p>
+          </div>
+          {editingId && (
+            <button 
+              type="button"
+              onClick={cancelEditing}
+              className="text-[10px] font-bold uppercase text-slate-400 hover:text-white px-2 py-1 border border-slate-700 bg-slate-900 rounded-sm cursor-pointer"
+            >
+              Cancel
+            </button>
+          )}
         </div>
         
         {formError && (
@@ -115,13 +184,13 @@ export default function PrizeInventory({ inventory = [], fetchInventory, itemVar
           </div>
         )}
 
-        <form onSubmit={handleAddInventory} className="space-y-4">
+        <form onSubmit={handleFormSubmit} className="space-y-4">
           <div>
             <label className="text-[10px] font-bold uppercase text-slate-300 tracking-widest block mb-1">Item Title</label>
             <input 
               type="text" 
-              value={newItemName} 
-              onChange={(e) => setNewItemName(e.target.value)} 
+              value={itemName} 
+              onChange={(e) => setItemName(e.target.value)} 
               required 
               placeholder="e.g. Carhartt Heavyweight Hoodie" 
               className="w-full p-3 text-slate-100 text-xs font-bold uppercase outline-none transition-colors rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)]" 
@@ -133,8 +202,8 @@ export default function PrizeInventory({ inventory = [], fetchInventory, itemVar
               <label className="text-[10px] font-bold uppercase text-slate-300 tracking-widest block mb-1">Point Valuation</label>
               <input 
                 type="number" 
-                value={newItemCost} 
-                onChange={(e) => setNewItemCost(e.target.value)} 
+                value={itemCost} 
+                onChange={(e) => setItemCost(e.target.value)} 
                 required 
                 placeholder="Points" 
                 className="w-full p-3 text-slate-100 text-xs font-bold uppercase outline-none transition-colors rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)]" 
@@ -145,8 +214,8 @@ export default function PrizeInventory({ inventory = [], fetchInventory, itemVar
               <label className="text-[10px] font-bold uppercase text-slate-300 tracking-widest block mb-1">Stock Quantity</label>
               <input 
                 type="number" 
-                value={newItemStock} 
-                onChange={(e) => setNewItemStock(e.target.value)} 
+                value={itemStock} 
+                onChange={(e) => setItemStock(e.target.value)} 
                 required 
                 placeholder="In Stock QTY" 
                 className="w-full p-3 text-slate-100 text-xs font-bold uppercase outline-none transition-colors rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)]" 
@@ -157,8 +226,8 @@ export default function PrizeInventory({ inventory = [], fetchInventory, itemVar
           <div>
             <label className="text-[10px] font-bold uppercase text-slate-300 tracking-widest block mb-1">Category Classification</label>
             <select
-              value={newItemCategory}
-              onChange={(e) => setNewItemCategory(e.target.value)}
+              value={itemCategory}
+              onChange={(e) => setItemCategory(e.target.value)}
               className="w-full p-3 text-slate-100 text-xs font-bold uppercase outline-none cursor-pointer rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)]"
             >
               {CATEGORIES.map(cat => (
@@ -174,8 +243,8 @@ export default function PrizeInventory({ inventory = [], fetchInventory, itemVar
               Product Description & Specs
             </label>
             <textarea 
-              value={newItemDescription}
-              onChange={(e) => setNewItemDescription(e.target.value)}
+              value={itemDescription}
+              onChange={(e) => setItemDescription(e.target.value)}
               placeholder="Detail sizing, material quality, warranty, or pickup instructions..."
               className="w-full p-3 text-slate-100 text-xs font-sans h-24 outline-none resize-none transition-colors rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)]"
             />
@@ -190,14 +259,14 @@ export default function PrizeInventory({ inventory = [], fetchInventory, itemVar
               <button
                 type="button"
                 onClick={addImageField}
-                className="text-[9px] font-bold uppercase text-[var(--color-brand-blue)] hover:underline"
+                className="text-[9px] font-bold uppercase text-[var(--color-brand-blue)] hover:underline cursor-pointer"
               >
                 + Add Photo URL
               </button>
             </div>
 
             <div className="space-y-2">
-              {newItemImages.map((imgUrl, index) => (
+              {itemImages.map((imgUrl, index) => (
                 <div key={index} className="flex gap-2 items-center">
                   <input 
                     type="url" 
@@ -206,11 +275,11 @@ export default function PrizeInventory({ inventory = [], fetchInventory, itemVar
                     placeholder={index === 0 ? "Primary Image URL (HTTPS)" : `Gallery Photo #${index + 1} URL`} 
                     className="flex-1 p-2.5 text-slate-100 text-xs font-mono outline-none transition-colors rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)]" 
                   />
-                  {newItemImages.length > 1 && (
+                  {itemImages.length > 1 && (
                     <button 
                       type="button"
                       onClick={() => removeImageField(index)}
-                      className="px-2.5 py-2 text-xs font-bold text-[var(--color-brand-red)] border border-[var(--color-brand-border)] hover:bg-red-950/40 rounded-sm"
+                      className="px-2.5 py-2 text-xs font-bold text-[var(--color-brand-red)] border border-[var(--color-brand-border)] hover:bg-red-950/40 rounded-sm cursor-pointer"
                     >
                       ✕
                     </button>
@@ -234,12 +303,32 @@ export default function PrizeInventory({ inventory = [], fetchInventory, itemVar
             </label>
           </div>
 
-          <button 
-            type="submit" 
-            className="w-full mt-2 text-white py-3.5 font-bold uppercase tracking-wider text-xs hover:bg-white hover:text-black transition-all duration-200 cursor-pointer rounded-sm bg-[var(--color-brand-blue)] shadow-[0_0_15px_rgba(0,136,255,0.25)]"
-          >
-            + Commit Item To Catalog ↗
-          </button>
+          <div className="flex gap-2 pt-2">
+            {editingId && (
+              <button
+                type="button"
+                onClick={cancelEditing}
+                className="flex-1 py-3.5 border border-slate-700 text-slate-300 font-bold uppercase tracking-wider text-xs hover:bg-slate-800 transition-colors rounded-sm cursor-pointer"
+              >
+                Cancel
+              </button>
+            )}
+            <button 
+              type="submit" 
+              disabled={isSubmitting}
+              className={`flex-1 py-3.5 font-bold uppercase tracking-wider text-xs transition-all duration-200 cursor-pointer rounded-sm ${
+                editingId 
+                  ? "bg-amber-400 hover:bg-white text-black shadow-[0_0_15px_rgba(251,191,36,0.25)]" 
+                  : "bg-[var(--color-brand-blue)] hover:bg-white hover:text-black text-white shadow-[0_0_15px_rgba(0,136,255,0.25)]"
+              }`}
+            >
+              {isSubmitting 
+                ? "Saving..." 
+                : editingId 
+                ? "✓ Save Catalog Changes ↗" 
+                : "+ Commit Item To Catalog ↗"}
+            </button>
+          </div>
         </form>
       </motion.div>
 
@@ -248,7 +337,6 @@ export default function PrizeInventory({ inventory = [], fetchInventory, itemVar
         variants={itemVariants} 
         className="lg:col-span-2 border p-4 sm:p-6 shadow-2xl relative overflow-hidden group rounded-sm bg-[var(--color-brand-card)] border-[var(--color-brand-border)] flex flex-col justify-between"
       >
-        {/* Top Accent Line */}
         <div className="absolute top-0 left-0 w-full h-[2px] bg-[var(--color-brand-border)] group-hover:bg-[var(--color-brand-blue)] transition-colors duration-300" />
 
         <div>
@@ -283,9 +371,17 @@ export default function PrizeInventory({ inventory = [], fetchInventory, itemVar
                   inventory.map(item => {
                     const photosCount = (item.images?.length || (item.image_url ? 1 : 0));
                     const primaryThumb = item.images?.[0] || item.image_url;
+                    const isCurrentlyEditing = editingId === item.id;
 
                     return (
-                      <tr key={item.id} className="transition-colors hover:bg-[var(--color-brand-bg)]/50">
+                      <tr 
+                        key={item.id} 
+                        className={`transition-colors ${
+                          isCurrentlyEditing 
+                            ? "bg-amber-400/10 border-l-2 border-amber-400" 
+                            : "hover:bg-[var(--color-brand-bg)]/50"
+                        }`}
+                      >
                         <td className="py-3.5 px-3 text-slate-100 font-bold uppercase text-xs">
                           <div className="flex items-center gap-3">
                             {primaryThumb ? (
@@ -328,8 +424,16 @@ export default function PrizeInventory({ inventory = [], fetchInventory, itemVar
                         <td className={`py-3.5 px-3 font-bold tabular-nums text-xs whitespace-nowrap ${item.quantity_in_stock > 0 ? 'text-[var(--color-metric-safe-acts)]' : 'text-[var(--color-metric-assistance)]'}`}>
                           {item.quantity_in_stock > 0 ? `${item.quantity_in_stock} UNITS` : 'OUT OF STOCK'}
                         </td>
-                        <td className="py-3.5 px-3 text-right whitespace-nowrap">
+                        <td className="py-3.5 px-3 text-right whitespace-nowrap space-x-2">
                           <button 
+                            type="button"
+                            onClick={() => startEditing(item)} 
+                            className="text-xs font-bold uppercase hover:underline cursor-pointer text-[var(--color-brand-blue)] hover:text-white"
+                          >
+                            [ Edit ]
+                          </button>
+                          <button 
+                            type="button"
                             onClick={() => handleDeleteItem(item.id)} 
                             className="text-xs font-bold uppercase hover:underline cursor-pointer text-[var(--color-brand-red)] hover:text-red-400"
                           >
