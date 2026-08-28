@@ -17,11 +17,19 @@ const ParticleCloud = () => {
     canvas.style.height = '100%';
     ctx.scale(2, 2);
 
-    const particles: { x: number, y: number, r: number, a: number, speed: number, dist: number, baseAlpha: number, isWhite: boolean }[] = [];
+    const particles: { x: number, y: number, r: number, a: number, speed: number, dist: number, baseAlpha: number, type: 'white' | 'red' | 'blue' }[] = [];
     const particleCount = 600;
     const center = size / 2;
 
     for (let i = 0; i < particleCount; i++) {
+      const rand = Math.random();
+      let type: 'white' | 'red' | 'blue' = 'white';
+      if (rand > 0.8) {
+        type = 'red'; // #ea1f27
+      } else if (rand > 0.4) {
+        type = 'blue'; // #0088ff
+      }
+
       particles.push({
         x: 0, 
         y: 0,
@@ -30,7 +38,7 @@ const ParticleCloud = () => {
         dist: Math.random() * (center - 2),
         speed: (Math.random() - 0.5) * 0.008,
         baseAlpha: Math.random() * 0.85 + 0.15,
-        isWhite: Math.random() > 0.7
+        type
       });
     }
 
@@ -49,7 +57,14 @@ const ParticleCloud = () => {
 
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = p.isWhite ? `rgba(255, 255, 255, ${finalOpacity})` : `rgba(0, 136, 255, ${finalOpacity})`;
+        
+        if (p.type === 'red') {
+          ctx.fillStyle = `rgba(234, 31, 39, ${finalOpacity})`;
+        } else if (p.type === 'blue') {
+          ctx.fillStyle = `rgba(0, 136, 255, ${finalOpacity})`;
+        } else {
+          ctx.fillStyle = `rgba(255, 255, 255, ${finalOpacity})`;
+        }
         ctx.fill();
       });
 
@@ -64,10 +79,10 @@ const ParticleCloud = () => {
 };
 
 const metrics = [
-  { prefix: "", value: "1995", label: "Year Established" },
-  { prefix: "", value: "12,600", label: "Sq Ft Shop Space" },
-  { prefix: "+", value: "75", label: "Specialized Craftsmen" },
-  { prefix: "+", value: "21", label: "Manufacturers Served" },
+  { prefix: "", value: "1995", label: "Year Established", borderColor: "#ea1f27", glowColor: "rgba(234,31,39,0.7)", shadowColor: "rgba(234,31,39,0.25)" },
+  { prefix: "", value: "12,600", label: "Sq Ft Shop Space", borderColor: "#64748b", glowColor: "rgba(100,116,139,0.7)", shadowColor: "rgba(100,116,139,0.25)" },
+  { prefix: "+", value: "75", label: "Specialized Craftsmen", borderColor: "#64748b", glowColor: "rgba(100,116,139,0.7)", shadowColor: "rgba(100,116,139,0.25)" },
+  { prefix: "+", value: "21", label: "Manufacturers Served", borderColor: "#0088ff", glowColor: "rgba(0,136,255,0.7)", shadowColor: "rgba(0,136,255,0.25)" },
 ];
 
 export default function AtAGlance() {
@@ -82,25 +97,38 @@ export default function AtAGlance() {
               
               {/* Primary Neon Orbit Ring (Forward) */}
               <div 
-                className="absolute -inset-1.5 rounded-full border border-transparent border-t-[#00a6ff] border-b-[#0066ff] opacity-80 animate-[spin_8s_linear_infinite] pointer-events-none transition-all duration-300 group-hover:opacity-100"
+                className="absolute -inset-1.5 rounded-full border border-transparent opacity-80 animate-[spin_8s_linear_infinite] pointer-events-none transition-all duration-300 group-hover:opacity-100"
                 style={{
-                  filter: 'drop-shadow(0 0 8px #00a6ff) drop-shadow(0 0 16px rgba(0,166,255,0.7))'
+                  borderTopColor: metric.borderColor,
+                  borderBottomColor: metric.borderColor === '#ea1f27' ? '#0088ff' : metric.borderColor === '#0088ff' ? '#ea1f27' : '#64748b',
+                  filter: `drop-shadow(0 0 8px ${metric.borderColor}) drop-shadow(0 0 16px ${metric.glowColor})`
                 }}
               />
               
               {/* Secondary Accent Orbit Ring (Reverse) */}
               <div 
-                className="absolute -inset-3.5 rounded-full border border-transparent border-l-[#38bdf8] border-r-[#0088ff] opacity-60 animate-[spin_14s_linear_infinite_reverse] pointer-events-none transition-all duration-300 group-hover:opacity-90"
+                className="absolute -inset-3.5 rounded-full border border-transparent opacity-60 animate-[spin_14s_linear_infinite_reverse] pointer-events-none transition-all duration-300 group-hover:opacity-90"
                 style={{
-                  filter: 'drop-shadow(0 0 10px rgba(56,189,248,0.6))'
+                  borderLeftColor: metric.borderColor === '#ea1f27' ? '#64748b' : '#ea1f27',
+                  borderRightColor: metric.borderColor,
+                  filter: `drop-shadow(0 0 10px ${metric.glowColor})`
                 }}
               />
 
               {/* Ambient Circular Backlight Glow */}
-              <div className="absolute inset-0 rounded-full bg-[#0088ff]/10 blur-xl pointer-events-none group-hover:bg-[#0088ff]/25 transition-colors duration-500" />
+              <div 
+                className="absolute inset-0 rounded-full blur-xl pointer-events-none transition-colors duration-500"
+                style={{ backgroundColor: metric.borderColor === '#ea1f27' ? 'rgba(234,31,39,0.1)' : metric.borderColor === '#0088ff' ? 'rgba(0,136,255,0.1)' : 'rgba(100,116,139,0.1)' }} 
+              />
 
               {/* Main Housing Container */}
-              <div className="relative w-full h-full flex flex-col items-center justify-center rounded-full border border-[#0088ff]/50 group-hover:border-[#00a6ff] shadow-[inset_0_0_35px_rgba(0,136,255,0.25)] bg-[#020b1a]/90 overflow-hidden transition-colors duration-300 px-4 text-center">
+              <div 
+                className="relative w-full h-full flex flex-col items-center justify-center rounded-full border bg-[#020b1a]/90 overflow-hidden transition-colors duration-300 px-4 text-center shadow-inner"
+                style={{ 
+                  borderColor: metric.borderColor,
+                  boxShadow: `inset 0 0 35px ${metric.shadowColor}`
+                }}
+              >
                 <ParticleCloud />
 
                 {/* Number & Prefix */}
@@ -118,8 +146,9 @@ export default function AtAGlance() {
                 {/* Prominent, Larger Metric Label */}
                 <div className="relative z-10 mt-2 max-w-[190px]">
                   <span 
-                    className="text-xs sm:text-[13px] font-black text-[#38bdf8] uppercase tracking-[0.14em] leading-tight block group-hover:text-white transition-colors duration-300"
+                    className="text-xs sm:text-[13px] font-black uppercase tracking-[0.14em] leading-tight block group-hover:text-white transition-colors duration-300"
                     style={{
+                      color: metric.borderColor === '#ea1f27' ? '#ea1f27' : metric.borderColor === '#0088ff' ? '#38bdf8' : '#94a3b8',
                       textShadow: '0 2px 8px rgba(0, 0, 0, 0.95), 0 0 14px rgba(0, 136, 255, 0.7)'
                     }}
                   >

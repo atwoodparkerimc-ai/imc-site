@@ -235,8 +235,9 @@ export async function getJobLocations(
     .select('name')
     .order('name', { ascending: true });
 
+  // Updated fallback array to include Nestle Gaffney
   if (error || !data || data.length === 0) {
-    return ['Nestle Springville', 'Nestle Jonesboro', 'Springville Shop'];
+    return ['Nestle Springville', 'Nestle Gaffney', 'Springville Shop'];
   }
   return data.map(l => l.name);
 }
@@ -1090,4 +1091,61 @@ export async function updateInventoryItem(
     return { success: false, error: error.message };
   }
   return { success: true };
+}
+
+// ==========================================
+// 9. SITE-SPECIFIC BRIEFING ROUTING
+// ==========================================
+
+/** Set a site-specific safety briefing override for the current day */
+export async function setSiteBriefingOverride(
+  supabase: SupabaseClient,
+  locationName: string,
+  briefingId: string
+): Promise<{ success: boolean; error?: string }> {
+  const now = new Date();
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  
+  const { data, error } = await supabase
+    .from('locations')
+    .update({
+      active_briefing_id: briefingId,
+      active_briefing_date: todayStr
+    })
+    .ilike('name', locationName.trim()) // Bulletproof match (ignores case/spaces)
+    .select();
+
+  if (error) return { success: false, error: error.message };
+
+  if (!data || data.length === 0) {
+    return { success: false, error: `Location '${locationName}' not found or blocked by RLS.` };
+  }
+
+  return { success: true };
+}
+
+/** Fetch the active briefing override for a specific location (if valid for today) */
+export async function getActiveSiteBriefingId(
+  supabase: SupabaseClient,
+  locationName: string | null | undefined
+): Promise<string | null> {
+  if (!locationName) return null;
+  
+  const now = new Date();
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  
+  const { data, error } = await supabase
+    .from('locations')
+    .select('active_briefing_id, active_briefing_date')
+    .ilike('name', locationName.trim()) // ilike prevents case-sensitivity bugs
+    .maybeSingle();
+
+  if (error || !data) return null;
+  
+  // Only return the override if it was explicitly set for the local TODAY
+  if (data.active_briefing_date === todayStr) {
+    return data.active_briefing_id;
+  }
+  
+  return null;
 }

@@ -5,11 +5,14 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 
-// --- CENTRAL DATA SERVICE IMPORT ---
+// --- CENTRAL DATA SERVICE & BRIEFING IMPORTS ---
 import { 
   getEmployeeProfile, 
-  completeDailySafetyBriefing 
+  completeDailySafetyBriefing,
+  getActiveSiteBriefingId // Added override fetcher
 } from "@/lib/db/operations";
+import { getDailyBriefing, getBriefingById, SafetyBriefing } from "@/lib/data/safetyBriefings";
+import DailyBriefingModal from "./_components/DailyBriefingModal";
 
 interface ChecklistItem {
   id: number;
@@ -20,7 +23,7 @@ const checks: ChecklistItem[] = [
   { id: 1, text: "I have inspected my PPE for defects." },
   { id: 2, text: "I have verified all paperwork." },
   { id: 3, text: "I have reviewed the daily safety meeting." },
-  { id: 4, text: "I am fit for work" },
+  { id: 4, text: "I am fit for work." },
 ];
 
 export default function SafetyMeetingPage() {
@@ -34,6 +37,11 @@ export default function SafetyMeetingPage() {
   const [showCelebration, setShowCelebration] = useState<boolean>(false);
   const [terminalFeedback, setTerminalFeedback] = useState<{ message: string; isError: boolean } | null>(null);
 
+  // Daily Briefing Interactive Gate State
+  const [dailyBriefing, setDailyBriefing] = useState<SafetyBriefing>(() => getDailyBriefing());
+  const [showBriefingModal, setShowBriefingModal] = useState<boolean>(false);
+  const [hasCompletedBriefing, setHasCompletedBriefing] = useState<boolean>(false);
+
   useEffect(() => {
     async function checkTodayStatus() {
       try {
@@ -43,9 +51,24 @@ export default function SafetyMeetingPage() {
         const userProfile = await getEmployeeProfile(supabase, user.id);
         const todayDate = new Date().toISOString().split('T')[0];
 
+        // --- CHECK FOR MANAGER SITE OVERRIDE ---
+        if (userProfile?.location) {
+          const overrideId = await getActiveSiteBriefingId(supabase, userProfile.location);
+          if (overrideId) {
+            const siteBriefing = getBriefingById(overrideId);
+            if (siteBriefing) {
+              setDailyBriefing(siteBriefing); // Override the calendar rotation
+            }
+          }
+        }
+
         if (userProfile?.last_safety_check === todayDate) {
           setHasCompletedToday(true);
+          setHasCompletedBriefing(true);
           setAcknowledged(checks.map(c => c.id));
+        } else {
+          // If not completed today, trigger the mandatory briefing modal
+          setShowBriefingModal(true);
         }
       } catch (err) {
         console.error("Failed to check daily safety status:", err);
@@ -56,6 +79,13 @@ export default function SafetyMeetingPage() {
 
     checkTodayStatus();
   }, [supabase]);
+
+  const handleBriefingComplete = () => {
+    setShowBriefingModal(false);
+    setHasCompletedBriefing(true);
+    // Auto-check the "reviewed daily safety meeting" item
+    setAcknowledged(prev => prev.includes(3) ? prev : [...prev, 3]);
+  };
 
   const handleSign = async () => {
     if (acknowledged.length !== checks.length || isSigning || hasCompletedToday) return;
@@ -106,6 +136,14 @@ export default function SafetyMeetingPage() {
 
   return (
     <div className="w-full relative min-h-[calc(100vh-4rem)] flex flex-col justify-center py-6 sm:py-12 font-mono text-slate-100">
+      
+      {/* 60-SECOND MANDATORY BRIEFING MODAL */}
+      <DailyBriefingModal
+        briefing={dailyBriefing}
+        isOpen={showBriefingModal}
+        onComplete={handleBriefingComplete}
+      />
+
       {/* Blueprint Grid Background Overlay */}
       <div className="absolute inset-0 pointer-events-none opacity-5 bg-[linear-gradient(to_right,var(--color-brand-border)_1px,transparent_1px),linear-gradient(to_bottom,var(--color-brand-border)_1px,transparent_1px)] bg-[size:32px_32px] z-0" />
 
@@ -146,7 +184,7 @@ export default function SafetyMeetingPage() {
               </div>
             ) : (
               <div className="inline-block self-start sm:self-auto px-3 py-1 bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] text-xs font-bold text-[var(--color-brand-blue)] uppercase tracking-wider rounded-sm">
-                Status: [Pending]
+                Status: [{hasCompletedBriefing ? "Briefing Verified" : "Briefing Pending"}]
               </div>
             )}
           </div>
@@ -167,10 +205,25 @@ export default function SafetyMeetingPage() {
             />
             
             <div>
-              <h2 className="text-slate-200 font-bold uppercase tracking-widest text-xs mb-6 border-b pb-4 border-[var(--color-brand-border)] flex items-center justify-between">
-                <span>Protocol Verification</span>
-                <span className="text-[10px] text-slate-400 tabular-nums">{acknowledged.length} / {checks.length} COMPLETE</span>
-              </h2>
+              <div className="mb-6 border-b pb-4 border-[var(--color-brand-border)] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                <h2 className="text-slate-200 font-bold uppercase tracking-widest text-xs">
+                  Protocol Verification
+                </h2>
+                <div className="flex items-center gap-3">
+                  {!hasCompletedToday && (
+                    <button
+                      type="button"
+                      onClick={() => setShowBriefingModal(true)}
+                      className="text-[10px] font-bold text-[var(--color-brand-blue)] uppercase hover:underline cursor-pointer"
+                    >
+                      📖 Review Today's Policy
+                    </button>
+                  )}
+                  <span className="text-[10px] text-slate-400 tabular-nums font-bold">
+                    {acknowledged.length} / {checks.length} COMPLETE
+                  </span>
+                </div>
+              </div>
 
               {terminalFeedback && (
                 <div className={`mb-6 p-3 font-mono text-[10px] font-bold uppercase tracking-wider border rounded-sm ${
@@ -188,9 +241,13 @@ export default function SafetyMeetingPage() {
                   return (
                     <button
                       key={check.id}
-                      disabled={hasCompletedToday}
+                      disabled={hasCompletedToday || (!hasCompletedBriefing && check.id !== 3)}
                       onClick={() => {
                         if (hasCompletedToday) return;
+                        if (!hasCompletedBriefing && check.id === 3) {
+                          setShowBriefingModal(true);
+                          return;
+                        }
                         setAcknowledged(prev => isChecked ? prev.filter(i => i !== check.id) : [...prev, check.id]);
                       }}
                       className="w-full p-4.5 border transition-all duration-200 flex items-center gap-4 text-left rounded-sm outline-none disabled:cursor-default cursor-pointer"
@@ -230,6 +287,14 @@ export default function SafetyMeetingPage() {
               <div className="w-full mt-8 py-4 font-bold uppercase tracking-[0.2em] text-xs flex justify-center items-center rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] text-slate-400">
                 ✓ SIGNATURE RECORDED FOR TODAY
               </div>
+            ) : !hasCompletedBriefing ? (
+              <button 
+                type="button"
+                onClick={() => setShowBriefingModal(true)}
+                className="w-full mt-8 py-4 font-bold uppercase tracking-[0.2em] text-xs transition-all duration-300 flex justify-center items-center cursor-pointer rounded-sm border bg-amber-500/10 border-amber-500/50 text-amber-300 hover:bg-amber-500 hover:text-black shadow-[0_0_15px_rgba(245,158,11,0.2)]"
+              >
+                ⚠ Complete 60s Briefing Policy Check ↗
+              </button>
             ) : (
               <button 
                 onClick={handleSign}
@@ -250,7 +315,7 @@ export default function SafetyMeetingPage() {
             )}
           </motion.div>
 
-          {/* RIGHT COL: TELEMETRY & INCENTIVE PANEL */}
+          {/* RIGHT COL: TELEMETRY & BRIEFING TOPIC SPOTLIGHT */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -260,21 +325,35 @@ export default function SafetyMeetingPage() {
             
             <div className="space-y-6">
               <h2 className="text-slate-200 font-bold uppercase tracking-widest text-xs border-b pb-4 border-[var(--color-brand-border)]">
-                Daily Reward breakdown
+                Today's Safety Briefing
               </h2>
 
+              {/* ACTIVE TOPIC CARD */}
+              <div className="p-4 border rounded-sm bg-[var(--color-brand-bg)] border-[var(--color-brand-border)]">
+                <span className="text-[9px] font-bold text-[var(--color-brand-blue)] uppercase tracking-wider block">
+                  {dailyBriefing.category}
+                </span>
+                <p className="text-sm font-black text-white uppercase mt-1">
+                  {dailyBriefing.title}
+                </p>
+                <p className="text-[11px] text-slate-400 font-sans mt-2 line-clamp-3 leading-relaxed">
+                  {dailyBriefing.intro}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setShowBriefingModal(true)}
+                  className="mt-3 text-[10px] font-bold text-slate-300 uppercase hover:text-white underline block"
+                >
+                  View Full Briefing Document ↗
+                </button>
+              </div>
+
+              {/* REWARD BREAKDOWN */}
               <div className="p-4 border rounded-sm bg-[var(--color-brand-bg)] border-[var(--color-brand-border)]">
                 <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">COMPLETION AWARD</p>
                 <p className="text-3xl font-black text-[var(--color-metric-meetings,#10b981)] tabular-nums mt-1">+10 PTS</p>
-                <p className="text-[11px] text-slate-300 mt-2 leading-relaxed">
+                <p className="text-[11px] text-slate-300 mt-2 leading-relaxed font-sans">
                   Submitting your daily check-in logs your compliance status directly to the job site safety log.
-                </p>
-              </div>
-
-              <div className="p-4 border rounded-sm bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] space-y-2">
-                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">COMPLIANCE RULE</p>
-                <p className="text-xs font-bold text-slate-200">
-                  Must be signed daily prior to starting work.
                 </p>
               </div>
             </div>

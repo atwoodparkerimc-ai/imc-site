@@ -59,7 +59,7 @@ export default function ContactPage() {
   };
 
   return (
-    <main className="w-full relative overflow-x-hidden bg-[#0b0f19] text-slate-100 font-sans selection:bg-red-500 selection:text-white">
+    <main className="w-full relative overflow-x-hidden bg-[#0b0f19] text-slate-100 font-sans selection:bg-[#0088ff] selection:text-white">
       
       {/* ========================================= */}
       {/* 1. HERO SECTION                           */}
@@ -76,7 +76,7 @@ export default function ContactPage() {
           >
             <h1 className="text-[clamp(2.5rem,5.5vw,5.5rem)] font-black tracking-tighter uppercase leading-[0.95] text-white mb-5">
               Initiate a <br/>
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ea1f27] from-[18%] via-[#a855f7] via-[50%] to-[#0088ff] to-[82%]">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ea1f27] from-0% via-[#64748b]/80 via-50% to-[#0088ff] to-100%">
                 Project Bid.
               </span>
             </h1>
@@ -104,35 +104,35 @@ export default function ContactPage() {
           >
             
             {/* DIRECT LINES */}
-            <div className="bg-[#0b1324] p-7 sm:p-8 border border-slate-700/80 rounded-lg shadow-xl">
+            <div className="bg-[#030914] p-7 sm:p-8 border border-slate-800 rounded-lg shadow-inner">
               <h3 className="text-xl font-black text-white mb-6 flex items-center gap-2.5 uppercase tracking-tight">
                 <Phone className="h-5 w-5 text-[#ea1f27]" /> Direct Lines
               </h3>
               
               <div className="space-y-6">
                 {/* Estimating */}
-                <div className="pb-5 border-b border-slate-700/80">
-                  <span className="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider block mb-1 flex items-center gap-2">
-                    <HardHat className="h-4 w-4 text-[#0088ff]" /> Estimating & Bids
+                <div className="pb-5 border-b border-slate-800">
+                  <span className="text-xs font-mono font-bold text-slate-400 uppercase tracking-wider block mb-1 flex items-center gap-2">
+                    <HardHat className="h-4 w-4 text-[#ea1f27]" /> Estimating & Bids
                   </span>
                   <a 
                     href={phoneHref} 
-                    className="font-mono text-xl font-black text-white hover:text-[#0088ff] transition-colors block mb-2"
+                    className="font-mono text-xl font-black text-white hover:text-[#ea1f27] transition-colors block mb-2"
                   >
                     {phoneDisplay}
                   </a>
                   <a 
                     href={`mailto:${estimatingEmail}`} 
-                    className="inline-flex items-center gap-2.5 bg-[#070d19] border border-slate-600 hover:border-[#0088ff] px-3.5 py-2 rounded-md font-mono text-sm font-bold text-white hover:text-[#0088ff] transition-all no-underline break-all"
+                    className="inline-flex items-center gap-2.5 bg-[#070a10] border border-slate-800 hover:border-[#ea1f27]/50 px-3.5 py-2 rounded-xs font-mono text-sm font-bold text-slate-300 hover:text-white transition-all no-underline break-all"
                   >
-                    <Mail className="w-4 h-4 text-[#0088ff] shrink-0" />
+                    <Mail className="w-4 h-4 text-[#ea1f27] shrink-0" />
                     {estimatingEmail}
                   </a>
                 </div>
 
                 {/* HR & Recruiting */}
                 <div>
-                  <span className="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider block mb-1 flex items-center gap-2">
+                  <span className="text-xs font-mono font-bold text-slate-400 uppercase tracking-wider block mb-1 flex items-center gap-2">
                     <FileText className="h-4 w-4 text-[#0088ff]" /> HR & Recruiting
                   </span>
                   <a 
@@ -143,7 +143,7 @@ export default function ContactPage() {
                   </a>
                   <a 
                     href={`mailto:${careersEmail}`} 
-                    className="inline-flex items-center gap-2.5 bg-[#070d19] border border-slate-600 hover:border-[#0088ff] px-3.5 py-2 rounded-md font-mono text-sm font-bold text-white hover:text-[#0088ff] transition-all no-underline break-all"
+                    className="inline-flex items-center gap-2.5 bg-[#070a10] border border-slate-800 hover:border-[#0088ff]/50 px-3.5 py-2 rounded-xs font-mono text-sm font-bold text-slate-300 hover:text-white transition-all no-underline break-all"
                   >
                     <Mail className="w-4 h-4 text-[#0088ff] shrink-0" />
                     {careersEmail}
@@ -153,20 +153,20 @@ export default function ContactPage() {
             </div>
 
             {/* OPERATIONS & ENVIRONMENTS */}
-            <div className="bg-[#0b1324] p-7 sm:p-8 border border-slate-700/80 rounded-lg shadow-xl flex-1 flex flex-col justify-between">
+            <div className="bg-[#030914] p-7 sm:p-8 border border-slate-800 rounded-lg shadow-inner flex-1 flex flex-col justify-between">
               <div>
                 <h3 className="text-xl font-black text-white mb-6 flex items-center gap-2.5 uppercase tracking-tight">
-                  <MapPin className="h-5 w-5 text-[#0088ff]" /> Operations
+                  <MapPin className="h-5 w-5 text-[#64748b]" /> Operations
                 </h3>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                   {/* Utah HQ */}
-                  <div className="bg-[#070d19] p-4 border border-slate-700 rounded-md">
+                  <div className="bg-[#070a10] p-4 border border-slate-800 rounded-xs group hover:border-[#64748b]/50 transition-colors">
                     <div className="flex items-center gap-2 mb-1.5">
                       <span className="w-2 h-2 bg-[#ea1f27] rounded-none animate-pulse" />
                       <span className="text-xs font-mono font-bold text-[#ea1f27] uppercase tracking-wider">Headquarters</span>
                     </div>
-                    <address className="not-italic text-white text-sm font-mono leading-relaxed">
+                    <address className="not-italic text-slate-200 text-sm font-mono leading-relaxed">
                       Springville, UT <br />
                       221 W. 900 N. Unit 5<br />
                       Springville, UT 84663
@@ -174,12 +174,12 @@ export default function ContactPage() {
                   </div>
 
                   {/* South Carolina */}
-                  <div className="bg-[#070d19] p-4 border border-slate-700 rounded-md">
+                  <div className="bg-[#070a10] p-4 border border-slate-800 rounded-xs group hover:border-[#64748b]/50 transition-colors">
                     <div className="flex items-center gap-2 mb-1.5">
-                      <span className="w-2 h-2 bg-slate-300 rounded-none" />
-                      <span className="text-xs font-mono font-bold text-slate-200 uppercase tracking-wider">SC OPERATIONS</span>
+                      <span className="w-2 h-2 bg-slate-500 rounded-none" />
+                      <span className="text-xs font-mono font-bold text-slate-400 uppercase tracking-wider">SC OPERATIONS</span>
                     </div>
-                    <p className="text-slate-200 text-xs sm:text-sm leading-relaxed font-normal">
+                    <p className="text-slate-300 text-xs sm:text-sm leading-relaxed font-normal">
                       Embedded facility contracts & specialized site operations.
                     </p>
                   </div>
@@ -187,14 +187,14 @@ export default function ContactPage() {
               </div>
 
               {/* Specialized Environments Tags */}
-              <div className="pt-4 border-t border-slate-700/80">
-                <span className="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2 mb-3">
-                  <Droplets className="w-4 h-4 text-[#0088ff]" /> Specialized Disciplines
+              <div className="pt-4 border-t border-slate-800">
+                <span className="text-xs font-mono font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2 mb-3">
+                  <Droplets className="w-4 h-4 text-[#64748b]" /> Specialized Disciplines
                 </span>
-                <div className="flex flex-wrap gap-2">
-                  <span className="px-3 py-1.5 bg-[#070d19] border border-slate-700 text-white text-xs font-mono font-bold uppercase tracking-wider rounded-md">Food & Beverage</span>
-                  <span className="px-3 py-1.5 bg-[#070d19] border border-slate-700 text-white text-xs font-mono font-bold uppercase tracking-wider rounded-md">High Purity</span>
-                  <span className="px-3 py-1.5 bg-[#070d19] border border-slate-700 text-white text-xs font-mono font-bold uppercase tracking-wider rounded-md">Industrial Mfg</span>
+                <div className="flex flex-wrap gap-2.5">
+                  <span className="px-3.5 py-1.5 bg-[#070a10] border border-slate-800 text-slate-200 text-xs font-mono font-bold uppercase tracking-wider rounded-xs hover:border-[#ea1f27]/40 transition-colors">Food & Beverage</span>
+                  <span className="px-3.5 py-1.5 bg-[#070a10] border border-slate-800 text-slate-200 text-xs font-mono font-bold uppercase tracking-wider rounded-xs hover:border-[#64748b]/40 transition-colors">High Purity</span>
+                  <span className="px-3.5 py-1.5 bg-[#070a10] border border-slate-800 text-slate-200 text-xs font-mono font-bold uppercase tracking-wider rounded-xs hover:border-[#0088ff]/40 transition-colors">Industrial Mfg</span>
                 </div>
               </div>
             </div>
@@ -207,36 +207,32 @@ export default function ContactPage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 0.5, ease: "easeOut", delay: 0.1 }}
-            className="lg:col-span-7 bg-[#0b1324] p-7 sm:p-9 border border-slate-700/80 rounded-lg shadow-2xl relative flex flex-col justify-between"
+            className="lg:col-span-7 bg-[#030914] p-7 sm:p-9 border border-slate-800 rounded-lg shadow-inner relative flex flex-col justify-between"
           >
-            <div className="absolute top-0 right-0 transform translate-x-2 -translate-y-2 pointer-events-none hidden sm:block">
-              <div className="px-3.5 py-1 bg-[#ea1f27]/20 border border-[#ea1f27]/50 text-[#ea1f27] font-mono text-xs font-bold uppercase tracking-wider rounded-xs">
-                Secure Bid Gateway
-              </div>
-            </div>
+            
 
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-white mb-1">
                   Project Inquiry
                 </h2>
-                <p className="text-slate-200 text-sm sm:text-base font-normal">
-                  Submit details below for direct estimator review. Transparent bids with hard timelines.
+                <p className="text-slate-300 text-sm sm:text-base font-normal">
+                  Submit details below for our team to review.
                 </p>
               </div>
-              <div className="hidden sm:flex h-11 w-11 items-center justify-center rounded-md bg-[#070d19] border border-slate-700">
-                <ArrowRight className="w-5 h-5 text-slate-200" />
+              <div className="hidden sm:flex h-11 w-11 items-center justify-center rounded-xs bg-[#070a10] border border-slate-800">
+                <ArrowRight className="w-5 h-5 text-slate-400" />
               </div>
             </div>
 
             {submitted ? (
-              <div className="p-8 bg-[#070d19] border border-slate-700 rounded-md text-center space-y-3">
-                <CheckCircle2 className="w-10 h-10 text-emerald-400 mx-auto" />
+              <div className="p-8 bg-[#070a10] border border-slate-800 rounded-xs text-center space-y-3 shadow-inner">
+                <CheckCircle2 className="w-10 h-10 text-[#0088ff] mx-auto" />
                 <h3 className="text-lg font-bold text-white uppercase font-mono tracking-wider">
-                  Inquiry Transmitted Successfully
+                  Message Sent Successfully
                 </h3>
                 <p className="text-slate-300 text-sm max-w-md mx-auto">
-                  Your project details have been routed directly to our estimating department. A representative will be in touch shortly.
+                  Your project details have been sent to our estimating department. A representative will be in touch shortly.
                 </p>
               </div>
             ) : (
@@ -256,7 +252,7 @@ export default function ContactPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div>
-                    <label htmlFor="first-name" className="block text-xs font-mono font-bold uppercase tracking-wider text-white mb-2">
+                    <label htmlFor="first-name" className="block text-xs font-mono font-bold uppercase tracking-wider text-slate-300 mb-2">
                       First Name <span className="text-[#ea1f27]">*</span>
                     </label>
                     <input 
@@ -265,11 +261,11 @@ export default function ContactPage() {
                       name="firstName"
                       required
                       placeholder="John" 
-                      className="w-full bg-[#070d19] border border-slate-600 focus:border-[#0088ff] rounded-md px-4 py-3 text-base text-white placeholder:text-slate-400 focus:outline-none transition-colors"
+                      className="w-full bg-[#070a10] border border-slate-800 focus:border-[#0088ff] rounded-xs px-4 py-3 text-base text-white placeholder:text-slate-500 focus:outline-none transition-colors"
                     />
                   </div>
                   <div>
-                    <label htmlFor="last-name" className="block text-xs font-mono font-bold uppercase tracking-wider text-white mb-2">
+                    <label htmlFor="last-name" className="block text-xs font-mono font-bold uppercase tracking-wider text-slate-300 mb-2">
                       Last Name <span className="text-[#ea1f27]">*</span>
                     </label>
                     <input 
@@ -278,14 +274,14 @@ export default function ContactPage() {
                       name="lastName"
                       required
                       placeholder="Doe" 
-                      className="w-full bg-[#070d19] border border-slate-600 focus:border-[#0088ff] rounded-md px-4 py-3 text-base text-white placeholder:text-slate-400 focus:outline-none transition-colors"
+                      className="w-full bg-[#070a10] border border-slate-800 focus:border-[#0088ff] rounded-xs px-4 py-3 text-base text-white placeholder:text-slate-500 focus:outline-none transition-colors"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div>
-                    <label htmlFor="company" className="block text-xs font-mono font-bold uppercase tracking-wider text-white mb-2">
+                    <label htmlFor="company" className="block text-xs font-mono font-bold uppercase tracking-wider text-slate-300 mb-2">
                       Company Name
                     </label>
                     <input 
@@ -293,11 +289,11 @@ export default function ContactPage() {
                       id="company" 
                       name="company"
                       placeholder="Acme Industrial Corp" 
-                      className="w-full bg-[#070d19] border border-slate-600 focus:border-[#0088ff] rounded-md px-4 py-3 text-base text-white placeholder:text-slate-400 focus:outline-none transition-colors"
+                      className="w-full bg-[#070a10] border border-slate-800 focus:border-[#0088ff] rounded-xs px-4 py-3 text-base text-white placeholder:text-slate-500 focus:outline-none transition-colors"
                     />
                   </div>
                   <div>
-                    <label htmlFor="phone" className="block text-xs font-mono font-bold uppercase tracking-wider text-white mb-2">
+                    <label htmlFor="phone" className="block text-xs font-mono font-bold uppercase tracking-wider text-slate-300 mb-2">
                       Phone Number <span className="text-[#ea1f27]">*</span>
                     </label>
                     <input 
@@ -306,13 +302,13 @@ export default function ContactPage() {
                       name="phone"
                       required
                       placeholder="(555) 000-0000" 
-                      className="w-full bg-[#070d19] border border-slate-600 focus:border-[#0088ff] rounded-md px-4 py-3 text-base text-white placeholder:text-slate-400 focus:outline-none transition-colors"
+                      className="w-full bg-[#070a10] border border-slate-800 focus:border-[#0088ff] rounded-xs px-4 py-3 text-base text-white placeholder:text-slate-500 focus:outline-none transition-colors"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label htmlFor="email" className="block text-xs font-mono font-bold uppercase tracking-wider text-white mb-2">
+                  <label htmlFor="email" className="block text-xs font-mono font-bold uppercase tracking-wider text-slate-300 mb-2">
                     Email Address <span className="text-[#ea1f27]">*</span>
                   </label>
                   <input 
@@ -321,19 +317,19 @@ export default function ContactPage() {
                     name="email"
                     required
                     placeholder="john.doe@company.com" 
-                    className="w-full bg-[#070d19] border border-slate-600 focus:border-[#0088ff] rounded-md px-4 py-3 text-base text-white placeholder:text-slate-400 focus:outline-none transition-colors"
+                    className="w-full bg-[#070a10] border border-slate-800 focus:border-[#0088ff] rounded-xs px-4 py-3 text-base text-white placeholder:text-slate-500 focus:outline-none transition-colors"
                   />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div>
-                    <label htmlFor="project-type" className="block text-xs font-mono font-bold uppercase tracking-wider text-white mb-2">
+                    <label htmlFor="project-type" className="block text-xs font-mono font-bold uppercase tracking-wider text-slate-300 mb-2">
                       Project Type
                     </label>
                     <select 
                       id="project-type" 
                       name="projectType"
-                      className="w-full bg-[#070d19] border border-slate-600 focus:border-[#0088ff] rounded-md px-4 py-3 text-sm text-white focus:outline-none transition-colors"
+                      className="w-full bg-[#070a10] border border-slate-800 focus:border-[#0088ff] rounded-xs px-4 py-3 text-sm text-white focus:outline-none transition-colors"
                     >
                       <option value="Sanitary & Process Piping">Sanitary & Process Piping</option>
                       <option value="Heavy Commercial HVAC">Heavy Commercial HVAC</option>
@@ -343,13 +339,13 @@ export default function ContactPage() {
                     </select>
                   </div>
                   <div>
-                    <label htmlFor="timeline" className="block text-xs font-mono font-bold uppercase tracking-wider text-white mb-2">
+                    <label htmlFor="timeline" className="block text-xs font-mono font-bold uppercase tracking-wider text-slate-300 mb-2">
                       Estimated Timeline
                     </label>
                     <select 
                       id="timeline" 
                       name="timeline"
-                      className="w-full bg-[#070d19] border border-slate-600 focus:border-[#0088ff] rounded-md px-4 py-3 text-sm text-white focus:outline-none transition-colors"
+                      className="w-full bg-[#070a10] border border-slate-800 focus:border-[#0088ff] rounded-xs px-4 py-3 text-sm text-white focus:outline-none transition-colors"
                     >
                       <option value="Immediate / Expedited">Immediate / Expedited</option>
                       <option value="1 - 3 Months">1 - 3 Months</option>
@@ -360,7 +356,7 @@ export default function ContactPage() {
                 </div>
 
                 <div>
-                  <label htmlFor="message" className="block text-xs font-mono font-bold uppercase tracking-wider text-white mb-2">
+                  <label htmlFor="message" className="block text-xs font-mono font-bold uppercase tracking-wider text-slate-300 mb-2">
                     Project Description & Specs
                   </label>
                   <textarea 
@@ -368,17 +364,17 @@ export default function ContactPage() {
                     name="message"
                     rows={3}
                     placeholder="Scope, facility type, and material requirements (e.g., 316L Stainless, Copper, Carbon Steel)."
-                    className="w-full bg-[#070d19] border border-slate-600 focus:border-[#0088ff] rounded-md px-4 py-3 text-base text-white placeholder:text-slate-400 focus:outline-none transition-colors resize-none"
+                    className="w-full bg-[#070a10] border border-slate-800 focus:border-[#0088ff] rounded-xs px-4 py-3 text-base text-white placeholder:text-slate-500 focus:outline-none transition-colors resize-none"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="file-upload" className="block text-xs font-mono font-bold uppercase tracking-wider text-white mb-2">
+                  <label htmlFor="file-upload" className="block text-xs font-mono font-bold uppercase tracking-wider text-slate-300 mb-2">
                     Attach Blueprints or Specs (Optional)
                   </label>
-                  <div className="border border-dashed border-slate-500 bg-[#070d19] rounded-md p-4 text-center hover:border-[#0088ff] transition-colors cursor-pointer group">
-                    <div className="flex items-center justify-center gap-2 text-sm text-slate-200 font-medium">
-                      <FileText className="w-5 h-5 text-slate-300 group-hover:text-[#0088ff] transition-colors" />
+                  <div className="border border-dashed border-slate-700 bg-[#070a10] rounded-xs p-4 text-center hover:border-[#0088ff] transition-colors cursor-pointer group">
+                    <div className="flex items-center justify-center gap-2 text-sm text-slate-300 font-medium">
+                      <FileText className="w-5 h-5 text-slate-500 group-hover:text-[#0088ff] transition-colors" />
                       <span><strong className="text-[#0088ff]">Upload file</strong> or drag and drop (PDF, DWG up to 50MB)</span>
                       <input id="file-upload" name="file-upload" type="file" className="sr-only" />
                     </div>
@@ -391,15 +387,15 @@ export default function ContactPage() {
                   </p>
                 )}
 
-                <div className="pt-4 border-t border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-4">
-                  <div className="flex items-center gap-2 text-slate-200 text-xs font-mono">
-                    <CheckCircle2 className="w-4 h-4 text-green-400" />
+                <div className="pt-4 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="flex items-center gap-2 text-slate-400 text-xs font-mono">
+                    <CheckCircle2 className="w-4 h-4 text-[#0088ff]" />
                     Secure SSL Encrypted Transmission
                   </div>
                   <button 
                     type="submit" 
                     disabled={isSubmitting}
-                    className="w-full sm:w-auto rounded-md bg-[#ea1f27] hover:bg-[#d41920] disabled:bg-slate-700 px-8 py-3.5 text-xs font-mono font-bold uppercase tracking-[0.15em] text-white shadow-lg transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-2"
+                    className="w-full sm:w-auto rounded-xs bg-[#ea1f27] hover:bg-[#d41920] disabled:bg-slate-700 px-8 py-3.5 text-xs font-mono font-bold uppercase tracking-[0.15em] text-white shadow-lg transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-2"
                   >
                     {isSubmitting ? (
                       <>
@@ -409,7 +405,7 @@ export default function ContactPage() {
                     ) : (
                       <>
                         <Send className="w-4 h-4" />
-                        Submit Inquiry
+                        Submit
                       </>
                     )}
                   </button>

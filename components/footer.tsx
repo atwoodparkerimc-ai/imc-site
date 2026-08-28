@@ -122,16 +122,16 @@ export default function Footer() {
               
               {/* Left-Aligned Header Lockup */}
               <div className="mb-10 flex items-center justify-start w-full">
-                <div className="inline-flex items-center gap-2.5 sm:gap-3.5 font-black uppercase text-white text-lg sm:text-2xl leading-none">
-                  <span className="tracking-[0.2em] sm:tracking-[0.24em]">BUILDERS</span>
-                  <span className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-slate-300 text-white text-[10px] sm:text-xs font-sans font-black flex items-center justify-center shrink-0 shadow-sm">
-                    OF
-                  </span>
-                  <span className="text-[#ea1f27] tracking-[0.2em] sm:tracking-[0.24em] -mr-[0.2em] sm:-mr-[0.24em]">
-                    INDUSTRY
-                  </span>
-                </div>
-              </div>
+  <div className="inline-flex items-center gap-2.5 sm:gap-3.5 font-black uppercase text-lg sm:text-2xl leading-none">
+    <span className="text-slate-500 tracking-[0.2em] sm:tracking-[0.24em]">BUILDERS</span>
+    <span className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-slate-300 text-white text-[10px] sm:text-xs font-sans font-black flex items-center justify-center shrink-0 shadow-sm">
+      OF
+    </span>
+    <span className="text-[#ea1f27] tracking-[0.2em] sm:tracking-[0.24em] -mr-[0.2em] sm:-mr-[0.24em]">
+      INDUSTRY
+    </span>
+  </div>
+</div>
 
               {/* Matrix Grid */}
               <div className="grid grid-cols-2 gap-x-8 gap-y-8 font-mono text-xs w-full">

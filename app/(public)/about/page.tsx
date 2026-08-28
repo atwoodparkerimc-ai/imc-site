@@ -17,7 +17,7 @@ import {
 
 export default function AboutPage() {
   return (
-    <main className="w-full relative overflow-x-hidden bg-[#0b0f19] text-slate-100 font-sans selection:bg-red-500 selection:text-white">
+    <main className="w-full relative overflow-x-hidden bg-[#0b0f19] text-slate-100 font-sans selection:bg-[#0088ff] selection:text-white">
       
       {/* ========================================= */}
       {/* 1. HERO SECTION (FULL-BLEED CENTERED STATEMENT) */}
@@ -35,12 +35,12 @@ export default function AboutPage() {
 
             <h1 className="text-[clamp(2.5rem,5.5vw,5.5rem)] font-black tracking-tighter uppercase leading-[0.95] text-white mb-8">
               Willing to do what <br/>
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ea1f27] from-[18%] via-[#a855f7] via-[50%] to-[#0088ff] to-[82%]">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ea1f27] from-0% via-[#64748b]/80 via-50% to-[#0088ff] to-100%">
                 others won't.
               </span>
             </h1>
             
-            <p className="text-base sm:text-lg lg:text-xl text-slate-300 font-normal leading-relaxed max-w-3xl mx-auto mb-10">
+            <p className="text-base sm:text-lg lg:text-xl text-slate-200 font-normal leading-relaxed max-w-3xl mx-auto mb-10">
               Established in 1995, Interwest Mechanical Contractors (IMC) was built on a simple premise: helping clients accomplish all goals, willing to do what others won't. We don't just build systems; we build the foundation of heavy industry.
             </p>
 
@@ -72,17 +72,17 @@ export default function AboutPage() {
             <h3 className="text-3xl sm:text-4xl font-black text-white uppercase tracking-tight mb-6">
               Built on Field Experience.
             </h3>
-            <p className="text-slate-300 text-base sm:text-lg leading-relaxed mb-8">
+            <p className="text-slate-200 text-base sm:text-lg leading-relaxed mb-8 font-normal">
               Owned and operated by the Beckstrom Family, IMC is led by personnel who came up through the trades. We understand the reality of the field because we have lived it. We treat our reputation as our most valuable asset, ensuring that leadership is directly involved in the success of every installation.
             </p>
 
             <div className="flex items-start gap-6 p-6 bg-[#030914] border border-slate-800 rounded-lg shadow-inner">
-              <MapPin className="w-7 h-7 text-[#ea1f27] shrink-0 mt-1" />
+              <MapPin className="w-7 h-7 text-[#0088ff] shrink-0 mt-1" />
               <div>
                 <h4 className="font-mono text-xs font-bold text-white uppercase tracking-wider mb-1.5">
                   Operational Reach
                 </h4>
-                <p className="text-sm text-slate-300 leading-relaxed">
+                <p className="text-sm sm:text-base text-slate-300 leading-relaxed font-normal">
                   Headquartered in <strong className="text-white font-semibold">Springville, UT</strong>. We actively service facilities across Utah and maintain embedded in long-term operations throughout several other states.
                 </p>
               </div>
@@ -122,7 +122,7 @@ export default function AboutPage() {
             <h2 className="text-3xl sm:text-4xl font-black uppercase tracking-tight text-white mb-4">
               The IMC DNA
             </h2>
-            <p className="text-slate-300 text-base sm:text-lg leading-relaxed font-normal">
+            <p className="text-slate-200 text-base sm:text-lg leading-relaxed font-normal">
               The blueprints only get you so far. The success of a complex mechanical install comes down to the grit, experience, and integrity of the people executing it.
             </p>
           </motion.div>
@@ -135,58 +135,58 @@ export default function AboutPage() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-80px" }}
               transition={{ duration: 0.4, ease: "easeOut", delay: 0.05 }}
-              className="bg-[#030914] p-8 sm:p-10 border border-slate-800 rounded-lg shadow-inner group hover:border-[#ea1f27]/60 transition-all duration-300 relative flex flex-col justify-between"
+              className="bg-[#030914] p-8 sm:p-10 border border-slate-800 rounded-lg shadow-inner group hover:border-[#ea1f27] transition-all duration-300 relative flex flex-col justify-between"
             >
               <div>
-                <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-md bg-[#070a10] border border-slate-800 shadow-inner">
+                <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-md bg-[#070a10] border border-slate-800 shadow-inner group-hover:border-[#ea1f27]/40 transition-colors">
                   <Settings2 className="w-6 h-6 text-[#ea1f27]" />
                 </div>
                 <h3 className="text-xl font-black uppercase tracking-tight text-white mb-3">
                   Total Control
                 </h3>
-                <p className="text-slate-300 text-sm leading-relaxed font-normal">
+                <p className="text-slate-300 text-sm sm:text-base leading-relaxed font-normal">
                   We take control of the entire fabrication process. By building critical components in our Springville shop, we eliminate third-party delays and strictly manage quality control.
                 </p>
               </div>
             </motion.div>
 
-            {/* Card 2: Unconventional Solutions (Purple) */}
+            {/* Card 2: Unconventional Solutions (Slate Gray) */}
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-80px" }}
               transition={{ duration: 0.4, ease: "easeOut", delay: 0.15 }}
-              className="bg-[#030914] p-8 sm:p-10 border border-slate-800 rounded-lg shadow-inner group hover:border-[#a855f7]/60 transition-all duration-300 relative flex flex-col justify-between"
+              className="bg-[#030914] p-8 sm:p-10 border border-slate-800 rounded-lg shadow-inner group hover:border-[#64748b] transition-all duration-300 relative flex flex-col justify-between"
             >
               <div>
-                <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-md bg-[#070a10] border border-slate-800 shadow-inner">
-                  <ShieldAlert className="w-6 h-6 text-[#a855f7]" />
+                <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-md bg-[#070a10] border border-slate-800 shadow-inner group-hover:border-[#64748b]/40 transition-colors">
+                  <ShieldAlert className="w-6 h-6 text-[#64748b]" />
                 </div>
                 <h3 className="text-xl font-black uppercase tracking-tight text-white mb-3">
                   Unconventional Solutions
                 </h3>
-                <p className="text-slate-300 text-sm leading-relaxed font-normal">
+                <p className="text-slate-300 text-sm sm:text-base leading-relaxed font-normal">
                   Industrial challenges rarely fit into a standard box. We pride ourselves on out of the box thinking & solutions to engineer mechanical systems that standard contractors walk away from.
                 </p>
               </div>
             </motion.div>
 
-            {/* Card 3: Decades of Execution (Blue) */}
+            {/* Card 3: Decades of Execution (Electric Blue) */}
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-80px" }}
               transition={{ duration: 0.4, ease: "easeOut", delay: 0.25 }}
-              className="bg-[#030914] p-8 sm:p-10 border border-slate-800 rounded-lg shadow-inner group hover:border-[#0088ff]/60 transition-all duration-300 relative flex flex-col justify-between"
+              className="bg-[#030914] p-8 sm:p-10 border border-slate-800 rounded-lg shadow-inner group hover:border-[#0088ff] transition-all duration-300 relative flex flex-col justify-between"
             >
               <div>
-                <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-md bg-[#070a10] border border-slate-800 shadow-inner">
+                <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-md bg-[#070a10] border border-slate-800 shadow-inner group-hover:border-[#0088ff]/40 transition-colors">
                   <CheckCircle2 className="w-6 h-6 text-[#0088ff]" />
                 </div>
                 <h3 className="text-xl font-black uppercase tracking-tight text-white mb-3">
                   Decades of Execution
                 </h3>
-                <p className="text-slate-300 text-sm leading-relaxed font-normal">
+                <p className="text-slate-300 text-sm sm:text-base leading-relaxed font-normal">
                   We bring many years of experience to the table. From high-pressure steam to pristine cleanrooms, our crews have successfully navigated the most stringent environments in manufacturing.
                 </p>
               </div>
@@ -212,11 +212,11 @@ export default function AboutPage() {
           >
             <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black uppercase tracking-tight text-white leading-[1.02] mb-5">
               Built for Heavy <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ea1f27] from-[18%] via-[#a855f7] via-[50%] to-[#0088ff] to-[82%]">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ea1f27] from-0% via-[#64748b]/80 via-50% to-[#0088ff] to-100%">
                 Industrial Demands.
               </span>
             </h2>
-            <p className="text-slate-300 font-normal text-base sm:text-lg leading-relaxed max-w-xl mx-auto">
+            <p className="text-slate-200 font-normal text-base sm:text-lg leading-relaxed max-w-xl mx-auto">
               Check our mechanical scope, material capabilities, and union craftsmanship.
             </p>
           </motion.div>
@@ -249,11 +249,11 @@ export default function AboutPage() {
           >
             <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black uppercase tracking-tight text-white leading-[1.05] mb-5">
               The Proof is in <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ea1f27] from-[18%] via-[#a855f7] via-[50%] to-[#0088ff] to-[82%]">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ea1f27] from-0% via-[#64748b]/80 via-50% to-[#0088ff] to-100%">
                 The Partnership.
               </span>
             </h2>
-            <p className="text-slate-400 font-normal text-sm sm:text-base leading-relaxed max-w-xl mx-auto">
+            <p className="text-slate-300 font-normal text-sm sm:text-base leading-relaxed max-w-xl mx-auto">
               Operating with a dedicated workforce across all locations, we have the manpower and operational scale to execute complex scopes safely and efficiently.
             </p>
           </motion.div>
@@ -280,7 +280,7 @@ export default function AboutPage() {
             <h2 className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-white mb-3">
               Ready to break ground?
             </h2>
-            <p className="text-slate-300 text-sm sm:text-base leading-relaxed font-normal">
+            <p className="text-slate-200 text-base sm:text-lg leading-relaxed font-normal">
               Get an overview of what we are capable of helping with. Submit your project specifications or blueprints, and our estimating team will get back to you with a comprehensive, transparent bid.
             </p>
           </div>
@@ -288,7 +288,7 @@ export default function AboutPage() {
           <div className="flex-shrink-0 w-full sm:w-auto">
             <Link 
               href="/contact" 
-              className="inline-flex items-center justify-center w-full sm:w-auto px-8 py-4 bg-[#ea1f27] hover:bg-[#d41920] text-white text-xs font-mono font-bold uppercase tracking-[0.15em] rounded-lg shadow-lg transition-all duration-200 active:scale-[0.98] text-center"
+              className="inline-flex items-center justify-center w-full sm:w-auto px-8 py-4 bg-[#ea1f27] hover:bg-[#d41920] text-white text-xs font-mono font-bold uppercase tracking-[0.15em] rounded-xs shadow-lg transition-all duration-200 active:scale-[0.98] text-center"
             >
               Request a Bid
             </Link>
@@ -298,9 +298,9 @@ export default function AboutPage() {
       </section>
 
       {/* ========================================= */}
-            {/*  SITE FOOTER                            */}
-            {/* ========================================= */}
-            <Footer />
+      {/*  SITE FOOTER                            */}
+      {/* ========================================= */}
+      <Footer />
 
     </main>
   );

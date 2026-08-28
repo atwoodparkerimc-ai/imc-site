@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
 import { motion, animate, Variants } from "framer-motion"; 
 import { getDisplayName } from "@/utils/display"; 
@@ -11,9 +12,15 @@ import {
   getEmployeeProfile, 
   getUserLedgerActivity, 
   getLatestHazardScore,
-  completeDailySafetyBriefing,
+  getActiveSiteBriefingId,
   UserProfile 
 } from "@/lib/db/operations";
+
+import { 
+  getDailyBriefing, 
+  getBriefingById, 
+  SafetyBriefing 
+} from "@/lib/data/safetyBriefings";
 
 import FirstLoginPasswordModal from "./_components/FirstLoginPasswordModal";
 import TermsAcceptanceModal from "./_components/TermsAcceptanceModal";
@@ -191,19 +198,6 @@ const DEFAULT_NEXT_GOAL = 250;
 const DEFAULT_LOCATION = "Springville Shop";
 const DEFAULT_INCIDENT_DATE = "2025-11-27T00:00:00";
 
-const SAFETY_BRIEFINGS = [
-  "UPDATE 1926.501: Fall protection is required at elevations of 6 feet or greater. Verify tie-off points before shift start.",
-  "PPE REMINDER: High-visibility safety apparel is mandatory when working near heavy equipment or active traffic.",
-  "HAZCOM PREP: Ensure all chemical containers are properly labeled and Safety Data Sheets (SDS) are accessible.",
-  "TOOL INSPECTION: Check all power cords for fraying or damage before use. Tag out defective equipment immediately.",
-  "LADDER SAFETY: Always maintain three points of contact when ascending or descending. Do not stand on the top step.",
-  "HEAT STRESS PREPAREDNESS: Hydrate continuously. Follow the work/rest cycles mandated for today's temperature index.",
-  "TRENCHING & EXCAVATION: Any trench 5 feet or deeper requires a protective system. Inspect daily before entry.",
-  "SCAFFOLDING CHECK: Ensure all scaffolds are fully planked and equipped with guardrails and toeboards.",
-  "LOCKOUT/TAGOUT (LOTO): Never bypass a lock. Verify zero energy state before performing maintenance on machinery.",
-  "FIRE EXTINGUISHER PROTOCOL: Know the locations of the nearest fire extinguishers and keep pathways to them clear."
-];
-
 // --- MAIN PAGE ---
 export default function DashboardPage() {
   const router = useRouter();
@@ -212,18 +206,9 @@ export default function DashboardPage() {
   const [profile, setProfile] = useState<UserProfile | null>(null);  
   const [displayPoints, setDisplayPoints] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [isSigningBriefing, setIsSigningBriefing] = useState<boolean>(false);
   const [recentActivity, setRecentActivity] = useState<ActivityLogItem[]>([]);
-  const [dailyBriefing, setDailyBriefing] = useState<string>("");
+  const [dailyBriefing, setDailyBriefing] = useState<SafetyBriefing>(() => getDailyBriefing());
   const [yesterdayHazards, setYesterdayHazards] = useState<number>(0);
-
-  useEffect(() => {
-    const today = new Date();
-    const startOfYear = new Date(today.getFullYear(), 0, 0);
-    const diff = today.getTime() - startOfYear.getTime();
-    const dayOfYear = Math.floor(diff / (1000 * 60 * 60 * 24));
-    setDailyBriefing(SAFETY_BRIEFINGS[dayOfYear % SAFETY_BRIEFINGS.length]);
-  }, []);
 
   const refreshDashboardData = async (userId: string) => {
     const userProfile = await getEmployeeProfile(supabase, userId);
@@ -232,10 +217,23 @@ export default function DashboardPage() {
       setProfile(userProfile);
 
       const empLocation = userProfile.location || DEFAULT_LOCATION;
-      const [ledgerData, siteHazardScore] = await Promise.all([
+      const [ledgerData, siteHazardScore, siteOverrideId] = await Promise.all([
         getUserLedgerActivity(supabase, userId),
-        getLatestHazardScore(supabase, empLocation)
+        getLatestHazardScore(supabase, empLocation),
+        getActiveSiteBriefingId(supabase, empLocation)
       ]);
+
+      // Resolve site-specific briefing module or fallback to calendar rotation
+      if (siteOverrideId) {
+        const customBriefing = getBriefingById(siteOverrideId);
+        if (customBriefing) {
+          setDailyBriefing(customBriefing);
+        } else {
+          setDailyBriefing(getDailyBriefing());
+        }
+      } else {
+        setDailyBriefing(getDailyBriefing());
+      }
 
       setYesterdayHazards(siteHazardScore);
 
@@ -284,17 +282,6 @@ export default function DashboardPage() {
     
     fetchData();
   }, [supabase, router]);
-
-  const handleSignBriefing = async () => {
-    if (!profile || isSigningBriefing) return;
-    setIsSigningBriefing(true);
-
-    const res = await completeDailySafetyBriefing(supabase, profile.id);
-    if (res.success) {
-      await refreshDashboardData(profile.id);
-    }
-    setIsSigningBriefing(false);
-  };
 
   // Safe Days Logic
   const safeDaysCount = useMemo(() => {
@@ -416,7 +403,7 @@ export default function DashboardPage() {
       <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         
         {/* DAILY SAFETY CARD */}
-        <a 
+        <Link 
           href="/safety" 
           className={`group p-5 tactical-card-interactive border transition-all duration-300 relative overflow-hidden rounded-sm flex flex-col justify-center shadow-md hover:-translate-y-0.5 ${
             isSafetyComplete 
@@ -458,10 +445,10 @@ export default function DashboardPage() {
               }`} />
             </div>
           </div>
-        </a>
+        </Link>
         
         {/* REWARDS CATALOG */}
-        <a href="/catalog" className="group p-5 tactical-card-interactive border border-[var(--color-brand-border)] hover:border-[var(--color-brand-blue)] transition-all duration-300 relative overflow-hidden rounded-sm flex flex-col justify-center shadow-md hover:-translate-y-0.5">
+        <Link href="/catalog" className="group p-5 tactical-card-interactive border border-[var(--color-brand-border)] hover:border-[var(--color-brand-blue)] transition-all duration-300 relative overflow-hidden rounded-sm flex flex-col justify-center shadow-md hover:-translate-y-0.5">
           <div className="absolute top-0 left-0 w-full h-[2px] bg-[var(--color-brand-border)] group-hover:bg-[var(--color-brand-blue)] transition-colors z-20" />
           <div className="absolute inset-0 z-0 opacity-30 group-hover:opacity-70 transition-opacity duration-500 overflow-hidden">
              <ParticleCloud r={0} g={136} b={255} />
@@ -475,10 +462,10 @@ export default function DashboardPage() {
               <div className="w-2 h-2 bg-[var(--color-brand-blue)] transition-all" />
             </div>
           </div>
-        </a>
+        </Link>
 
         {/* REPORT SAFE ACT CARD */}
-        <a 
+        <Link 
           href="/reporting" 
           className={`group p-5 tactical-card-interactive border transition-all duration-300 relative overflow-hidden rounded-sm flex flex-col justify-center shadow-md hover:-translate-y-0.5 ${
             isReportingComplete 
@@ -520,7 +507,7 @@ export default function DashboardPage() {
               }`} />
             </div>
           </div>
-        </a>
+        </Link>
       </motion.div>
 
       {/* OPERATIONAL CONSOLE FEED */}
@@ -531,10 +518,12 @@ export default function DashboardPage() {
           <div className="absolute top-0 left-0 w-full h-[2px] bg-[var(--color-brand-blue)]" />
           <div>
             <div className="flex justify-between items-center mb-4 border-b border-[var(--color-brand-border)] pb-3">
-              <h3 className="text-[var(--color-brand-blue)] text-xs uppercase font-black tracking-widest flex items-center gap-2">
+              <div className="flex items-center gap-2">
                 <span className="w-2 h-2 bg-[var(--color-brand-blue)] animate-pulse" />
-                Daily Briefing
-              </h3>
+                <h3 className="text-[var(--color-brand-blue)] text-xs uppercase font-black tracking-widest">
+                  Daily Safety Module
+                </h3>
+              </div>
               {isSafetyComplete ? (
                 <span className="text-[9px] font-black text-[var(--color-brand-green,#00ff9d)] border border-[var(--color-brand-green,#00ff9d)]/50 bg-[var(--color-brand-green,#00ff9d)]/10 px-2.5 py-0.5 uppercase tracking-wider">
                   [COMPLETED TODAY]
@@ -546,26 +535,50 @@ export default function DashboardPage() {
               )}
             </div>
 
-            <p className="text-slate-100 text-sm leading-relaxed font-sans mb-6">
-              {dailyBriefing}
-              <span className="inline-block w-2 h-3 bg-[var(--color-brand-blue)] ml-2 animate-pulse align-middle font-mono" />
-            </p>
+            {/* Briefing Category & Title */}
+            <div className="mb-3">
+              <span className="text-[9px] font-mono font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                {dailyBriefing.category}
+              </span>
+              <h4 className="text-base sm:text-lg font-black text-white uppercase tracking-tight leading-snug">
+                {dailyBriefing.title}
+              </h4>
+            </div>
+
+            {/* Core Policy Highlight Snippet */}
+            {dailyBriefing.core_reminder ? (
+              <div className="p-3.5 mb-6 rounded-sm border bg-[var(--color-brand-red)]/10 border-[var(--color-brand-red)]/30 text-slate-200">
+                <p className="text-[10px] font-mono font-bold uppercase text-[var(--color-brand-red)] tracking-wider mb-1 flex items-center gap-1.5">
+                  <span>🛑</span> Core Policy Reminder:
+                </p>
+                <p className="text-xs font-sans text-slate-200 line-clamp-3 leading-relaxed">
+                  {dailyBriefing.core_reminder}
+                </p>
+              </div>
+            ) : (
+              <p className="text-slate-300 text-xs sm:text-sm font-sans mb-6 line-clamp-3 leading-relaxed">
+                {dailyBriefing.intro}
+              </p>
+            )}
           </div>
 
+          {/* Navigation Route to Safety Section */}
           {!isSafetyComplete ? (
-            <button
-              onClick={handleSignBriefing}
-              disabled={isSigningBriefing}
-              className="w-full bg-[var(--color-brand-blue)] text-[var(--color-brand-bg)] border border-[var(--color-brand-blue)] font-black uppercase tracking-widest py-3 text-xs hover:bg-white hover:text-[var(--color-brand-bg)] transition-all duration-200 cursor-pointer disabled:opacity-50 shadow-[0_0_20px_rgba(0,136,255,0.4)]"
+            <Link
+              href="/safety"
+              className="w-full bg-[var(--color-brand-blue)] hover:bg-white hover:text-[var(--color-brand-bg)] text-[var(--color-brand-bg)] border border-[var(--color-brand-blue)] font-black uppercase tracking-widest py-3 text-xs transition-all duration-200 text-center block rounded-sm shadow-[0_0_20px_rgba(0,136,255,0.4)]"
             >
-              {isSigningBriefing ? "Recording Signature..." : "Sign Briefing (+10 PTS) ↗"}
-            </button>
+              Start Safety Briefing (+10 PTS) ↗
+            </Link>
           ) : (
-            <div className="w-full bg-black/40 border border-[var(--color-brand-border)] text-slate-300 p-3 text-center rounded-xs">
+            <Link
+              href="/safety"
+              className="w-full bg-black/40 hover:bg-black/60 border border-[var(--color-brand-border)] hover:border-slate-500 text-slate-300 p-3 text-center rounded-xs transition-colors block"
+            >
               <p className="text-[10px] font-mono uppercase tracking-wider font-black">
-                ✓ Signature Recorded For Today
+                ✓ Signature Recorded For Today — View Policy ↗
               </p>
-            </div>
+            </Link>
           )}
         </motion.div>
 
@@ -576,9 +589,9 @@ export default function DashboardPage() {
             <h3 className="text-slate-100 text-xs uppercase font-black tracking-widest">
               Recent Activity
             </h3>
-            <a href="/profile" className="text-[var(--color-brand-blue)] text-[10px] font-black uppercase tracking-widest hover:underline transition-all">
+            <Link href="/profile" className="text-[var(--color-brand-blue)] text-[10px] font-black uppercase tracking-widest hover:underline transition-all">
               View All ↗
-            </a>
+            </Link>
           </div>
           
           <div className="flex flex-col gap-3.5 flex-1 overflow-hidden">

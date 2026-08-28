@@ -30,6 +30,7 @@ import HazardControlPanel from "./_components/HazardControlPanel";
 import CrewLocationManager from "./_components/CrewLocationManager";
 import EmployeeCertManager from "./_components/EmployeeCertManager";
 import AddEmployeeModal from "../dashboard/_components/AddEmployeeModal";
+import ManagerBriefingSelector from "./_components/ManagerBriefingSelector"; // Imported Selector
 
 interface DataBucket {
   name: string;
@@ -638,6 +639,9 @@ export default function ManagerDashboard() {
         <div className={activeTab === 'safety' ? 'block print:hidden space-y-6' : 'hidden'}>
           {/* LOCATION-AWARE HAZARD CONTROL PANEL */}
           <HazardControlPanel selectedLocation={selectedLocation} />
+
+          {/* MANAGER BRIEFING SELECTOR OVERRIDE PANEL */}
+          <ManagerBriefingSelector locations={locations} />
 
           {/* INITIATE RECOGNITION (FULL-WIDTH) */}
           <RecognitionForm 

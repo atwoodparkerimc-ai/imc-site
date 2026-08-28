@@ -22,10 +22,6 @@ export default function OperationalMap() {
       <div className="w-full lg:w-2/3 relative">
         
         <div className="flex items-center justify-between mb-4 font-mono text-xs text-slate-300 uppercase tracking-widest">
-          <span className="flex items-center gap-2">
-            <span className="w-2 h-2 bg-white rounded-none animate-pulse" />
-            [ Telemetry Node: Active Operations Map ]
-          </span>
           <span className="hidden sm:inline-block text-slate-400">HQ Location: Springville, UT</span>
         </div>
 
@@ -141,13 +137,13 @@ export default function OperationalMap() {
       <div className="w-full lg:w-1/3 space-y-8 text-slate-100 z-10">
         
         <div>
-          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black uppercase tracking-tight text-white leading-[0.95]">
-            Precision <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ea1f27] from-[18%] via-[#a855f7] via-[50%] to-[#0088ff] to-[82%]">
-              Reach.
-            </span>
-          </h2>
-        </div>
+  <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black uppercase tracking-tight text-white leading-[0.95]">
+    Precision <br />
+    <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ea1f27] from-0% via-[#64748b]/80 via-50% to-[#0088ff] to-100%">
+      Reach.
+    </span>
+  </h2>
+</div>
 
         <p className="text-slate-200 text-sm sm:text-base leading-relaxed font-normal">
           Headquartered in Springville, Utah. We construct high-tolerance industrial HVAC, cleanrooms, and complex piping systems across the nation—bridging architectural vision and operational reality.

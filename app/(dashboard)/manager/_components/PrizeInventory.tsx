@@ -463,3 +463,4 @@ export default function PrizeInventory({ inventory = [], fetchInventory, itemVar
     </div>
   );
 }
+

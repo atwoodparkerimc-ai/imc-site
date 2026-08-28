@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { motion, Variants } from "framer-motion";
+import { Loader2 } from "lucide-react";
 
 // --- CENTRAL DATA SERVICE IMPORT ---
 import { awardPointsToEmployee } from "@/lib/db/operations";
@@ -78,38 +79,34 @@ export default function RecognitionForm({ employees = [], onAwardSuccess, itemVa
   return (
     <motion.div 
       variants={itemVariants} 
-      className="w-full border p-4 sm:p-6 shadow-2xl relative overflow-hidden group font-mono text-slate-100 rounded-sm bg-[var(--color-brand-card)] border-[var(--color-brand-border)]"
+      className="w-full bg-[var(--color-brand-card)] border border-[var(--color-brand-border)] p-6 rounded-sm shadow-xl font-mono text-slate-100"
     >
-      {/* Top Accent Line */}
-      <div className="absolute top-0 left-0 w-full h-[2px] bg-[var(--color-brand-border)] group-hover:bg-[var(--color-brand-blue)] transition-colors duration-300" />
-      
-      <div className="mb-6 border-b pb-4 border-[var(--color-brand-border)] flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-        <div>
-          <h2 className="text-slate-100 font-black uppercase tracking-widest text-sm sm:text-base flex items-center gap-2">
-            <span className="w-2 h-2 bg-[var(--color-brand-blue)] animate-pulse rounded-none" />
-            Initiate Recognition
-          </h2>
-          <p className="text-[11px] sm:text-xs text-slate-400 font-bold uppercase tracking-wider mt-0.5">
-            Authorize Direct Point Allocation
-          </p>
-        </div>
-
-        {formFeedback && (
-          <div className={`px-3 py-1.5 font-mono text-xs font-bold uppercase tracking-wider border rounded-sm ${
-            formFeedback.isError 
-              ? 'bg-amber-500/10 border-amber-500/50 text-[var(--color-brand-red)]' 
-              : 'bg-emerald-950/30 border-emerald-500/50 text-[var(--color-metric-meetings)]'
-          }`}>
-            [{formFeedback.isError ? 'REFUSED' : 'ACCEPTED'}] {formFeedback.message}
-          </div>
-        )}
+      <div className="flex items-center gap-2 mb-2">
+        <span className="w-2 h-2 rounded-none animate-pulse bg-[var(--color-brand-blue)]" />
+        <h3 className="font-mono text-sm sm:text-base font-black text-slate-100 uppercase tracking-widest flex items-center gap-2">
+          Initiate Recognition
+        </h3>
       </div>
 
-      <form onSubmit={handleAwardSubmit} className="space-y-4">
-        {/* ROW 1: EMPLOYEE, CATEGORY, & AMOUNT ACROSS FULL WIDTH */}
+      <p className="text-slate-400 text-xs uppercase tracking-wider mb-6 font-mono leading-relaxed">
+        Authorize direct point allocations to reward team members for proactive safety, teamwork, and operational compliance.
+      </p>
+
+      {formFeedback && (
+        <div className={`mb-6 p-3 font-mono text-xs uppercase tracking-wider font-bold rounded-sm border ${
+          formFeedback.isError 
+            ? 'bg-amber-500/10 border-amber-500/50 text-[var(--color-brand-red)]' 
+            : 'bg-emerald-950/30 border-emerald-500/50 text-[var(--color-metric-meetings,#10b981)]'
+        }`}>
+          [{formFeedback.isError ? 'REFUSED' : 'ACCEPTED'}] {formFeedback.message}
+        </div>
+      )}
+
+      <form onSubmit={handleAwardSubmit} className="space-y-6">
+        {/* ROW 1: EMPLOYEE, CATEGORY, & AMOUNT */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
           <div className="md:col-span-5">
-            <label className="text-[10px] font-bold uppercase text-slate-300 tracking-widest block mb-1.5">
+            <label className="block font-mono text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
               Target Employee / Manager
             </label>
             <div className="relative">
@@ -117,20 +114,20 @@ export default function RecognitionForm({ employees = [], onAwardSuccess, itemVa
                 value={selectedUser} 
                 onChange={(e) => setSelectedUser(e.target.value)} 
                 required 
-                className="w-full py-2.5 px-3 pr-8 text-slate-100 text-xs font-bold uppercase outline-none cursor-pointer appearance-none rounded-sm truncate border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] transition-colors"
+                className="w-full bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] rounded-sm px-4 py-3 text-xs text-white font-mono uppercase tracking-wide focus:outline-none transition-colors appearance-none cursor-pointer pr-8"
               >
                 <option value="" disabled className="text-slate-500">Select Team Member</option>
                 {(employees || []).map(emp => {
                   const nameDisplay = emp.nickname || emp.first_name;
                   const roleLabel = emp.role === 'manager' ? ' (Manager)' : '';
                   return (
-                    <option key={emp.id} value={emp.id} className="bg-[var(--color-brand-card)] text-slate-100">
+                    <option key={emp.id} value={emp.id} className="bg-[var(--color-brand-card)] text-white">
                       {nameDisplay}{roleLabel}
                     </option>
                   );
                 })}
               </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400">
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400">
                 <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
                   <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
                 </svg>
@@ -139,20 +136,20 @@ export default function RecognitionForm({ employees = [], onAwardSuccess, itemVa
           </div>
 
           <div className="md:col-span-4">
-            <label className="text-[10px] font-bold uppercase text-slate-300 tracking-widest block mb-1.5">
+            <label className="block font-mono text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
               Category
             </label>
             <div className="relative">
               <select 
                 value={category} 
                 onChange={(e) => setCategory(e.target.value)} 
-                className="w-full py-2.5 px-3 pr-8 text-slate-100 text-xs font-bold uppercase outline-none cursor-pointer appearance-none rounded-sm truncate border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] transition-colors"
+                className="w-full bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] rounded-sm px-4 py-3 text-xs text-white font-mono uppercase tracking-wide focus:outline-none transition-colors appearance-none cursor-pointer pr-8"
               >
                 {REWARD_CATEGORIES.map(cat => (
-                  <option key={cat} value={cat} className="bg-[var(--color-brand-card)] text-slate-100">{cat}</option>
+                  <option key={cat} value={cat} className="bg-[var(--color-brand-card)] text-white">{cat}</option>
                 ))}
               </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400">
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400">
                 <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
                   <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
                 </svg>
@@ -161,7 +158,7 @@ export default function RecognitionForm({ employees = [], onAwardSuccess, itemVa
           </div>
 
           <div className="md:col-span-3">
-            <label className="text-[10px] font-bold uppercase text-slate-300 tracking-widest block mb-1.5">
+            <label className="block font-mono text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
               Amount
             </label>
             <input 
@@ -171,14 +168,14 @@ export default function RecognitionForm({ employees = [], onAwardSuccess, itemVa
               onChange={(e) => setAmount(e.target.value)} 
               required 
               placeholder="PTS" 
-              className="w-full py-2.5 px-3 font-black text-xs outline-none transition-colors rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] text-[var(--color-metric-safe-acts)] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
+              className="w-full bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] rounded-sm px-4 py-3 text-xs text-[var(--color-metric-safe-acts)] font-mono font-black uppercase tracking-wide focus:outline-none transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
             />
           </div>
         </div>
 
         {/* ROW 2: JUSTIFICATION NOTE */}
         <div>
-          <label className="text-[10px] font-bold uppercase text-slate-300 tracking-widest block mb-1.5">
+          <label className="block font-mono text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
             Justification Note
           </label>
           <textarea 
@@ -187,18 +184,27 @@ export default function RecognitionForm({ employees = [], onAwardSuccess, itemVa
             required 
             rows={2} 
             placeholder="OPERATIONAL NOTE..." 
-            className="w-full p-3 text-slate-100 text-xs font-bold uppercase outline-none transition-colors resize-none placeholder-slate-500 rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)]" 
+            className="w-full bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] rounded-sm p-3 text-xs text-white font-mono uppercase tracking-wide placeholder-slate-500 focus:outline-none transition-colors resize-none" 
           />
         </div>
 
         {/* ROW 3: FULL WIDTH AUTHORIZE BUTTON */}
-        <button 
-          type="submit" 
-          disabled={isSubmitting} 
-          className="w-full text-white py-3.5 font-bold uppercase tracking-wider text-xs hover:bg-white hover:text-black transition-all duration-200 disabled:opacity-50 cursor-pointer rounded-sm bg-[var(--color-brand-blue)] shadow-[0_0_15px_rgba(0,136,255,0.25)]"
-        >
-          {isSubmitting ? "PROCESSING..." : "AUTHORIZE TRANSFER ↗"}
-        </button>
+        <div className="pt-2">
+          <button 
+            type="submit" 
+            disabled={isSubmitting || !selectedUser || !amount || !reason} 
+            className="w-full bg-[var(--color-brand-blue)] hover:bg-white hover:text-black disabled:bg-slate-800 disabled:text-slate-500 text-white font-mono text-xs sm:text-sm font-black uppercase tracking-widest py-3.5 px-6 rounded-sm transition-all shadow-[0_0_20px_rgba(0,136,255,0.25)] flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Processing Transfer...
+              </>
+            ) : (
+              "Authorize Transfer ↗"
+            )}
+          </button>
+        </div>
       </form>
     </motion.div>
   );

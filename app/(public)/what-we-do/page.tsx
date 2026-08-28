@@ -7,13 +7,16 @@ import {
   Phone,
   Factory,
   Flame,
-  Wind
+  Wind,
+  Snowflake,
+  PackageSearch,
+  Wrench
 } from "lucide-react";
 import Footer from "@/components/footer";
 
 const capabilitySectors = [
   {
-    title: "Process & Piping",
+    title: "Process & Sanitary Piping",
     code: "pipefitting",
     icon: Flame,
     accentBorder: "border-t-[#ea1f27]",
@@ -26,11 +29,24 @@ const capabilitySectors = [
     ]
   },
   {
+    title: "Industrial Refrigeration",
+    code: "AMMONIA",
+    icon: Snowflake,
+    accentBorder: "border-t-[#64748b]",
+    accentBadge: "text-[#64748b] border-[#64748b]/40 bg-[#64748b]/10",
+    description: "Heavy-duty thermal control, anhydrous ammonia distribution, and plate freezer tie-ins for production plants.",
+    specs: [
+      { name: "Ammonia Lines", detail: "Certified carbon steel & low-temp alloy piping" },
+      { name: "Plate Freezers", detail: "Mechanical tie-ins & valve manifold packages" },
+      { name: "Compressor Skids", detail: "Pre-piped equipment bases & receiver connections" }
+    ]
+  },
+  {
     title: "Atmospheric Systems",
     code: "HVAC",
     icon: Wind,
-    accentBorder: "border-t-[#a855f7]",
-    accentBadge: "text-[#a855f7] border-[#a855f7]/40 bg-[#a855f7]/10",
+    accentBorder: "border-t-[#0088ff]",
+    accentBadge: "text-[#0088ff] border-[#0088ff]/40 bg-[#0088ff]/10",
     description: "Controlled cleanroom environments, central physical plant infrastructure, and hazardous exhaust.",
     specs: [
       { name: "Cleanroom HVAC", detail: "ISO-classified positive/negative pressure environments" },
@@ -39,16 +55,42 @@ const capabilitySectors = [
     ]
   },
   {
+    title: "Packaging & Conveyance",
+    code: "LOGISTICS",
+    icon: PackageSearch,
+    accentBorder: "border-t-[#ea1f27]",
+    accentBadge: "text-[#ea1f27] border-[#ea1f27]/40 bg-[#ea1f27]/10",
+    description: "Mechanical placement, precision alignment, and utility drops for high-speed filling and sorting lines.",
+    specs: [
+      { name: "Line Fillers", detail: "Rigging & mounting for automated packaging equipment" },
+      { name: "Conveyor Grids", detail: "Installation of belt, roller & food-grade layouts" },
+      { name: "Utility Drops", detail: "Air, steam, and CIP manifolds routed to hookups" }
+    ]
+  },
+  {
     title: "Structural Fabrication",
     code: "FABRICATION",
     icon: Factory,
-    accentBorder: "border-t-[#0088ff]",
-    accentBadge: "text-[#0088ff] border-[#0088ff]/40 bg-[#0088ff]/10",
+    accentBorder: "border-t-[#64748b]",
+    accentBadge: "text-[#64748b] border-[#64748b]/40 bg-[#64748b]/10",
     description: "Heavy industrial framework, pre-fabricated piping assemblies, and custom equipment skids.",
     specs: [
       { name: "Custom Skids", detail: "Engineered modular baseframes & transport skids" },
       { name: "Pipe Spool Fab", detail: "Precision pre-fab spooling for rapid field assembly" },
       { name: "Heavy Ductwork", detail: "Heavy-gauge industrial duct & high-pressure exhaust" }
+    ]
+  },
+  {
+    title: "Equipment Setting",
+    code: "RIGGING",
+    icon: Wrench,
+    accentBorder: "border-t-[#0088ff]",
+    accentBadge: "text-[#0088ff] border-[#0088ff]/40 bg-[#0088ff]/10",
+    description: "Precision rigging and mechanical mounting for heavy machinery, boilers, chillers, and production equipment.",
+    specs: [
+      { name: "Heavy Rigging", detail: "Safe positioning of large-scale industrial units" },
+      { name: "Laser Alignment", detail: "Precision leveling and mechanical alignment" },
+      { name: "Mechanical Tie-ins", detail: "Direct connection to plant utility headers" }
     ]
   }
 ];
@@ -69,7 +111,7 @@ export default function CapabilitiesLandingPage() {
           <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black uppercase tracking-tight text-white leading-none">
             WHAT WE{" "}
             <span className="text-[#ea1f27]">BU</span>
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ea1f27] via-[#a855f7] to-[#0088ff]">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ea1f27] from-0% via-[#64748b]/80 via-50% to-[#0088ff] to-100%">
               IL
             </span>
             <span className="text-[#0088ff]">D.</span>
@@ -82,7 +124,7 @@ export default function CapabilitiesLandingPage() {
 
         {/* Temporary Spec Index Notice Card */}
         <div className="mb-14 p-8 sm:p-10 bg-[#070a10] border border-slate-800 rounded-sm relative shadow-2xl overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-[#ea1f27] via-[#a855f7] to-[#0088ff]" />
+          <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-[#ea1f27] via-[#64748b] to-[#0088ff]" />
           
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             <div className="space-y-2">
@@ -104,7 +146,7 @@ export default function CapabilitiesLandingPage() {
           </div>
         </div>
 
-        {/* 3-Column Systems Matrix (Red -> Purple -> Blue Order) */}
+        {/* 6-Column Systems Matrix */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
           {capabilitySectors.map((sector, idx) => {
             const IconComponent = sector.icon;

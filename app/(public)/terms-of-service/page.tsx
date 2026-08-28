@@ -28,7 +28,7 @@ export default function TermsOfServicePage() {
           </div>
 
           <h1 className="text-4xl sm:text-5xl font-black uppercase tracking-tight text-white mb-6">
-            Terms of <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ea1f27] via-[#a855f7] to-[#0088ff]">Service.</span>
+            Terms of <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ea1f27] from-0% via-[#64748b]/80 via-50% to-[#0088ff] to-100%">Service.</span>
           </h1>
 
           <p className="font-mono text-xs text-slate-400 uppercase tracking-widest">
@@ -57,7 +57,7 @@ export default function TermsOfServicePage() {
           {/* Intellectual Property Rights */}
           <div className="bg-[#070a10] border border-slate-800 p-8 rounded-lg shadow-xl">
             <h2 className="text-white font-black text-xl uppercase tracking-tight mb-4 flex items-center gap-3">
-              <ShieldCheck className="w-5 h-5 text-[#a855f7]" /> 2. Intellectual Property Rights
+              <ShieldCheck className="w-5 h-5 text-[#64748b]" /> 2. Intellectual Property Rights
             </h2>
             <p className="mb-4">
               Unless otherwise indicated, the Website and all source code, databases, functionality, software, website designs, audio, video, text, photographs, and graphics on the Website (collectively, the "Content") are owned or controlled by us or licensed to us, and are protected by copyright and trademark laws.
@@ -142,9 +142,9 @@ export default function TermsOfServicePage() {
       </section>
 
       {/* ========================================= */}
-            {/*  SITE FOOTER                            */}
-            {/* ========================================= */}
-            <Footer />
+      {/*  SITE FOOTER                            */}
+      {/* ========================================= */}
+      <Footer />
 
     </main>
   );

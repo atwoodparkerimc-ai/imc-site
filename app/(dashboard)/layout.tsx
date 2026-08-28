@@ -396,13 +396,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
 
             {/* Center: Scaled-Up Builders of Industry Lockup */}
+            {/* Center: Scaled-Up Builders of Industry Lockup */}
             <div className="flex-shrink-0 flex items-center justify-center my-1 lg:my-0">
-              <div className="inline-flex items-center gap-3 font-black uppercase text-white text-base sm:text-lg leading-none">
-                <span className="tracking-[0.22em]">BUILDERS</span>
-                <span className="w-7 h-7 rounded-full border-2 border-slate-300 text-white text-[11px] font-sans font-black flex items-center justify-center shrink-0 shadow-sm leading-none pl-[0.5px]">
+              <div className="inline-flex items-center gap-2.5 sm:gap-3.5 font-black uppercase text-lg sm:text-2xl leading-none">
+                <span className="text-slate-500 tracking-[0.2em] sm:tracking-[0.24em]">BUILDERS</span>
+                <span className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-slate-300 text-white text-[10px] sm:text-xs font-sans font-black flex items-center justify-center shrink-0 shadow-sm">
                   OF
                 </span>
-                <span className="text-[#ea1f27] tracking-[0.22em] -mr-[0.22em]">
+                <span className="text-[#ea1f27] tracking-[0.2em] sm:tracking-[0.24em] -mr-[0.2em] sm:-mr-[0.24em]">
                   INDUSTRY
                 </span>
               </div>
