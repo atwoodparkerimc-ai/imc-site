@@ -11,17 +11,33 @@ interface PopupData {
 export default function OperationalMap() {
   const [popup, setPopup] = useState<PopupData | null>(null);
 
+  // Obfuscated email assembly to protect against automated scrapers
+  const emailUser = "estimating";
+  const emailDomain = "interwestmechanical.com";
+  const mapEmail = `${emailUser}@${emailDomain}`;
+
   const handleStateClick = (e: React.MouseEvent<SVGPathElement | SVGCircleElement, MouseEvent>, name: string) => {
+    e.stopPropagation();
     setPopup({ name, x: e.clientX, y: e.clientY });
   };
 
   return (
-    <div className="max-w-[1400px] mx-auto flex flex-col lg:flex-row items-center gap-12 lg:gap-16 relative z-10">
+    <div className="max-w-[1400px] mx-auto flex flex-col lg:flex-row items-center gap-8 lg:gap-16 relative z-10">
       
+      {/* 1. TITLE: Rendered on mobile at the top, desktop on the side */}
+      <div className="block lg:hidden w-full text-left">
+        <h2 className="text-3xl sm:text-5xl font-black uppercase tracking-tight text-white leading-[0.95]">
+          Precision <br />
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ea1f27] from-0% via-[#64748b]/80 via-50% to-[#0088ff] to-100%">
+            Reach.
+          </span>
+        </h2>
+      </div>
+
       {/* Full US Map Container */}
-      <div className="w-full lg:w-2/3 relative">
+      <div className="w-full lg:w-2/3 relative order-2 lg:order-1">
         
-        <div className="flex items-center justify-between mb-4 font-mono text-xs text-slate-300 uppercase tracking-widest">
+        <div className="flex items-center justify-between mb-2 sm:mb-4 font-mono text-xs text-slate-300 uppercase tracking-widest">
           <span className="hidden sm:inline-block text-slate-400">HQ Location: Springville, UT</span>
         </div>
 
@@ -95,61 +111,99 @@ export default function OperationalMap() {
               <circle className="state" onClick={(e: any) => handleStateClick(e, "Washington DC")} cx="801.6" cy="252.1" r="5" />
             </g>
           </svg>
-
-          {/* Tactical HUD Interactive Popup */}
+{/* {/* Tactical HUD Interactive Popup */}
           {popup && (
-            <div 
-              className="fixed bg-[#0b1324] text-slate-100 p-6 rounded-md shadow-[0_20px_50px_rgba(0,0,0,0.9)] z-[100] w-80 sm:w-96 border border-slate-600 backdrop-blur-md font-mono"
-              style={{ top: popup.y + 15, left: popup.x + 15 }}
-            >
-              <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-700">
-                <span className="text-xs text-[#0088ff] font-bold uppercase tracking-widest">[ STATE NODE: {popup.name} ]</span>
-                <button 
-                  onClick={() => setPopup(null)} 
-                  className="text-slate-200 hover:text-white font-bold text-xs cursor-pointer px-2 py-1 border border-slate-600 hover:border-slate-400 rounded-xs transition-colors bg-[#070d19]"
-                >
-                  ✕
-                </button>
-              </div>
+            <>
+              {/* Invisible Click-Off Backdrop to dismiss anywhere outside */}
+              <div 
+                className="fixed inset-0 z-[95] bg-black/40 sm:bg-transparent"
+                onClick={() => setPopup(null)}
+                aria-hidden="true"
+              />
 
-              <div className="space-y-3 text-xs">
-                <p className="font-black text-white text-base pb-1 uppercase tracking-tight">{popup.name} Regional Sector</p>
-                <p className="flex justify-between items-center text-slate-300"><span className="text-slate-400 font-bold uppercase">Contact:</span> <span className="text-white font-bold">Estimating Team</span></p>
-                <div>
-                  <span className="text-slate-400 font-bold uppercase block mb-1">Email:</span>
-                  <a href="mailto:estimating@interwestmechanical.com" className="block bg-[#070d19] border border-slate-600 hover:border-[#0088ff] px-3.5 py-2 rounded-xs font-mono text-xs font-bold text-white hover:text-[#0088ff] transition-all no-underline break-all">
-                    estimating@interwestmechanical.com
-                  </a>
+              {/* Popup Container: Centered over map on mobile, cursor-relative on desktop */}
+              <div 
+                className="absolute z-[100] bg-[#0b1324] text-slate-100 p-5 sm:p-6 rounded-md shadow-[0_20px_50px_rgba(0,0,0,0.95)] border border-slate-600 backdrop-blur-md font-mono
+                  top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[92%] max-w-sm
+                  sm:fixed sm:top-auto sm:left-auto sm:translate-x-0 sm:translate-y-0 sm:w-96"
+                style={typeof window !== "undefined" && window.innerWidth >= 640 ? { 
+                  top: Math.min(popup.y + 15, window.innerHeight - 280), 
+                  left: Math.min(popup.x + 15, window.innerWidth - 400) 
+                } : undefined}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-700">
+                  <span className="text-xs text-[#0088ff] font-bold uppercase tracking-widest">[ STATE NODE: {popup.name} ]</span>
+                  <button 
+                    onClick={() => setPopup(null)} 
+                    className="text-slate-200 hover:text-white font-bold text-xs cursor-pointer px-2.5 py-1 border border-slate-600 hover:border-slate-400 rounded-xs transition-colors bg-[#070d19]"
+                    aria-label="Close state information"
+                  >
+                    ✕
+                  </button>
                 </div>
-                <p className="flex justify-between items-center"><span className="text-slate-400 font-bold uppercase">Status:</span> <span className="text-emerald-400 font-bold tracking-wider">ACTIVE REGION</span></p>
-              </div>
 
-              <div className="mt-5 pt-3 border-t border-slate-700 text-[10px] text-slate-400 uppercase tracking-wider flex justify-between">
-                <span>INTERWEST MECHANICAL</span>
-                <span className="text-slate-300 font-bold">EST. 1995</span>
+                <div className="space-y-3 text-xs">
+                  <p className="font-black text-white text-base pb-1 uppercase tracking-tight">{popup.name} Regional Sector</p>
+                  <p className="flex justify-between items-center text-slate-300"><span className="text-slate-400 font-bold uppercase">Contact:</span> <span className="text-white font-bold">Kelly Mower</span></p>
+                  <div>
+                    <span className="text-slate-400 font-bold uppercase block mb-1">Email:</span>
+                    <a 
+                      href={`mailto:${mapEmail}`} 
+                      className="block bg-[#070d19] border border-slate-600 hover:border-[#0088ff] px-3.5 py-2 rounded-xs font-mono text-xs font-bold text-white hover:text-[#0088ff] transition-all no-underline break-all"
+                    >
+                      {mapEmail}
+                    </a>
+                  </div>
+                  <p className="flex justify-between items-center"><span className="text-slate-400 font-bold uppercase">Status:</span> <span className="text-emerald-400 font-bold tracking-wider">ACTIVE REGION</span></p>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-slate-700 text-[10px] text-slate-400 uppercase tracking-wider flex justify-between">
+                  <span>INTERWEST MECHANICAL</span>
+                  <span className="text-slate-300 font-bold">EST. 1995</span>
+                </div>
               </div>
-            </div>
+            </>
           )}
         </div>
       </div>
 
-      {/* Telemetry Stats Panel */}
-      <div className="w-full lg:w-1/3 space-y-8 text-slate-100 z-10">
+      {/* Telemetry Stats & Content Panel (Desktop on Right, Mobile ordered below Map) */}
+      <div className="w-full lg:w-1/3 flex flex-col z-10 order-3 lg:order-2">
         
-        <div>
-  <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black uppercase tracking-tight text-white leading-[0.95]">
-    Precision <br />
-    <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ea1f27] from-0% via-[#64748b]/80 via-50% to-[#0088ff] to-100%">
-      Reach.
-    </span>
-  </h2>
-</div>
+        {/* Title: Desktop Only */}
+        <div className="hidden lg:block mb-6">
+          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black uppercase tracking-tight text-white leading-[0.95]">
+            Precision <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ea1f27] from-0% via-[#64748b]/80 via-50% to-[#0088ff] to-100%">
+              Reach.
+            </span>
+          </h2>
+        </div>
 
-        <p className="text-slate-200 text-sm sm:text-base leading-relaxed font-normal">
+        {/* 2. MAP KEY (Rendered 1st under map on mobile) */}
+        <div className="order-1 lg:order-4 pb-6 lg:pb-0 lg:pt-5 border-b lg:border-b-0 lg:border-t border-slate-800/80 font-mono text-xs space-y-2.5 text-slate-200 uppercase tracking-wider">
+          <div className="flex items-center gap-2.5">
+            <span className="w-3.5 h-3.5 bg-white border border-slate-300 rounded-none inline-block shrink-0" />
+            <span className="text-white font-bold">National HQ Node (Utah)</span>
+          </div>
+          <div className="flex items-center gap-2.5">
+            <span className="w-3.5 h-3.5 bg-[#7e8c9f] border border-slate-400 rounded-none inline-block shrink-0" />
+            <span>Primary Regional Sectors</span>
+          </div>
+          <div className="flex items-center gap-2.5">
+            <span className="w-3.5 h-3.5 bg-[#384352] border border-slate-700 rounded-none inline-block shrink-0" />
+            <span className="text-slate-400">Secondary Field Coverage</span>
+          </div>
+        </div>
+
+        {/* 3. PARAGRAPH (Rendered 2nd under map on mobile) */}
+        <p className="order-2 lg:order-2 py-6 lg:py-0 lg:mb-6 text-slate-200 text-sm sm:text-base leading-relaxed font-normal">
           Headquartered in Springville, Utah. We construct high-tolerance industrial HVAC, cleanrooms, and complex piping systems across the nation—bridging architectural vision and operational reality.
         </p>
 
-        <div className="grid grid-cols-2 gap-6 pt-6 border-t border-slate-800/80 font-mono">
+        {/* 4. STATS (Rendered 3rd under map on mobile) */}
+        <div className="order-3 lg:order-3 grid grid-cols-2 gap-6 py-6 lg:py-6 border-t border-b lg:border-b-0 border-slate-800/80 font-mono">
           <div>
             <span className="block text-white font-black text-3xl sm:text-4xl tracking-tight">12+</span>
             <span className="text-xs uppercase tracking-widest text-slate-400 mt-1 block">Active States</span>
@@ -157,22 +211,6 @@ export default function OperationalMap() {
           <div>
             <span className="block text-white font-black text-3xl sm:text-4xl tracking-tight">450+</span>
             <span className="text-xs uppercase tracking-widest text-slate-400 mt-1 block">Deployments</span>
-          </div>
-        </div>
-
-        {/* Interactive Map Legend */}
-        <div className="pt-5 border-t border-slate-800/80 font-mono text-xs space-y-2.5 text-slate-200 uppercase tracking-wider">
-          <div className="flex items-center gap-2.5">
-            <span className="w-3.5 h-3.5 bg-white border border-slate-300 rounded-none inline-block" />
-            <span className="text-white font-bold">National HQ Node (Utah)</span>
-          </div>
-          <div className="flex items-center gap-2.5">
-            <span className="w-3.5 h-3.5 bg-[#7e8c9f] border border-slate-400 rounded-none inline-block" />
-            <span>Primary Regional Sectors</span>
-          </div>
-          <div className="flex items-center gap-2.5">
-            <span className="w-3.5 h-3.5 bg-[#384352] border border-slate-700 rounded-none inline-block" />
-            <span className="text-slate-400">Secondary Field Coverage</span>
           </div>
         </div>
 

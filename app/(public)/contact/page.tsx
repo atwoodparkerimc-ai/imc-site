@@ -15,15 +15,37 @@ import {
   CheckCircle2, 
   Send,
   Mail,
-  Loader2
+  Loader2,
+  Paperclip,
+  X
 } from 'lucide-react';
+
+const PROJECT_TYPES = [
+  "Sanitary & Process Piping",
+  "Commercial HVAC",
+  "Custom Fabrication",
+  "Facility Maintenance",
+  "Other"
+];
+
+const TIMELINES = [
+  "Immediate / Expedited",
+  "1 - 3 Months",
+  "3 - 6 Months",
+  "6+ Months"
+];
 
 export default function ContactPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  
+  // Tactical pill state
+  const [selectedProjectType, setSelectedProjectType] = useState(PROJECT_TYPES[0]);
+  const [selectedTimeline, setSelectedTimeline] = useState(TIMELINES[0]);
+  const [attachedFileName, setAttachedFileName] = useState<string | null>(null);
 
-  // Obfuscated contact variables to prevent automated spam bot scraping
+  // Decoupled contact variables to prevent automated spam bot scraping
   const phoneDisplay = ["(801)", "360-5735"].join(" ");
   const phoneHref = ["tel:8013605735"].join("");
   
@@ -31,12 +53,21 @@ export default function ContactPage() {
   const estimatingEmail = `estimating@${domain}`;
   const careersEmail = `careers@${domain}`;
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setAttachedFileName(e.target.files[0].name);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
     setErrorMessage("");
 
     const formData = new FormData(e.currentTarget);
+    formData.set("projectType", selectedProjectType);
+    formData.set("timeline", selectedTimeline);
+
     const payload = Object.fromEntries(formData.entries());
 
     try {
@@ -64,7 +95,7 @@ export default function ContactPage() {
       {/* ========================================= */}
       {/* 1. HERO SECTION                           */}
       {/* ========================================= */}
-      <section className="relative w-full pt-16 pb-10 lg:pt-20 lg:pb-12 flex items-center border-b border-slate-800/80 overflow-hidden">
+      <section className="relative w-full pt-14 pb-8 sm:pt-20 sm:pb-12 flex items-center border-b border-slate-800/80 overflow-hidden">
         <div className="absolute inset-0 z-0 tactical-graph-paper opacity-30 pointer-events-none" />
         
         <div className="relative z-10 max-w-[1400px] mx-auto px-6 lg:px-12 w-full text-center">
@@ -74,14 +105,14 @@ export default function ContactPage() {
             transition={{ duration: 0.5, ease: "easeOut" }}
             className="max-w-4xl mx-auto flex flex-col items-center"
           >
-            <h1 className="text-[clamp(2.5rem,5.5vw,5.5rem)] font-black tracking-tighter uppercase leading-[0.95] text-white mb-5">
+            <h1 className="text-[clamp(2.4rem,5.5vw,5.5rem)] font-black tracking-tighter uppercase leading-[0.95] text-white mb-4 sm:mb-5">
               Initiate a <br/>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ea1f27] from-0% via-[#64748b]/80 via-50% to-[#0088ff] to-100%">
                 Project Bid.
               </span>
             </h1>
             
-            <p className="text-base sm:text-lg lg:text-xl text-slate-200 font-normal leading-relaxed max-w-3xl mx-auto">
+            <p className="text-sm sm:text-base lg:text-xl text-slate-200 font-normal leading-relaxed max-w-3xl mx-auto">
               Whether you need a custom fabrication quote, specialized process piping, or a complete design-build mechanical system, our teams are ready. Reach out to the specific department below or submit a detailed project inquiry.
             </p>
           </motion.div>
@@ -91,7 +122,7 @@ export default function ContactPage() {
       {/* ========================================= */}
       {/* 2. MAIN CONTACT & INQUIRY GRID            */}
       {/* ========================================= */}
-      <section className="relative z-20 py-16 px-6 lg:px-12 bg-[#070a10] border-b border-slate-800/80">
+      <section className="relative z-20 py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-12 bg-[#070a10] border-b border-slate-800/80">
         <div className="max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-stretch">
           
           {/* LEFT COLUMN: DIRECT LINES & OPERATIONS (5 Cols) */}
@@ -104,48 +135,48 @@ export default function ContactPage() {
           >
             
             {/* DIRECT LINES */}
-            <div className="bg-[#030914] p-7 sm:p-8 border border-slate-800 rounded-lg shadow-inner">
-              <h3 className="text-xl font-black text-white mb-6 flex items-center gap-2.5 uppercase tracking-tight">
+            <div className="bg-[#030914] p-6 sm:p-8 border border-slate-800 rounded-lg shadow-inner">
+              <h3 className="text-lg sm:text-xl font-black text-white mb-5 flex items-center gap-2.5 uppercase tracking-tight">
                 <Phone className="h-5 w-5 text-[#ea1f27]" /> Direct Lines
               </h3>
               
-              <div className="space-y-6">
+              <div className="space-y-5">
                 {/* Estimating */}
-                <div className="pb-5 border-b border-slate-800">
-                  <span className="text-xs font-mono font-bold text-slate-400 uppercase tracking-wider block mb-1 flex items-center gap-2">
+                <div className="pb-4 border-b border-slate-800">
+                  <span className="text-[11px] sm:text-xs font-mono font-bold text-slate-400 uppercase tracking-wider block mb-1 flex items-center gap-2">
                     <HardHat className="h-4 w-4 text-[#ea1f27]" /> Estimating & Bids
                   </span>
                   <a 
                     href={phoneHref} 
-                    className="font-mono text-xl font-black text-white hover:text-[#ea1f27] transition-colors block mb-2"
+                    className="font-mono text-lg sm:text-xl font-black text-white hover:text-[#ea1f27] transition-colors block mb-1.5"
                   >
                     {phoneDisplay}
                   </a>
                   <a 
                     href={`mailto:${estimatingEmail}`} 
-                    className="inline-flex items-center gap-2.5 bg-[#070a10] border border-slate-800 hover:border-[#ea1f27]/50 px-3.5 py-2 rounded-xs font-mono text-sm font-bold text-slate-300 hover:text-white transition-all no-underline break-all"
+                    className="inline-flex items-center gap-2.5 bg-[#070a10] border border-slate-800 hover:border-[#ea1f27]/50 px-3 py-1.5 rounded-xs font-mono text-xs sm:text-sm font-bold text-slate-300 hover:text-white transition-all no-underline break-all"
                   >
-                    <Mail className="w-4 h-4 text-[#ea1f27] shrink-0" />
+                    <Mail className="w-3.5 h-3.5 text-[#ea1f27] shrink-0" />
                     {estimatingEmail}
                   </a>
                 </div>
 
                 {/* HR & Recruiting */}
                 <div>
-                  <span className="text-xs font-mono font-bold text-slate-400 uppercase tracking-wider block mb-1 flex items-center gap-2">
+                  <span className="text-[11px] sm:text-xs font-mono font-bold text-slate-400 uppercase tracking-wider block mb-1 flex items-center gap-2">
                     <FileText className="h-4 w-4 text-[#0088ff]" /> HR & Recruiting
                   </span>
                   <a 
                     href={phoneHref} 
-                    className="font-mono text-xl font-black text-white hover:text-[#0088ff] transition-colors block mb-2"
+                    className="font-mono text-lg sm:text-xl font-black text-white hover:text-[#0088ff] transition-colors block mb-1.5"
                   >
                     {phoneDisplay}
                   </a>
                   <a 
                     href={`mailto:${careersEmail}`} 
-                    className="inline-flex items-center gap-2.5 bg-[#070a10] border border-slate-800 hover:border-[#0088ff]/50 px-3.5 py-2 rounded-xs font-mono text-sm font-bold text-slate-300 hover:text-white transition-all no-underline break-all"
+                    className="inline-flex items-center gap-2.5 bg-[#070a10] border border-slate-800 hover:border-[#0088ff]/50 px-3 py-1.5 rounded-xs font-mono text-xs sm:text-sm font-bold text-slate-300 hover:text-white transition-all no-underline break-all"
                   >
-                    <Mail className="w-4 h-4 text-[#0088ff] shrink-0" />
+                    <Mail className="w-3.5 h-3.5 text-[#0088ff] shrink-0" />
                     {careersEmail}
                   </a>
                 </div>
@@ -153,20 +184,20 @@ export default function ContactPage() {
             </div>
 
             {/* OPERATIONS & ENVIRONMENTS */}
-            <div className="bg-[#030914] p-7 sm:p-8 border border-slate-800 rounded-lg shadow-inner flex-1 flex flex-col justify-between">
+            <div className="bg-[#030914] p-6 sm:p-8 border border-slate-800 rounded-lg shadow-inner flex-1 flex flex-col justify-between">
               <div>
-                <h3 className="text-xl font-black text-white mb-6 flex items-center gap-2.5 uppercase tracking-tight">
+                <h3 className="text-lg sm:text-xl font-black text-white mb-5 flex items-center gap-2.5 uppercase tracking-tight">
                   <MapPin className="h-5 w-5 text-[#64748b]" /> Operations
                 </h3>
                 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mb-5">
                   {/* Utah HQ */}
-                  <div className="bg-[#070a10] p-4 border border-slate-800 rounded-xs group hover:border-[#64748b]/50 transition-colors">
-                    <div className="flex items-center gap-2 mb-1.5">
+                  <div className="bg-[#070a10] p-3.5 sm:p-4 border border-slate-800 rounded-xs group hover:border-[#64748b]/50 transition-colors">
+                    <div className="flex items-center gap-2 mb-1">
                       <span className="w-2 h-2 bg-[#ea1f27] rounded-none animate-pulse" />
-                      <span className="text-xs font-mono font-bold text-[#ea1f27] uppercase tracking-wider">Headquarters</span>
+                      <span className="text-[11px] font-mono font-bold text-[#ea1f27] uppercase tracking-wider">Headquarters</span>
                     </div>
-                    <address className="not-italic text-slate-200 text-sm font-mono leading-relaxed">
+                    <address className="not-italic text-slate-200 text-xs sm:text-sm font-mono leading-relaxed">
                       Springville, UT <br />
                       221 W. 900 N. Unit 5<br />
                       Springville, UT 84663
@@ -174,10 +205,10 @@ export default function ContactPage() {
                   </div>
 
                   {/* South Carolina */}
-                  <div className="bg-[#070a10] p-4 border border-slate-800 rounded-xs group hover:border-[#64748b]/50 transition-colors">
-                    <div className="flex items-center gap-2 mb-1.5">
+                  <div className="bg-[#070a10] p-3.5 sm:p-4 border border-slate-800 rounded-xs group hover:border-[#64748b]/50 transition-colors">
+                    <div className="flex items-center gap-2 mb-1">
                       <span className="w-2 h-2 bg-slate-500 rounded-none" />
-                      <span className="text-xs font-mono font-bold text-slate-400 uppercase tracking-wider">SC OPERATIONS</span>
+                      <span className="text-[11px] font-mono font-bold text-slate-400 uppercase tracking-wider">SC OPERATIONS</span>
                     </div>
                     <p className="text-slate-300 text-xs sm:text-sm leading-relaxed font-normal">
                       Embedded facility contracts & specialized site operations.
@@ -188,45 +219,43 @@ export default function ContactPage() {
 
               {/* Specialized Environments Tags */}
               <div className="pt-4 border-t border-slate-800">
-                <span className="text-xs font-mono font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2 mb-3">
+                <span className="text-[11px] sm:text-xs font-mono font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2 mb-2.5">
                   <Droplets className="w-4 h-4 text-[#64748b]" /> Specialized Disciplines
                 </span>
-                <div className="flex flex-wrap gap-2.5">
-                  <span className="px-3.5 py-1.5 bg-[#070a10] border border-slate-800 text-slate-200 text-xs font-mono font-bold uppercase tracking-wider rounded-xs hover:border-[#ea1f27]/40 transition-colors">Food & Beverage</span>
-                  <span className="px-3.5 py-1.5 bg-[#070a10] border border-slate-800 text-slate-200 text-xs font-mono font-bold uppercase tracking-wider rounded-xs hover:border-[#64748b]/40 transition-colors">High Purity</span>
-                  <span className="px-3.5 py-1.5 bg-[#070a10] border border-slate-800 text-slate-200 text-xs font-mono font-bold uppercase tracking-wider rounded-xs hover:border-[#0088ff]/40 transition-colors">Industrial Mfg</span>
+                <div className="flex flex-wrap gap-2">
+                  <span className="px-2.5 py-1 bg-[#070a10] border border-slate-800 text-slate-200 text-[11px] font-mono font-bold uppercase tracking-wider rounded-xs hover:border-[#ea1f27]/40 transition-colors">Food & Beverage</span>
+                  <span className="px-2.5 py-1 bg-[#070a10] border border-slate-800 text-slate-200 text-[11px] font-mono font-bold uppercase tracking-wider rounded-xs hover:border-[#64748b]/40 transition-colors">High Purity</span>
+                  <span className="px-2.5 py-1 bg-[#070a10] border border-slate-800 text-slate-200 text-[11px] font-mono font-bold uppercase tracking-wider rounded-xs hover:border-[#0088ff]/40 transition-colors">Industrial Mfg</span>
                 </div>
               </div>
             </div>
 
           </motion.div>
 
-          {/* RIGHT COLUMN: HIGH-CONTRAST PROJECT INQUIRY FORM (7 Cols) */}
+          {/* RIGHT COLUMN: HIGH-PERFORMANCE STREAMLINED INQUIRY FORM (7 Cols) */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 0.5, ease: "easeOut", delay: 0.1 }}
-            className="lg:col-span-7 bg-[#030914] p-7 sm:p-9 border border-slate-800 rounded-lg shadow-inner relative flex flex-col justify-between"
+            className="lg:col-span-7 bg-[#030914] p-5 sm:p-8 lg:p-9 border border-slate-800 rounded-lg shadow-inner relative flex flex-col justify-between"
           >
-            
-
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-5">
               <div>
-                <h2 className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-white mb-1">
+                <h2 className="text-xl sm:text-2xl lg:text-3xl font-black uppercase tracking-tight text-white mb-0.5">
                   Project Inquiry
                 </h2>
-                <p className="text-slate-300 text-sm sm:text-base font-normal">
-                  Submit details below for our team to review.
+                <p className="text-slate-300 text-xs sm:text-sm font-normal">
+                  Fast-track submission for commercial bids & engineering scopes.
                 </p>
               </div>
-              <div className="hidden sm:flex h-11 w-11 items-center justify-center rounded-xs bg-[#070a10] border border-slate-800">
-                <ArrowRight className="w-5 h-5 text-slate-400" />
+              <div className="hidden sm:flex h-10 w-10 items-center justify-center rounded-xs bg-[#070a10] border border-slate-800">
+                <ArrowRight className="w-4 h-4 text-slate-400" />
               </div>
             </div>
 
             {submitted ? (
-              <div className="p-8 bg-[#070a10] border border-slate-800 rounded-xs text-center space-y-3 shadow-inner">
+              <div className="p-8 bg-[#070a10] border border-slate-800 rounded-xs text-center space-y-3 shadow-inner my-auto">
                 <CheckCircle2 className="w-10 h-10 text-[#0088ff] mx-auto" />
                 <h3 className="text-lg font-bold text-white uppercase font-mono tracking-wider">
                   Message Sent Successfully
@@ -236,9 +265,9 @@ export default function ContactPage() {
                 </p>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-5">
+              <form onSubmit={handleSubmit} className="space-y-4">
                 
-                {/* Invisible Honeypot to catch automated spam bots */}
+                {/* Honeypot anti-bot trap */}
                 <div className="hidden" aria-hidden="true">
                   <label htmlFor="website_lead_verify">Do not fill this out if human</label>
                   <input 
@@ -250,38 +279,23 @@ export default function ContactPage() {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                {/* 2-Across Compact Contact Inputs on ALL devices */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   <div>
-                    <label htmlFor="first-name" className="block text-xs font-mono font-bold uppercase tracking-wider text-slate-300 mb-2">
-                      First Name <span className="text-[#ea1f27]">*</span>
+                    <label htmlFor="fullName" className="block text-[11px] font-mono font-bold uppercase tracking-wider text-slate-300 mb-1">
+                      Full Name <span className="text-[#ea1f27]">*</span>
                     </label>
                     <input 
                       type="text" 
-                      id="first-name" 
-                      name="firstName"
+                      id="fullName" 
+                      name="fullName"
                       required
-                      placeholder="John" 
-                      className="w-full bg-[#070a10] border border-slate-800 focus:border-[#0088ff] rounded-xs px-4 py-3 text-base text-white placeholder:text-slate-500 focus:outline-none transition-colors"
+                      placeholder="John Doe" 
+                      className="w-full bg-[#070a10] border border-slate-800 focus:border-[#0088ff] rounded-xs px-3.5 py-2.5 text-sm text-white placeholder:text-slate-600 focus:outline-none transition-colors"
                     />
                   </div>
                   <div>
-                    <label htmlFor="last-name" className="block text-xs font-mono font-bold uppercase tracking-wider text-slate-300 mb-2">
-                      Last Name <span className="text-[#ea1f27]">*</span>
-                    </label>
-                    <input 
-                      type="text" 
-                      id="last-name" 
-                      name="lastName"
-                      required
-                      placeholder="Doe" 
-                      className="w-full bg-[#070a10] border border-slate-800 focus:border-[#0088ff] rounded-xs px-4 py-3 text-base text-white placeholder:text-slate-500 focus:outline-none transition-colors"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  <div>
-                    <label htmlFor="company" className="block text-xs font-mono font-bold uppercase tracking-wider text-slate-300 mb-2">
+                    <label htmlFor="company" className="block text-[11px] font-mono font-bold uppercase tracking-wider text-slate-300 mb-1">
                       Company Name
                     </label>
                     <input 
@@ -289,11 +303,14 @@ export default function ContactPage() {
                       id="company" 
                       name="company"
                       placeholder="Acme Industrial Corp" 
-                      className="w-full bg-[#070a10] border border-slate-800 focus:border-[#0088ff] rounded-xs px-4 py-3 text-base text-white placeholder:text-slate-500 focus:outline-none transition-colors"
+                      className="w-full bg-[#070a10] border border-slate-800 focus:border-[#0088ff] rounded-xs px-3.5 py-2.5 text-sm text-white placeholder:text-slate-600 focus:outline-none transition-colors"
                     />
                   </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   <div>
-                    <label htmlFor="phone" className="block text-xs font-mono font-bold uppercase tracking-wider text-slate-300 mb-2">
+                    <label htmlFor="phone" className="block text-[11px] font-mono font-bold uppercase tracking-wider text-slate-300 mb-1">
                       Phone Number <span className="text-[#ea1f27]">*</span>
                     </label>
                     <input 
@@ -302,82 +319,124 @@ export default function ContactPage() {
                       name="phone"
                       required
                       placeholder="(555) 000-0000" 
-                      className="w-full bg-[#070a10] border border-slate-800 focus:border-[#0088ff] rounded-xs px-4 py-3 text-base text-white placeholder:text-slate-500 focus:outline-none transition-colors"
+                      className="w-full bg-[#070a10] border border-slate-800 focus:border-[#0088ff] rounded-xs px-3.5 py-2.5 text-sm text-white placeholder:text-slate-600 focus:outline-none transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="email" className="block text-[11px] font-mono font-bold uppercase tracking-wider text-slate-300 mb-1">
+                      Email Address <span className="text-[#ea1f27]">*</span>
+                    </label>
+                    <input 
+                      type="email" 
+                      id="email" 
+                      name="email"
+                      required
+                      placeholder="john@company.com" 
+                      className="w-full bg-[#070a10] border border-slate-800 focus:border-[#0088ff] rounded-xs px-3.5 py-2.5 text-sm text-white placeholder:text-slate-600 focus:outline-none transition-colors"
                     />
                   </div>
                 </div>
 
+                {/* 1-Tap Pill Chips: Project Type */}
                 <div>
-                  <label htmlFor="email" className="block text-xs font-mono font-bold uppercase tracking-wider text-slate-300 mb-2">
-                    Email Address <span className="text-[#ea1f27]">*</span>
-                  </label>
-                  <input 
-                    type="email" 
-                    id="email" 
-                    name="email"
-                    required
-                    placeholder="john.doe@company.com" 
-                    className="w-full bg-[#070a10] border border-slate-800 focus:border-[#0088ff] rounded-xs px-4 py-3 text-base text-white placeholder:text-slate-500 focus:outline-none transition-colors"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  <div>
-                    <label htmlFor="project-type" className="block text-xs font-mono font-bold uppercase tracking-wider text-slate-300 mb-2">
-                      Project Type
-                    </label>
-                    <select 
-                      id="project-type" 
-                      name="projectType"
-                      className="w-full bg-[#070a10] border border-slate-800 focus:border-[#0088ff] rounded-xs px-4 py-3 text-sm text-white focus:outline-none transition-colors"
-                    >
-                      <option value="Sanitary & Process Piping">Sanitary & Process Piping</option>
-                      <option value="Heavy Commercial HVAC">Heavy Commercial HVAC</option>
-                      <option value="Off-Site Custom Fabrication">Off-Site Custom Fabrication</option>
-                      <option value="Facility Maintenance Contract">Facility Maintenance Contract</option>
-                      <option value="Other">Other</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label htmlFor="timeline" className="block text-xs font-mono font-bold uppercase tracking-wider text-slate-300 mb-2">
-                      Estimated Timeline
-                    </label>
-                    <select 
-                      id="timeline" 
-                      name="timeline"
-                      className="w-full bg-[#070a10] border border-slate-800 focus:border-[#0088ff] rounded-xs px-4 py-3 text-sm text-white focus:outline-none transition-colors"
-                    >
-                      <option value="Immediate / Expedited">Immediate / Expedited</option>
-                      <option value="1 - 3 Months">1 - 3 Months</option>
-                      <option value="3 - 6 Months">3 - 6 Months</option>
-                      <option value="6+ Months / Planning Phase">6+ Months / Planning Phase</option>
-                    </select>
+                  <span className="block text-[11px] font-mono font-bold uppercase tracking-wider text-slate-300 mb-1.5">
+                    Project Discipline <span className="text-[#ea1f27]">*</span>
+                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {PROJECT_TYPES.map((type) => {
+                      const isSelected = selectedProjectType === type;
+                      return (
+                        <button
+                          key={type}
+                          type="button"
+                          onClick={() => setSelectedProjectType(type)}
+                          className={`px-3 py-1.5 rounded-xs text-xs font-mono font-bold transition-all ${
+                            isSelected
+                              ? "bg-[#0088ff] text-white shadow-[0_0_12px_rgba(0,136,255,0.4)] border border-[#0088ff]"
+                              : "bg-[#070a10] text-slate-300 hover:text-white border border-slate-800 hover:border-slate-700"
+                          }`}
+                        >
+                          {type}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
+                {/* 1-Tap Pill Chips: Estimated Timeline */}
                 <div>
-                  <label htmlFor="message" className="block text-xs font-mono font-bold uppercase tracking-wider text-slate-300 mb-2">
-                    Project Description & Specs
+                  <span className="block text-[11px] font-mono font-bold uppercase tracking-wider text-slate-300 mb-1.5">
+                    Target Timeline
+                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {TIMELINES.map((time) => {
+                      const isSelected = selectedTimeline === time;
+                      return (
+                        <button
+                          key={time}
+                          type="button"
+                          onClick={() => setSelectedTimeline(time)}
+                          className={`px-3 py-1.5 rounded-xs text-xs font-mono font-bold transition-all ${
+                            isSelected
+                              ? "bg-slate-700 text-white border border-slate-500"
+                              : "bg-[#070a10] text-slate-400 hover:text-slate-200 border border-slate-800 hover:border-slate-700"
+                          }`}
+                        >
+                          {time}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Scope Description */}
+                <div>
+                  <label htmlFor="message" className="block text-[11px] font-mono font-bold uppercase tracking-wider text-slate-300 mb-1">
+                    Scope Description & Specs
                   </label>
                   <textarea 
                     id="message"
                     name="message"
-                    rows={3}
-                    placeholder="Scope, facility type, and material requirements (e.g., 316L Stainless, Copper, Carbon Steel)."
-                    className="w-full bg-[#070a10] border border-slate-800 focus:border-[#0088ff] rounded-xs px-4 py-3 text-base text-white placeholder:text-slate-500 focus:outline-none transition-colors resize-none"
+                    rows={2}
+                    placeholder="Facility type, pipe class, or custom fabrication scope..."
+                    className="w-full bg-[#070a10] border border-slate-800 focus:border-[#0088ff] rounded-xs px-3.5 py-2.5 text-sm text-white placeholder:text-slate-600 focus:outline-none transition-colors resize-none"
                   />
                 </div>
 
+                {/* Compact 1-Line File Attachment Button */}
                 <div>
-                  <label htmlFor="file-upload" className="block text-xs font-mono font-bold uppercase tracking-wider text-slate-300 mb-2">
-                    Attach Blueprints or Specs (Optional)
-                  </label>
-                  <div className="border border-dashed border-slate-700 bg-[#070a10] rounded-xs p-4 text-center hover:border-[#0088ff] transition-colors cursor-pointer group">
-                    <div className="flex items-center justify-center gap-2 text-sm text-slate-300 font-medium">
-                      <FileText className="w-5 h-5 text-slate-500 group-hover:text-[#0088ff] transition-colors" />
-                      <span><strong className="text-[#0088ff]">Upload file</strong> or drag and drop (PDF, DWG up to 50MB)</span>
-                      <input id="file-upload" name="file-upload" type="file" className="sr-only" />
-                    </div>
+                  <div className="flex items-center gap-3">
+                    <label 
+                      htmlFor="file-upload" 
+                      className="inline-flex items-center gap-2 px-3.5 py-2 bg-[#070a10] hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white text-xs font-mono font-bold rounded-xs cursor-pointer transition-colors"
+                    >
+                      <Paperclip className="w-3.5 h-3.5 text-[#0088ff]" />
+                      <span>{attachedFileName ? "Change File" : "Attach Blueprints / Specs"}</span>
+                      <input 
+                        id="file-upload" 
+                        name="file-upload" 
+                        type="file" 
+                        className="sr-only" 
+                        onChange={handleFileChange}
+                      />
+                    </label>
+
+                    {attachedFileName ? (
+                      <div className="flex items-center gap-1.5 text-xs font-mono text-emerald-400 bg-[#070a10] px-2.5 py-1.5 rounded-xs border border-emerald-500/30">
+                        <span className="truncate max-w-[150px]">{attachedFileName}</span>
+                        <button 
+                          type="button" 
+                          onClick={() => setAttachedFileName(null)}
+                          className="text-slate-400 hover:text-white ml-1"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ) : (
+                      <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider">
+                        PDF, DWG up to 50MB
+                      </span>
+                    )}
                   </div>
                 </div>
 
@@ -387,25 +446,26 @@ export default function ContactPage() {
                   </p>
                 )}
 
-                <div className="pt-4 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
-                  <div className="flex items-center gap-2 text-slate-400 text-xs font-mono">
-                    <CheckCircle2 className="w-4 h-4 text-[#0088ff]" />
-                    Secure SSL Encrypted Transmission
+                {/* Submit Row */}
+                <div className="pt-3 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+                  <div className="flex items-center gap-2 text-slate-400 text-[11px] font-mono">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#0088ff]" />
+                    Encrypted Transmission
                   </div>
                   <button 
                     type="submit" 
                     disabled={isSubmitting}
-                    className="w-full sm:w-auto rounded-xs bg-[#ea1f27] hover:bg-[#d41920] disabled:bg-slate-700 px-8 py-3.5 text-xs font-mono font-bold uppercase tracking-[0.15em] text-white shadow-lg transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-2"
+                    className="w-full sm:w-auto rounded-xs bg-[#ea1f27] hover:bg-[#d41920] disabled:bg-slate-700 px-7 py-3 text-xs font-mono font-bold uppercase tracking-[0.15em] text-white shadow-lg transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-2"
                   >
                     {isSubmitting ? (
                       <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
                         Transmitting...
                       </>
                     ) : (
                       <>
-                        <Send className="w-4 h-4" />
-                        Submit
+                        <Send className="w-3.5 h-3.5" />
+                        Submit Bid Request
                       </>
                     )}
                   </button>
@@ -419,18 +479,18 @@ export default function ContactPage() {
       </section>
 
       {/* ========================================= */}
-      {/* 3. MAP ONLY (NO HEADER)                   */}
+      {/* 3. MAP SECTION                            */}
       {/* ========================================= */}
-      <section className="relative z-20 py-16 bg-[#02060d] border-b border-slate-800/80 overflow-hidden">
+      <section className="relative z-20 py-12 sm:py-16 bg-[#02060d] border-b border-slate-800/80 overflow-hidden">
         <div className="absolute inset-0 z-0 tactical-graph-paper opacity-30 pointer-events-none" />
 
-        <div className="w-full px-6 lg:px-12 relative z-10">
+        <div className="w-full px-4 sm:px-6 lg:px-12 relative z-10">
           <OperationalMap />
         </div>
       </section>
 
       {/* ========================================= */}
-      {/*  SITE FOOTER                              */}
+      {/* 4. SITE FOOTER                            */}
       {/* ========================================= */}
       <Footer />
 

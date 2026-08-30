@@ -50,57 +50,60 @@ export default function Footer() {
       {/* Background Tactical Grid */}
       <div className="absolute inset-0 z-0 tactical-graph-paper opacity-20 pointer-events-none" />
 
-      <div className="relative z-10 max-w-[1600px] mx-auto px-6 sm:px-10 lg:px-16 pt-20 pb-12">
+      <div className="relative z-10 max-w-[1600px] mx-auto px-6 sm:px-10 lg:px-16 pt-16 lg:pt-20 pb-16 lg:pb-12">
         {/* Main 3-Column Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 pb-12 items-stretch">
           
           {/* COLUMN 1: Brand, Address, Direct Comm (4 Cols) */}
           <div className="lg:col-span-4 flex flex-col justify-between">
             <div>
-              {/* Scaled-Up Official IMC Logo */}
-              <Link href="/" className="inline-block mb-10">
-                <Image
-                  src="/imclogo.svg"
-                  alt="Interwest Mechanical Contractors Logo"
-                  width={280}
-                  height={80}
-                  className="h-16 sm:h-20 w-auto object-contain"
-                  priority
-                />
-              </Link>
+              {/* Top Row: Logo & Address Side-by-Side on Mobile */}
+              <div className="flex flex-row items-center justify-between gap-4 mb-6 lg:mb-0 lg:block">
+                {/* Scaled Official IMC Logo */}
+                <Link href="/" className="inline-block lg:mb-10 shrink-0">
+                  <Image
+                    src="/imclogo.svg"
+                    alt="Interwest Mechanical Contractors Logo"
+                    width={280}
+                    height={80}
+                    className="h-12 sm:h-16 lg:h-20 w-auto object-contain"
+                    priority
+                  />
+                </Link>
 
-              {/* Physical Shop Location */}
-              <div className="mb-8">
-                <span className="text-sm sm:text-base font-mono font-bold uppercase tracking-[0.2em] text-white block mb-2 flex items-center gap-2">
-                  <MapPin className="w-5 h-5 text-[#0088ff] shrink-0" /> National HQ 
-                </span>
-                <address className="not-italic font-mono text-sm text-slate-200 leading-relaxed">
-                  221 W. 900 N. Unit 5<br />
-                  Springville, UT 84663
-                </address>
+                {/* Physical Shop Location */}
+                <div className="lg:mb-8 text-right lg:text-left">
+                  <span className="text-xs sm:text-base font-mono font-bold uppercase tracking-[0.2em] text-white block mb-1 lg:mb-2 flex items-center justify-end lg:justify-start gap-1.5 lg:gap-2">
+                    <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-[#0088ff] shrink-0" /> National HQ 
+                  </span>
+                  <address className="not-italic font-mono text-xs sm:text-sm text-slate-200 leading-relaxed">
+                    221 W. 900 N. Unit 5<br />
+                    Springville, UT 84663
+                  </address>
+                </div>
               </div>
 
               {/* Direct Communication Channels */}
-              <div className="space-y-4">
+              <div className="space-y-4 pt-2 lg:pt-0">
                 <div>
-                  <span className="text-[13px] font-mono font-bold uppercase tracking-[0.2em] text-[#ea1f27] block mb-1">
+                  <span className="text-[12px] sm:text-[13px] font-mono font-bold uppercase tracking-[0.2em] text-[#ea1f27] block mb-1">
                     Phone
                   </span>
                   <a 
                     href={phoneHref} 
-                    className="font-mono text-base font-black text-white hover:text-[#0088ff] transition-colors"
+                    className="font-mono text-base font-black tracking-wide text-white hover:text-[#0088ff] transition-colors"
                   >
                     {phoneDisplay}
                   </a>
                 </div>
 
                 <div>
-                  <span className="text-[13px] font-mono font-bold uppercase tracking-[0.2em] text-[#0088ff] block mb-1">
+                  <span className="text-[12px] sm:text-[13px] font-mono font-bold uppercase tracking-[0.2em] text-[#0088ff] block mb-1">
                     Email
                   </span>
                   <a 
                     href={`mailto:${emailAddress}`} 
-                    className="font-mono text-sm text-slate-200 hover:text-white transition-colors break-all"
+                    className="font-mono text-sm text-slate-200 hover:text-white underline decoration-slate-600 hover:decoration-white underline-offset-4 transition-colors break-all"
                   >
                     {emailAddress}
                   </a>
@@ -117,91 +120,91 @@ export default function Footer() {
           </div>
 
           {/* COLUMN 2: Tactical Matrix & Legal Links (4 Cols) */}
-          <div className="lg:col-span-4 flex flex-col justify-between">
-            <div className="w-full max-w-md">
+          <div className="lg:col-span-4 flex flex-col justify-between items-center lg:items-start">
+            <div className="w-full max-w-xs sm:max-w-sm lg:max-w-md">
               
-              {/* Left-Aligned Header Lockup */}
-              <div className="mb-10 flex items-center justify-start w-full">
-  <div className="inline-flex items-center gap-2.5 sm:gap-3.5 font-black uppercase text-lg sm:text-2xl leading-none">
-    <span className="text-slate-500 tracking-[0.2em] sm:tracking-[0.24em]">BUILDERS</span>
-    <span className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-slate-300 text-white text-[10px] sm:text-xs font-sans font-black flex items-center justify-center shrink-0 shadow-sm">
-      OF
-    </span>
-    <span className="text-[#ea1f27] tracking-[0.2em] sm:tracking-[0.24em] -mr-[0.2em] sm:-mr-[0.24em]">
-      INDUSTRY
-    </span>
-  </div>
-</div>
+              {/* Header Lockup: Centered on Mobile, Left-Aligned on Desktop */}
+              <div className="mb-8 lg:mb-10 flex items-center justify-center lg:justify-start w-full">
+                <div className="inline-flex items-center gap-2.5 sm:gap-3.5 font-black uppercase text-lg sm:text-2xl leading-none">
+                  <span className="text-slate-500 tracking-[0.2em] sm:tracking-[0.24em]">BUILDERS</span>
+                  <span className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-slate-300 text-white text-[10px] sm:text-xs font-sans font-black flex items-center justify-center shrink-0 shadow-sm">
+                    OF
+                  </span>
+                  <span className="text-[#ea1f27] tracking-[0.2em] sm:tracking-[0.24em] -mr-[0.2em] sm:-mr-[0.24em]">
+                    INDUSTRY
+                  </span>
+                </div>
+              </div>
 
-              {/* Matrix Grid */}
-              <div className="grid grid-cols-2 gap-x-8 gap-y-8 font-mono text-xs w-full">
+              {/* Matrix Grid: Left-aligned text columns centered as a block in the viewport */}
+              <div className="grid grid-cols-2 gap-x-6 sm:gap-x-8 gap-y-6 sm:gap-y-8 font-mono text-xs w-full text-left">
                 
                 {/* Row 1 */}
                 <div>
-                  <span className="text-[12px] font-bold uppercase tracking-widest text-slate-500 block mb-3">
+                  <span className="text-[11px] sm:text-[12px] font-bold uppercase tracking-widest text-slate-500 block mb-2.5 sm:mb-3">
                     Structural
                   </span>
-                  <ul className="space-y-2 text-slate-300">
-                    <li><Link href="/what-we-do" className="hover:text-white transition-colors">Custom Skids</Link></li>
-                    <li><Link href="/what-we-do" className="hover:text-white transition-colors">Pipe Spool Fab</Link></li>
-                    <li><Link href="/what-we-do" className="hover:text-white transition-colors">Heavy Ductwork</Link></li>
+                  <ul className="space-y-1 text-slate-300">
+                    <li><Link href="/what-we-do" className="inline-block py-1 hover:text-white transition-colors">Custom Skids</Link></li>
+                    <li><Link href="/what-we-do" className="inline-block py-1 hover:text-white transition-colors">Pipe Spool Fab</Link></li>
+                    <li><Link href="/what-we-do" className="inline-block py-1 hover:text-white transition-colors">Heavy Ductwork</Link></li>
                   </ul>
                 </div>
 
                 <div>
-                  <span className="text-[12px] font-bold uppercase tracking-widest text-slate-500 block mb-3">
+                  <span className="text-[11px] sm:text-[12px] font-bold uppercase tracking-widest text-slate-500 block mb-2.5 sm:mb-3">
                     Sectors
                   </span>
-                  <ul className="space-y-2 text-slate-300">
-                    <li><Link href="/what-we-do" className="hover:text-white transition-colors">Biopharma</Link></li>
-                    <li><Link href="/what-we-do" className="hover:text-white transition-colors">Food & Beverage</Link></li>
-                    <li><Link href="/what-we-do" className="hover:text-white transition-colors">Industrial Mfg</Link></li>
+                  <ul className="space-y-1 text-slate-300">
+                    <li><Link href="/what-we-do" className="inline-block py-1 hover:text-white transition-colors">Biopharma</Link></li>
+                    <li><Link href="/what-we-do" className="inline-block py-1 hover:text-white transition-colors">Food & Beverage</Link></li>
+                    <li><Link href="/what-we-do" className="inline-block py-1 hover:text-white transition-colors">Industrial Mfg</Link></li>
                   </ul>
                 </div>
 
                 {/* Row 2 */}
                 <div>
-                  <span className="text-[12px] font-bold uppercase tracking-widest text-slate-500 block mb-3">
+                  <span className="text-[11px] sm:text-[12px] font-bold uppercase tracking-widest text-slate-500 block mb-2.5 sm:mb-3">
                     Atmospheric
                   </span>
-                  <ul className="space-y-2 text-slate-300">
-                    <li><Link href="/what-we-do" className="hover:text-white transition-colors">Cleanroom HVAC</Link></li>
-                    <li><Link href="/what-we-do" className="hover:text-white transition-colors">Central Plants</Link></li>
-                    <li><Link href="/what-we-do" className="hover:text-white transition-colors">Industrial Exhaust</Link></li>
+                  <ul className="space-y-1 text-slate-300">
+                    <li><Link href="/what-we-do" className="inline-block py-1 hover:text-white transition-colors">Cleanroom HVAC</Link></li>
+                    <li><Link href="/what-we-do" className="inline-block py-1 hover:text-white transition-colors">Central Plants</Link></li>
+                    <li><Link href="/what-we-do" className="inline-block py-1 hover:text-white transition-colors">Industrial Exhaust</Link></li>
                   </ul>
                 </div>
 
                 <div>
-                  <span className="text-[12px] font-bold uppercase tracking-widest text-slate-500 block mb-3">
+                  <span className="text-[11px] sm:text-[12px] font-bold uppercase tracking-widest text-slate-500 block mb-2.5 sm:mb-3">
                     Organization
                   </span>
-                  <ul className="space-y-2 text-slate-300">
-                    <li><Link href="/about" className="hover:text-white transition-colors">About IMC</Link></li>
-                    <li><Link href="/" className="hover:text-white transition-colors">Operations Map</Link></li>
-                    <li><Link href="/login" className="text-slate-300 hover:text-[#ea1f27] transition-colors">Staff Portal ↗</Link></li>
+                  <ul className="space-y-1 text-slate-300">
+                    <li><Link href="/about" className="inline-block py-1 hover:text-white transition-colors">About IMC</Link></li>
+                    <li><Link href="/" className="inline-block py-1 hover:text-white transition-colors">Operations Map</Link></li>
+                    <li><Link href="/login" className="inline-block py-1 text-slate-300 hover:text-[#ea1f27] transition-colors">Staff Portal ↗</Link></li>
                   </ul>
                 </div>
 
                 {/* Row 3 */}
                 <div>
-                  <span className="text-[12px] font-bold uppercase tracking-widest text-slate-500 block mb-3">
+                  <span className="text-[11px] sm:text-[12px] font-bold uppercase tracking-widest text-slate-500 block mb-2.5 sm:mb-3">
                     Piping
                   </span>
-                  <ul className="space-y-2 text-slate-300">
-                    <li><Link href="/what-we-do" className="hover:text-white transition-colors">Sanitary Stainless</Link></li>
-                    <li><Link href="/what-we-do" className="hover:text-white transition-colors">Orbital Welding</Link></li>
-                    <li><Link href="/what-we-do" className="hover:text-white transition-colors">Utility Distribution</Link></li>
+                  <ul className="space-y-1 text-slate-300">
+                    <li><Link href="/what-we-do" className="inline-block py-1 hover:text-white transition-colors">Sanitary Stainless</Link></li>
+                    <li><Link href="/what-we-do" className="inline-block py-1 hover:text-white transition-colors">Orbital Welding</Link></li>
+                    <li><Link href="/what-we-do" className="inline-block py-1 hover:text-white transition-colors">Utility Distribution</Link></li>
                   </ul>
                 </div>
 
                 <div>
-                  <span className="text-[12px] font-bold uppercase tracking-widest text-slate-500 block mb-3">
+                  <span className="text-[11px] sm:text-[12px] font-bold uppercase tracking-widest text-slate-500 block mb-2.5 sm:mb-3">
                     Safety
                   </span>
-                  <ul className="space-y-2 text-slate-300">
-                    <li><Link href="/what-we-do" className="hover:text-white transition-colors"><span className="text-slate-300">0.78 EMR Rating</span></Link></li>
-                    <li><Link href="/what-we-do" className="hover:text-white transition-colors">OSHA 30 Certified</Link></li>
-                    <li><Link href="/what-we-do" className="hover:text-white transition-colors">ASME / AWS Compliant</Link></li>
+                  <ul className="space-y-1 text-slate-300">
+                    <li><Link href="/what-we-do" className="inline-block py-1 hover:text-white transition-colors"><span className="text-slate-300">0.78 EMR Rating</span></Link></li>
+                    <li><Link href="/what-we-do" className="inline-block py-1 hover:text-white transition-colors">OSHA 30 Certified</Link></li>
+                    <li><Link href="/what-we-do" className="inline-block py-1 hover:text-white transition-colors">ASME / AWS Compliant</Link></li>
                   </ul>
                 </div>
 
