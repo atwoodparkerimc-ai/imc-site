@@ -13,7 +13,6 @@ import {
   ShieldCheck
 } from 'lucide-react';
 
-// Heavy 3D CAD design for the hero visual
 const AhuBlueprintAnimation = dynamic(
   () => import("../../components/ahu-blueprint-animation"),
   { 
@@ -46,11 +45,11 @@ export default function Home() {
     <main className="w-full relative overflow-x-hidden bg-[#0b0f19] text-slate-100 font-sans selection:bg-[#0088ff] selection:text-white">
 
       {/* ========================================= */}
-      {/* 1. HERO SECTION */}
+      {/* 1. HERO SECTION: SPLIT-SCREEN NATIVE APP */}
       {/* ========================================= */}
-      <section className="relative w-full lg:min-h-[calc(100vh-5rem)] flex flex-col lg:flex-row lg:items-center justify-between lg:justify-end bg-[#0b0f19] border-b border-slate-800/80 overflow-hidden py-6 sm:py-12 lg:py-0">
+      <section className="relative w-full h-[calc(100dvh-5rem)] lg:min-h-[calc(100vh-5rem)] lg:h-auto flex flex-col lg:block bg-[#0b0f19] border-b border-slate-800/80 overflow-hidden">
 
-        {/* Blueprint Grid Background Overlay */}
+        {/* Tactical Grid Background */}
         <div className="absolute inset-0 z-0 tactical-graph-paper opacity-30 pointer-events-none" />
 
         {/* Telemetry overlay - Desktop only */}
@@ -59,35 +58,73 @@ export default function Home() {
           Class A Mechanical Contractor
         </div>
 
-        {/* DESKTOP 3D POSITIONING (Left 60% of screen - 100% UNTOUCHED) */}
+        {/* ========================================= */}
+        {/* MOBILE LAYOUT (Docked HUD & Framed Canvas) */}
+        {/* ========================================= */}
+        
+        {/* 1. Top Area: Dedicated 3D Canvas 
+            Using flex-1 allows the 3D camera to auto-fit the ENTIRE model perfectly 
+            in the remaining vertical space without any scaling hacks or clipping. */}
+        <div className="block lg:hidden relative flex-1 w-full z-10 pointer-events-auto">
+          <AhuBlueprintAnimation />
+          {/* Blend edge into the HUD */}
+          <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[#040812] to-transparent pointer-events-none" />
+        </div>
+
+        {/* 2. Bottom Area: Full-Width Docked HUD */}
+        <div className="block lg:hidden relative z-30 w-full bg-[#040812]/85 backdrop-blur-2xl border-t border-slate-700/60 px-5 py-6 shadow-[0_-20px_50px_rgba(0,0,0,0.8)]">
+          <h1 className="text-[2.2rem] xs:text-[2.5rem] font-black tracking-tighter uppercase leading-[0.93] text-white drop-shadow-md mb-3">
+            The <span className="inline-block bg-gradient-to-r from-[#ea1f27] from-0% via-[#ea1f27] via-[28%] to-[#64748b]/80 to-[80%] bg-clip-text text-transparent">NERVOUS</span> <br />
+            <span className="inline-block bg-gradient-to-r from-[#64748b]/80 from-[20%] to-[#0088ff] to-[72%] to-[#0088ff] to-100% bg-clip-text text-transparent">SYSTEM</span> <br />
+            Of Heavy Industry.
+          </h1>
+
+          <p className="text-[12px] xs:text-[13px] text-slate-300 font-normal leading-snug line-clamp-3 mb-5">
+            We build the infrastructure that keeps the world running. From massive commercial air handling systems to high-purity process piping and complete production line conveyance.
+          </p>
+
+          <div className="flex flex-row items-center gap-3 w-full">
+            <Link 
+              href="/contact" 
+              className="flex-1 px-3 py-3.5 bg-[#ea1f27] hover:bg-[#d41920] text-white font-mono text-[11px] font-bold uppercase tracking-wider rounded-sm transition-all text-center whitespace-nowrap shadow-md active:scale-[0.98]"
+            >
+              Initiate Bid
+            </Link>
+            <Link 
+              href="/what-we-do" 
+              className="flex-1 px-3 py-3.5 bg-slate-900/80 hover:bg-slate-800 text-slate-100 border border-slate-700 hover:border-slate-500 font-mono text-[11px] font-bold uppercase tracking-wider rounded-sm transition-all text-center whitespace-nowrap shadow-md active:scale-[0.98]"
+            >
+              Capabilities
+            </Link>
+          </div>
+        </div>
+
+        {/* ========================================= */}
+        {/* DESKTOP LAYOUT (100% Untouched) */}
+        {/* ========================================= */}
         <div className="hidden lg:flex absolute inset-0 z-10 w-[60%] h-full items-center justify-center pointer-events-none">
           <div className="w-full h-full pointer-events-auto">
             <AhuBlueprintAnimation />
           </div>
         </div>
 
-        {/* CONTENT WRAPPER */}
-        <div className="relative z-20 w-full max-w-[1800px] mx-auto px-5 sm:px-12 lg:px-16 flex flex-col lg:flex-row lg:justify-end items-center">
-
-          {/* 1. HEADLINE & COPY BLOCK */}
-          <div className="w-full lg:w-[45%] xl:w-[35%] flex flex-col pt-2 sm:pt-6 lg:pt-0">
-            
-            <div className="hidden lg:inline-flex items-center gap-2 px-3 py-1 bg-[#ea1f27]/10 border border-[#ea1f27]/30 text-[#ea1f27] font-mono text-[10px] font-bold tracking-[0.2em] uppercase rounded-xs mb-6 lg:mb-8 w-fit">
+        <div className="hidden lg:flex relative z-20 w-full h-full min-h-[calc(100vh-5rem)] max-w-[1800px] mx-auto flex-col justify-center items-end pointer-events-none lg:px-16 lg:py-0">
+          <div className="w-[45%] xl:w-[35%] pointer-events-auto flex flex-col">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#ea1f27]/10 border border-[#ea1f27]/30 text-[#ea1f27] font-mono text-[10px] font-bold tracking-[0.2em] uppercase rounded-xs mb-8 w-fit">
               Interwest Mechanical Contractors
             </div>
 
-            <h1 className="text-[2.2rem] xs:text-[2.5rem] sm:text-5xl lg:text-[clamp(2.4rem,7.5vw,4.5rem)] font-black tracking-tighter uppercase leading-[0.93] text-white drop-shadow-md mb-3 sm:mb-6">
+            <h1 className="text-[clamp(2.4rem,7.5vw,4.5rem)] font-black tracking-tighter uppercase leading-[0.93] text-white drop-shadow-md mb-6">
               The <span className="inline-block bg-gradient-to-r from-[#ea1f27] from-0% via-[#ea1f27] via-[28%] to-[#64748b]/80 to-[80%] bg-clip-text text-transparent">NERVOUS</span> <br />
               <span className="inline-block bg-gradient-to-r from-[#64748b]/80 from-[20%] to-[#0088ff] to-[72%] to-[#0088ff] to-100% bg-clip-text text-transparent">SYSTEM</span> <br />
               Of Heavy Industry.
             </h1>
 
-            <p className="text-xs sm:text-base lg:text-xl text-slate-300 font-normal leading-relaxed max-w-xl mb-4 sm:mb-6 lg:mb-10">
-              We build the infrastructure that keeps the world running. From massive commercial air handling systems and high-purity process piping to complete production line conveyers and fillers. our crews execute the complex mechanical scopes heavy manufacturing depends on.
+            <p className="text-xl text-slate-300 font-normal leading-relaxed max-w-xl drop-shadow-md mb-10">
+              We build the infrastructure that keeps the world running. From massive commercial air handling systems and high-purity process piping to complete production line conveyers and fillers.
             </p>
 
-            {/* Desktop Action Buttons (Untouched) */}
-            <div className="hidden lg:flex flex-row items-center gap-4 w-full pt-1">
+            <div className="flex flex-row items-center gap-4 w-full pt-1">
               <Link 
                 href="/contact" 
                 className="w-auto px-8 py-4 bg-[#0b0f19]/80 hover:bg-white hover:text-[#0b0f19] text-white backdrop-blur-md border border-slate-600 hover:border-white font-mono text-xs font-bold uppercase tracking-widest rounded-xs transition-all text-center whitespace-nowrap shadow-sm active:scale-[0.98]"
@@ -101,34 +138,7 @@ export default function Home() {
                 Capabilities
               </Link>
             </div>
-
           </div>
-
-          {/* 2. MOBILE DEDICATED FULL-VIEW 3D CANVAS (Visible with room to show top AHU down to bottom conveyors) */}
-          <div className="block lg:hidden relative w-full h-[52vh] min-h-[380px] max-h-[500px] my-4 overflow-hidden rounded-sm bg-[#030914]/40 border border-slate-800/40">
-            <div className="w-full h-full relative">
-              <AhuBlueprintAnimation />
-            </div>
-          </div>
-
-          {/* 3. MOBILE ACTION BUTTONS (Cleanly positioned under the complete animation) */}
-          <div className="block lg:hidden w-full pt-2 pb-2">
-            <div className="flex flex-row items-center gap-3 w-full">
-              <Link 
-                href="/contact" 
-                className="flex-1 px-4 py-3.5 bg-[#0b0f19] hover:bg-white hover:text-[#0b0f19] text-white border border-slate-600 font-mono text-xs font-bold uppercase tracking-wider rounded-xs transition-all text-center whitespace-nowrap shadow-md active:scale-[0.98]"
-              >
-                Initiate Bid
-              </Link>
-              <Link 
-                href="/what-we-do" 
-                className="flex-1 px-4 py-3.5 bg-[#0b0f19] hover:bg-[#ea1f27]/10 text-slate-200 hover:text-[#ea1f27] border border-slate-700 hover:border-[#ea1f27] font-mono text-xs font-bold uppercase tracking-wider rounded-xs transition-all text-center whitespace-nowrap shadow-md active:scale-[0.98]"
-              >
-                Capabilities
-              </Link>
-            </div>
-          </div>
-
         </div>
 
       </section>
