@@ -106,7 +106,7 @@ export default function Home() {
 
             {/* 2. PARAGRAPH TEXT */}
             <p className="text-sm sm:text-lg lg:text-xl text-slate-200 font-normal leading-relaxed mb-8 sm:mb-12 lg:mb-10 max-w-xl drop-shadow-sm">
-              We build the infrastructure that keeps the world running. From massive commercial air handling systems to high-purity process piping, our crews execute the most complex mechanical scopes on time and under budget.
+             We build the infrastructure that keeps the world running. From massive commercial air handling systems and high-purity process piping to complete production line conveyers and fillers. our crews execute the complex mechanical scopes heavy manufacturing depends on.
             </p>
 
             {/* 3. SIDE-BY-SIDE BUTTONS (Desktop inline flow) */}
@@ -328,7 +328,7 @@ export default function Home() {
               <div className="w-full md:w-2/3">
                 <h3 className="text-xl sm:text-2xl lg:text-3xl font-black text-white uppercase tracking-tight mb-2 sm:mb-3">Heavy Industrial Infrastructure</h3>
                 <p className="text-slate-200 text-sm sm:text-base lg:text-lg leading-relaxed mb-4 sm:mb-6 font-normal">
-                  Carbon steel fabrication, mechanical equipment rigging, and heavy HVAC duct routing. We build structural skids, support stands, and robust utility drops for heavy manufacturing plants.
+                  Carbon, and stainless steel fabrication, mechanical equipment rigging, and heavy HVAC duct routing. We build structural skids, support stands, and robust utility drops for heavy manufacturing plants.
                 </p>
                 <div className="flex flex-wrap gap-2 sm:gap-2.5">
                   <span className="px-3 py-1 sm:px-3.5 sm:py-1.5 bg-[#070a10] border border-[#0088ff]/30 text-[#0088ff] font-mono text-[11px] sm:text-xs font-bold uppercase tracking-wider rounded-xs">Carbon Steel</span>
@@ -377,7 +377,7 @@ export default function Home() {
               <span className="text-slate-500">& Ammonia Piping.</span>
             </h2>
             <p className="text-slate-200 text-sm sm:text-base lg:text-lg leading-relaxed font-normal">
-              Heavy-duty thermal control for production plants and cold processing. From anhydrous ammonia distribution to contact plate freezer tie-ins, we build welded piping networks engineered for zero leaks under extreme thermal cycles.
+              Heavy-duty thermal control for production plants and cold processing. From anhydrous ammonia distribution to contact plate freezer install and maintenance, we build welded piping networks engineered for zero leaks under extreme thermal cycles.
             </p>
           </div>
 
@@ -388,7 +388,7 @@ export default function Home() {
             </div>
             <div className="bg-[#070a10] border border-slate-800 p-6 sm:p-8 rounded-lg shadow-inner">
               <h4 className="text-white font-black text-lg sm:text-xl uppercase tracking-tight mb-2 sm:mb-3">Plate Freezers & Chillers</h4>
-              <p className="text-slate-300 text-xs sm:text-sm lg:text-base leading-relaxed font-normal">Mechanical tie-ins, valve manifold packages, and custom hookups for horizontal/vertical plate freezers and secondary glycol circuits.</p>
+              <p className="text-slate-300 text-xs sm:text-sm lg:text-base leading-relaxed font-normal">New unit installs, mechanical tie-ins, valve manifold packages, and custom hookups for horizontal/vertical plate freezers and secondary glycol circuits.</p>
             </div>
             <div className="bg-[#070a10] border border-slate-800 p-6 sm:p-8 rounded-lg shadow-inner">
               <h4 className="text-white font-black text-lg sm:text-xl uppercase tracking-tight mb-2 sm:mb-3">Compressor & Skid Piping</h4>
@@ -475,3 +475,4 @@ export default function Home() {
     </main>
   );
 }
+

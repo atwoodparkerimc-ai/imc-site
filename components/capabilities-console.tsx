@@ -4,7 +4,7 @@ import { useState, useMemo, useRef } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Edges, Float } from "@react-three/drei";
 import * as THREE from "three";
-import { Flame, Wind, Factory, ShieldCheck, CheckCircle2, ChevronRight, DraftingCompass } from "lucide-react";
+import { Flame, Wind, Factory, CheckCircle2, ChevronRight, DraftingCompass } from "lucide-react";
 
 // ============================================================================
 // --- DATA & CONTENT ---
@@ -925,30 +925,6 @@ export default function CapabilitiesConsole() {
 
         </div>
 
-      </div>
-
-      {/* UNION BADGE SECTION (Anchored at the bottom below the console) */}
-      <div className="w-full mt-6 p-5 sm:p-6 rounded-lg border border-slate-800 bg-[#030914] flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-lg">
-        <div className="flex items-center gap-3">
-          <ShieldCheck className="w-6 h-6 text-emerald-500 shrink-0" />
-          <div>
-            <h4 className="font-mono text-xs font-bold text-white uppercase tracking-widest mb-0.5">
-              Certified Union Craftsmanship
-            </h4>
-            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
-              Fabricated and installed by certified trade members across all project jurisdictions.
-            </p>
-          </div>
-        </div>
-        
-        <div className="flex items-center gap-2.5 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-800">
-          <span className="px-3 py-1.5 bg-[#070a10] border border-slate-700 text-slate-200 font-mono text-xs font-bold uppercase tracking-wider rounded-xs">
-            UA Local 140
-          </span>
-          <span className="px-3 py-1.5 bg-[#070a10] border border-slate-700 text-slate-200 font-mono text-xs font-bold uppercase tracking-wider rounded-xs">
-            SMW Local 312
-          </span>
-        </div>
       </div>
 
     </div>
