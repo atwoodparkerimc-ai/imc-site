@@ -6,24 +6,14 @@ import Footer from "@/components/footer";
 import { motion } from "framer-motion";
 import { 
   ArrowRight, 
-  ShieldAlert, 
-  HardHat, 
-  Activity, 
   FileText, 
-  Cpu, 
-  Wrench, 
-  Truck, 
-  CheckSquare,
   Microscope,
   Factory,
   Droplets,
-  ShieldCheck,
-  Crosshair,
-  Monitor,
-  Settings2
+  ShieldCheck
 } from 'lucide-react';
 
-// Bring back the heavy 3D CAD design for the hero visual
+// Heavy 3D CAD design for the hero visual
 const AhuBlueprintAnimation = dynamic(
   () => import("../../components/ahu-blueprint-animation"),
   { 
@@ -49,7 +39,6 @@ const CERTIFICATIONS = [
 ];
 
 export default function Home() {
-  // Obfuscated contact variables to prevent automated spam bot scraping
   const phoneDisplay = ["(801)", "360-5735"].join(" ");
   const phoneHref = ["tel:8013605735"].join("");
 
@@ -57,59 +46,47 @@ export default function Home() {
     <main className="w-full relative overflow-x-hidden bg-[#0b0f19] text-slate-100 font-sans selection:bg-[#0088ff] selection:text-white">
 
       {/* ========================================= */}
-      {/* 1. HERO: FULL-BLEED 3D & RIGHT-ALIGNED TYPOGRAPHY */}
+      {/* 1. HERO SECTION */}
       {/* ========================================= */}
-      <section className="relative w-full min-h-[calc(100vh-5rem)] flex items-center bg-[#0b0f19] border-b border-slate-800/80 overflow-hidden py-10 sm:py-16 lg:py-0">
+      <section className="relative w-full lg:min-h-[calc(100vh-5rem)] flex flex-col lg:flex-row lg:items-center justify-between lg:justify-end bg-[#0b0f19] border-b border-slate-800/80 overflow-hidden py-6 sm:py-12 lg:py-0">
 
-        {/* Unified Background Grid */}
-        <div className="absolute inset-0 z-0 tactical-graph-paper opacity-30"></div>
+        {/* Blueprint Grid Background Overlay */}
+        <div className="absolute inset-0 z-0 tactical-graph-paper opacity-30 pointer-events-none" />
 
-        {/* Telemetry overlay - Left aligned using company red (hidden on mobile) */}
+        {/* Telemetry overlay - Desktop only */}
         <div className="hidden lg:flex absolute bottom-8 left-8 items-center gap-3 text-[10px] font-mono text-slate-500 uppercase tracking-widest z-30">
           <span className="w-1.5 h-1.5 bg-[#ea1f27] rounded-none animate-pulse" />
           Class A Mechanical Contractor
         </div>
 
-        {/* DESKTOP ONLY 3D POSITIONING (Left 60% of screen) */}
+        {/* DESKTOP 3D POSITIONING (Left 60% of screen - 100% UNTOUCHED) */}
         <div className="hidden lg:flex absolute inset-0 z-10 w-[60%] h-full items-center justify-center pointer-events-none">
           <div className="w-full h-full pointer-events-auto">
             <AhuBlueprintAnimation />
           </div>
         </div>
 
-        {/* MOBILE ONLY 3D WATERMARK BACKDROP */}
-        <div className="block lg:hidden absolute top-2 left-1/2 -translate-x-1/2 w-[125%] h-[80vh] min-h-[500px] max-h-[660px] z-10 pointer-events-none overflow-hidden opacity-45">
-          <div className="w-full h-full relative">
-            <AhuBlueprintAnimation />
-            {/* Subtle radial shadow to protect typography contrast */}
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_25%,#0b0f19_80%)]" />
-          </div>
-        </div>
-
         {/* CONTENT WRAPPER */}
-        <div className="relative z-20 w-full h-full max-w-[1800px] mx-auto px-6 sm:px-12 lg:px-16 flex justify-end items-center pointer-events-none">
+        <div className="relative z-20 w-full max-w-[1800px] mx-auto px-5 sm:px-12 lg:px-16 flex flex-col lg:flex-row lg:justify-end items-center">
 
-          <div className="w-full lg:w-[45%] xl:w-[35%] pointer-events-auto flex flex-col pt-4 sm:pt-10 lg:pt-0">
+          {/* 1. HEADLINE & COPY BLOCK */}
+          <div className="w-full lg:w-[45%] xl:w-[35%] flex flex-col pt-2 sm:pt-6 lg:pt-0">
             
-            {/* 1. TITLE & BADGE */}
-            <div className="mb-6 sm:mb-10 lg:mb-6">
-              <div className="hidden lg:inline-flex items-center gap-2 px-3 py-1 bg-[#ea1f27]/10 border border-[#ea1f27]/30 text-[#ea1f27] font-mono text-[10px] font-bold tracking-[0.2em] uppercase rounded-xs mb-6 lg:mb-8">
-                Interwest Mechanical Contractors
-              </div>
-
-              <h1 className="text-[clamp(2.4rem,7.5vw,4.5rem)] font-black tracking-tighter uppercase leading-[0.95] text-white drop-shadow-md">
-                The <span className="inline-block bg-gradient-to-r from-[#ea1f27] from-0% via-[#ea1f27] via-[28%] to-[#64748b]/80 to-[80%] bg-clip-text text-transparent">NERVOUS</span> <br />
-                <span className="inline-block bg-gradient-to-r from-[#64748b]/80 from-[20%] to-[#0088ff] to-[72%] to-[#0088ff] to-100% bg-clip-text text-transparent">SYSTEM</span> <br />
-                Of Heavy Industry.
-              </h1>
+            <div className="hidden lg:inline-flex items-center gap-2 px-3 py-1 bg-[#ea1f27]/10 border border-[#ea1f27]/30 text-[#ea1f27] font-mono text-[10px] font-bold tracking-[0.2em] uppercase rounded-xs mb-6 lg:mb-8 w-fit">
+              Interwest Mechanical Contractors
             </div>
 
-            {/* 2. PARAGRAPH TEXT */}
-            <p className="text-sm sm:text-lg lg:text-xl text-slate-200 font-normal leading-relaxed mb-8 sm:mb-12 lg:mb-10 max-w-xl drop-shadow-sm">
-             We build the infrastructure that keeps the world running. From massive commercial air handling systems and high-purity process piping to complete production line conveyers and fillers. our crews execute the complex mechanical scopes heavy manufacturing depends on.
+            <h1 className="text-[2.2rem] xs:text-[2.5rem] sm:text-5xl lg:text-[clamp(2.4rem,7.5vw,4.5rem)] font-black tracking-tighter uppercase leading-[0.93] text-white drop-shadow-md mb-3 sm:mb-6">
+              The <span className="inline-block bg-gradient-to-r from-[#ea1f27] from-0% via-[#ea1f27] via-[28%] to-[#64748b]/80 to-[80%] bg-clip-text text-transparent">NERVOUS</span> <br />
+              <span className="inline-block bg-gradient-to-r from-[#64748b]/80 from-[20%] to-[#0088ff] to-[72%] to-[#0088ff] to-100% bg-clip-text text-transparent">SYSTEM</span> <br />
+              Of Heavy Industry.
+            </h1>
+
+            <p className="text-xs sm:text-base lg:text-xl text-slate-300 font-normal leading-relaxed max-w-xl mb-4 sm:mb-6 lg:mb-10">
+              We build the infrastructure that keeps the world running. From massive commercial air handling systems and high-purity process piping to complete production line conveyers and fillers. our crews execute the complex mechanical scopes heavy manufacturing depends on.
             </p>
 
-            {/* 3. SIDE-BY-SIDE BUTTONS (Desktop inline flow) */}
+            {/* Desktop Action Buttons (Untouched) */}
             <div className="hidden lg:flex flex-row items-center gap-4 w-full pt-1">
               <Link 
                 href="/contact" 
@@ -126,30 +103,38 @@ export default function Home() {
             </div>
 
           </div>
-        </div>
 
-        {/* MOBILE ONLY: Buttons Pinned to Section Bottom */}
-        <div className="block lg:hidden absolute bottom-4 left-6 right-6 z-30 pointer-events-auto">
-          <div className="flex flex-row items-center gap-3 w-full">
-            <Link 
-              href="/contact" 
-              className="flex-1 px-4 py-3.5 bg-[#0b0f19]/80 hover:bg-white hover:text-[#0b0f19] text-white backdrop-blur-md border border-slate-600 hover:border-white font-mono text-[11px] sm:text-xs font-bold uppercase tracking-wider rounded-xs transition-all text-center whitespace-nowrap shadow-sm active:scale-[0.98]"
-            >
-              Initiate Bid
-            </Link>
-            <Link 
-              href="/what-we-do" 
-              className="flex-1 px-4 py-3.5 bg-[#0b0f19]/80 hover:bg-[#ea1f27]/10 text-slate-200 hover:text-[#ea1f27] backdrop-blur-md border border-slate-700 hover:border-[#ea1f27] font-mono text-[11px] sm:text-xs font-bold uppercase tracking-wider rounded-xs transition-all text-center whitespace-nowrap shadow-sm active:scale-[0.98]"
-            >
-              Capabilities
-            </Link>
+          {/* 2. MOBILE DEDICATED FULL-VIEW 3D CANVAS (Visible with room to show top AHU down to bottom conveyors) */}
+          <div className="block lg:hidden relative w-full h-[52vh] min-h-[380px] max-h-[500px] my-4 overflow-hidden rounded-sm bg-[#030914]/40 border border-slate-800/40">
+            <div className="w-full h-full relative">
+              <AhuBlueprintAnimation />
+            </div>
           </div>
+
+          {/* 3. MOBILE ACTION BUTTONS (Cleanly positioned under the complete animation) */}
+          <div className="block lg:hidden w-full pt-2 pb-2">
+            <div className="flex flex-row items-center gap-3 w-full">
+              <Link 
+                href="/contact" 
+                className="flex-1 px-4 py-3.5 bg-[#0b0f19] hover:bg-white hover:text-[#0b0f19] text-white border border-slate-600 font-mono text-xs font-bold uppercase tracking-wider rounded-xs transition-all text-center whitespace-nowrap shadow-md active:scale-[0.98]"
+              >
+                Initiate Bid
+              </Link>
+              <Link 
+                href="/what-we-do" 
+                className="flex-1 px-4 py-3.5 bg-[#0b0f19] hover:bg-[#ea1f27]/10 text-slate-200 hover:text-[#ea1f27] border border-slate-700 hover:border-[#ea1f27] font-mono text-xs font-bold uppercase tracking-wider rounded-xs transition-all text-center whitespace-nowrap shadow-md active:scale-[0.98]"
+              >
+                Capabilities
+              </Link>
+            </div>
+          </div>
+
         </div>
 
       </section>
 
       {/* ========================================= */}
-      {/* 2. INDUSTRIAL CERTIFICATIONS TICKER (GAPLESS DUAL-TRACK) */}
+      {/* 2. INDUSTRIAL CERTIFICATIONS TICKER */}
       {/* ========================================= */}
       <div className="border-b border-slate-800/80 bg-[#030914] py-3.5 sm:py-4 relative z-20 overflow-hidden shadow-inner flex select-none">
         <svg width="0" height="0" className="absolute">
@@ -213,13 +198,11 @@ export default function Home() {
       </div>
 
       {/* ========================================= */}
-      {/* 3. THE MANIFESTO / STATS STRIP            */}
+      {/* 3. THE MANIFESTO / STATS STRIP */}
       {/* ========================================= */}
       <section className="bg-[#030914] py-12 sm:py-16 lg:py-20 border-b border-slate-800/80 relative z-20 shadow-inner">
         <div className="max-w-[1400px] mx-auto px-6 lg:px-12">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 lg:gap-0 divide-y sm:divide-y-0 sm:divide-x divide-slate-800/80">
-
-            {/* Metric 01 */}
             <div className="pt-4 sm:pt-0 sm:px-8 flex flex-col justify-center items-center text-center lg:items-start lg:text-left group">
               <span className="text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tighter mb-1 font-mono">
                 30<span className="text-[#ea1f27] font-bold">+</span>
@@ -229,7 +212,6 @@ export default function Home() {
               </span>
             </div>
 
-            {/* Metric 02 */}
             <div className="pt-4 sm:pt-0 sm:px-8 flex flex-col justify-center items-center text-center lg:items-start lg:text-left group">
               <span className="text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tighter mb-1 font-mono">
                 450<span className="text-[#a54a5a] font-bold">+</span>
@@ -239,7 +221,6 @@ export default function Home() {
               </span>
             </div>
 
-            {/* Metric 03 */}
             <div className="pt-4 sm:pt-0 sm:px-8 flex flex-col justify-center items-center text-center lg:items-start lg:text-left group">
               <span className="text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tighter mb-1 font-mono">
                 14K<span className="text-[#64748b] font-bold">+</span>
@@ -249,7 +230,6 @@ export default function Home() {
               </span>
             </div>
 
-            {/* Metric 04 */}
             <div className="pt-4 sm:pt-0 sm:px-8 flex flex-col justify-center items-center text-center lg:items-start lg:text-left group">
               <span className="text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tighter mb-1 font-mono">
                 100<span className="text-[#0088ff] font-bold">%</span>
@@ -258,17 +238,15 @@ export default function Home() {
                 In-House Execution
               </span>
             </div>
-
           </div>
         </div>
       </section>
 
       {/* ========================================= */}
-      {/* 4. MISSION CRITICAL ENVIRONMENTS (SECTORS)*/}
+      {/* 4. MISSION CRITICAL ENVIRONMENTS */}
       {/* ========================================= */}
       <section className="relative z-20 py-12 sm:py-18 lg:py-24 px-6 lg:px-12 bg-[#070a10] border-b border-slate-800/80">
         <div className="max-w-[1400px] mx-auto relative z-10">
-          
           <div className="mb-8 sm:mb-12 lg:mb-16 flex flex-col items-start text-left lg:items-end lg:text-right">
             <h2 className="text-2xl sm:text-4xl lg:text-5xl font-black uppercase tracking-tight text-white mb-2 sm:mb-4">
               Mission-Critical <br className="hidden sm:block" />
@@ -280,8 +258,6 @@ export default function Home() {
           </div>
 
           <div className="space-y-6 sm:space-y-8">
-            
-            {/* Sector 1: High-Purity & Process Piping */}
             <div className="flex flex-col md:flex-row items-center gap-6 sm:gap-8 bg-[#030914] border border-slate-800 p-6 sm:p-8 rounded-lg shadow-inner text-left">
               <div className="w-full md:w-1/3 aspect-video bg-[#070a10] border border-slate-800 rounded-xs flex flex-col items-center justify-center gap-2 sm:gap-3">
                 <Microscope className="w-8 h-8 sm:w-10 sm:h-10 text-[#ea1f27]" />
@@ -300,7 +276,6 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Sector 2: Food & Beverage Facilities */}
             <div className="flex flex-col md:flex-row-reverse items-center gap-6 sm:gap-8 bg-[#030914] border border-slate-800 p-6 sm:p-8 rounded-lg shadow-inner text-left">
               <div className="w-full md:w-1/3 aspect-video bg-[#070a10] border border-slate-800 rounded-xs flex flex-col items-center justify-center gap-2 sm:gap-3">
                 <Droplets className="w-8 h-8 sm:w-10 sm:h-10 text-[#64748b]" />
@@ -319,7 +294,6 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Sector 3: Heavy Industrial Infrastructure */}
             <div className="flex flex-col md:flex-row items-center gap-6 sm:gap-8 bg-[#030914] border border-slate-800 p-6 sm:p-8 rounded-lg shadow-inner text-left">
               <div className="w-full md:w-1/3 aspect-video bg-[#070a10] border border-slate-800 rounded-xs flex flex-col items-center justify-center gap-2 sm:gap-3">
                 <Factory className="w-8 h-8 sm:w-10 sm:h-10 text-[#0088ff]" />
@@ -337,13 +311,12 @@ export default function Home() {
                 </div>
               </div>
             </div>
-
           </div>
         </div>
       </section>
 
       {/* ========================================= */}
-      {/* 5. CLIENT REPUTATION / ENTERPRISE EXPERIENCE */}
+      {/* 5. CLIENT REPUTATION */}
       {/* ========================================= */}
       <section className="py-10 sm:py-14 bg-[#02060d] border-b border-slate-800/80">
         <div className="max-w-[1400px] mx-auto px-6 lg:px-12">
@@ -364,7 +337,7 @@ export default function Home() {
       </section>
 
       {/* ========================================= */}
-      {/* 6. INDUSTRIAL REFRIGERATION & AMMONIA     */}
+      {/* 6. INDUSTRIAL REFRIGERATION & AMMONIA */}
       {/* ========================================= */}
       <section className="relative z-20 py-12 sm:py-18 lg:py-24 px-6 lg:px-12 bg-[#030914] border-b border-slate-800/80 text-left">
         <div className="max-w-[1400px] mx-auto">
@@ -399,7 +372,7 @@ export default function Home() {
       </section>
 
       {/* ========================================= */}
-      {/* 7. PACKAGING LINES, FILLERS & CONVEYANCE  */}
+      {/* 7. PACKAGING LINES, FILLERS & CONVEYANCE */}
       {/* ========================================= */}
       <section className="relative z-20 py-12 sm:py-18 lg:py-24 px-6 lg:px-12 bg-[#070a10] border-b border-slate-800/80">
         <div className="max-w-[1400px] mx-auto">
@@ -441,7 +414,7 @@ export default function Home() {
       </section>
 
       {/* ========================================= */}
-      {/* 8. HIGH-INTENT CONVERSION ANCHOR         */}
+      {/* 8. HIGH-INTENT CONVERSION ANCHOR */}
       {/* ========================================= */}
       <section className="relative z-20 bg-[#030914] py-14 sm:py-20 lg:py-32 px-6 lg:px-12 border-b border-slate-800/80 shadow-inner">
         <div className="max-w-[1000px] mx-auto text-center flex flex-col items-center">
@@ -468,11 +441,10 @@ export default function Home() {
       </section>
 
       {/* ========================================= */}
-      {/* 9. SITE FOOTER                            */}
+      {/* 9. SITE FOOTER */}
       {/* ========================================= */}
       <Footer />
 
     </main>
   );
 }
-

@@ -30,7 +30,7 @@ import HazardControlPanel from "./_components/HazardControlPanel";
 import CrewLocationManager from "./_components/CrewLocationManager";
 import EmployeeCertManager from "./_components/EmployeeCertManager";
 import AddEmployeeModal from "../dashboard/_components/AddEmployeeModal";
-import ManagerBriefingSelector from "./_components/ManagerBriefingSelector"; // Imported Selector
+import ManagerBriefingSelector from "./_components/ManagerBriefingSelector";
 
 interface DataBucket {
   name: string;
@@ -55,12 +55,12 @@ interface CustomTooltipProps {
 // --- ANIMATION CONFIGURATIONS ---
 const containerVariants: Variants = { 
   hidden: { opacity: 0 }, 
-  show: { opacity: 1, transition: { staggerChildren: 0.1 } } 
+  show: { opacity: 1, transition: { staggerChildren: 0.08 } } 
 };
 
 const itemVariants: Variants = { 
-  hidden: { opacity: 0, y: 20 }, 
-  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } } 
+  hidden: { opacity: 0, y: 15 }, 
+  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 120, damping: 15 } } 
 };
 
 // Strict 4 Core Recognition Categories
@@ -71,7 +71,7 @@ const REWARD_CATEGORIES = [
   "Process Improvement"
 ];
 
-// Master Color Palette Assignment Map (Using CSS Variables)
+// Master Color Palette Assignment Map
 const CATEGORY_COLOR_MAP: Record<string, string> = {
   "Safety Observation": "var(--color-metric-observation)",
   "Team Assistance": "var(--color-metric-assistance)",
@@ -293,12 +293,9 @@ export default function ManagerDashboard() {
   }, [rawSafeActs, locationUserIds, selectedLocation]);
 
   // --- RUNTIME MEMOIZED CALCULATIONS ---
-
-  // 1. VELOCITY CHART BREAKDOWN
   const velocityData = useMemo(() => {
     const buckets = getBuckets(tfVelocity);
 
-    // Stream 1: Safety Meetings & Briefings
     const filteredBriefings = filterByTime(
       locationFilteredAwards.filter(a => {
         const str = String(a.reason || '').toUpperCase();
@@ -321,14 +318,12 @@ export default function ManagerDashboard() {
       }
     });
 
-    // Stream 2: Peer Safe Acts
     const filteredActs = filterByTime(locationFilteredSafeActs, tfVelocity, 'created_at');
     filteredActs.forEach(a => {
       populateBucket(buckets, a.created_at, tfVelocity, 'safeActs', 1);
       populateBucket(buckets, a.created_at, tfVelocity, 'value', 1);
     });
 
-    // Streams 3-6: Manager Recognized Categories
     const filteredRecognitions = filterByTime(locationFilteredAwards, tfVelocity, 'created_at').filter(a => {
       const reasonUpper = String(a.reason || '').toUpperCase();
       return !reasonUpper.includes('DAILY SAFETY BRIEFING') && !reasonUpper.includes('REPORTED SAFE ACT');
@@ -354,7 +349,6 @@ export default function ManagerDashboard() {
     return buckets;
   }, [locationFilteredAwards, locationFilteredSafeActs, rawMeetings, tfVelocity]);
 
-  // 2. CATEGORY DIST (STRICT 4 CORE CATEGORIES)
   const categoryData = useMemo(() => {
     const filtered = filterByTime(locationFilteredAwards, tfCategory, 'created_at').filter(a => {
       const reasonUpper = String(a.reason || '').toUpperCase();
@@ -393,7 +387,6 @@ export default function ManagerDashboard() {
       }));
   }, [locationFilteredAwards, tfCategory]);
 
-  // 3. REPORTING RHYTHM
   const rhythmData = useMemo(() => {
     const filteredActs = filterByTime(locationFilteredSafeActs, tfRhythm, 'created_at');
     
@@ -423,7 +416,6 @@ export default function ManagerDashboard() {
     return buckets;
   }, [locationFilteredSafeActs, locationFilteredAwards, rawMeetings, tfRhythm]);
 
-  // 4A. ALL POINTS LEADERS
   const topGeneralContributors = useMemo(() => {
     const timeFiltered = filterByTime(rawAwards, tfTop, 'created_at');
     const map: Record<string, { name: string; points: number }> = {};
@@ -442,7 +434,6 @@ export default function ManagerDashboard() {
     return Object.values(map).sort((a, b) => b.points - a.points).slice(0, 5);
   }, [rawAwards, locationFilteredUsers, tfTop]);
 
-  // 4B. SAFE ACT: POINTS RECEIVED BY USER
   const topSafeActReceivedContributors = useMemo(() => {
     const filteredActs = filterByTime(locationFilteredSafeActs, tfTop, 'created_at');
     const map: Record<string, { name: string; points: number; count: number }> = {};
@@ -466,7 +457,6 @@ export default function ManagerDashboard() {
     return Object.values(map).sort((a, b) => b.points - a.points).slice(0, 5);
   }, [locationFilteredSafeActs, allUsers, tfTop]);
 
-  // 4C. SAFE ACT: POINTS AWARDED / SUBMITTED BY USER
   const topSafeActGiftedContributors = useMemo(() => {
     const filteredActs = filterByTime(locationFilteredSafeActs, tfTop, 'created_at');
     const map: Record<string, { name: string; points: number; count: number }> = {};
@@ -490,7 +480,6 @@ export default function ManagerDashboard() {
     return Object.values(map).sort((a, b) => b.points - a.points).slice(0, 5);
   }, [locationFilteredSafeActs, allUsers, tfTop]);
 
-  // 5. EMPLOYEE COMPLIANCE TRACKER
   const complianceData = useMemo(() => {
     if (!compUser) return [];
     
@@ -531,7 +520,6 @@ export default function ManagerDashboard() {
     return buckets;
   }, [rawSafeActs, rawAwards, rawMeetings, compUser, tfComp]);
 
-  // TIMEZONE-IMMUNE LOCAL DAY COMPARISON
   const globalStats = useMemo(() => {
     const now = new Date();
     const todayLocalStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
@@ -553,7 +541,7 @@ export default function ManagerDashboard() {
 
   if (isLoading) {
     return (
-      <div className="h-full flex flex-col justify-center items-center px-4 min-h-[calc(100vh-4rem)] relative font-mono text-slate-100">
+      <div className="flex flex-col justify-center items-center px-4 min-h-[100dvh] relative font-mono text-slate-100">
         <div className="w-2.5 h-2.5 animate-pulse mb-3 bg-[var(--color-brand-blue)]" />
         <p className="uppercase tracking-[0.25em] text-xs font-bold text-center text-[var(--color-brand-blue)]">
           Authenticating System Access Terminal...
@@ -563,26 +551,25 @@ export default function ManagerDashboard() {
   }
 
   return (
-    <div className="max-w-[1600px] mx-auto p-4 sm:p-8 pt-6 sm:pt-8 pb-24 min-h-full w-full relative font-mono text-slate-100">
+    <div className="max-w-[1600px] mx-auto p-3.5 sm:p-8 pt-4 sm:pt-8 pb-28 sm:pb-24 min-h-[100dvh] w-full relative font-mono text-slate-100">
       {/* TACTICAL BLUEPRINT GRID OVERLAY */}
       <div className="absolute inset-0 pointer-events-none opacity-[0.035] bg-[linear-gradient(to_right,#334155_1px,transparent_1px),linear-gradient(to_bottom,#334155_1px,transparent_1px)] bg-[size:32px_32px] z-0" />
 
       <motion.div variants={containerVariants} initial="hidden" animate="show" className="relative z-10">
         
         {/* GLOBAL COMMAND HEADER & NAVIGATION MATRIX */}
-        <motion.header variants={itemVariants} className="mb-6 sm:mb-8 print:hidden">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between md:justify-start gap-3 sm:gap-4">
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-100 uppercase tracking-tighter flex items-center gap-2.5">
+        <motion.header variants={itemVariants} className="mb-4 sm:mb-8 print:hidden">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between md:justify-start gap-2.5 sm:gap-4">
+              <h1 className="text-xl sm:text-3xl md:text-4xl font-black text-slate-100 uppercase tracking-tighter flex items-center gap-2">
                 <span className="w-2 h-2 rounded-none animate-pulse bg-[var(--color-brand-blue)]" />
                 Admin Portal
               </h1>
               
-              {/* STRICTLY PROVISION BUTTON FOR SUPER ADMIN */}
               {currentUserEmail?.toLowerCase() === "atwoodparkerimc@gmail.com" && (
                 <button
                   onClick={() => setIsAddEmployeeOpen(true)}
-                  className="w-full sm:w-auto px-4 py-2 text-white font-bold text-xs uppercase tracking-wider hover:bg-white hover:text-black transition-all cursor-pointer rounded-sm text-center bg-[var(--color-brand-blue)] shadow-[0_0_15px_rgba(0,136,255,0.25)]"
+                  className="w-full sm:w-auto px-3.5 sm:px-4 py-2 text-white font-bold text-xs uppercase tracking-wider hover:bg-white hover:text-black transition-all cursor-pointer rounded-sm text-center bg-[var(--color-brand-blue)] shadow-[0_0_15px_rgba(0,136,255,0.25)] active:scale-[0.99]"
                 >
                   + Provision Employee
                 </button>
@@ -590,12 +577,12 @@ export default function ManagerDashboard() {
             </div>
             
             {/* GLOBAL LOCATION SELECTOR */}
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 border p-2.5 rounded-sm shadow-md w-full md:w-auto bg-[var(--color-brand-card)] border-[var(--color-brand-border)]">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-2 border p-2 sm:p-2.5 rounded-sm shadow-md w-full md:w-auto bg-[var(--color-brand-card)] border-[var(--color-brand-border)]">
               <span className="text-[10px] sm:text-xs font-bold text-slate-300 uppercase tracking-widest pl-1 sm:pl-2">ACTIVE LOCATION:</span>
               <select 
                 value={selectedLocation}
                 onChange={(e) => setSelectedLocation(e.target.value)}
-                className="text-xs font-bold uppercase text-slate-200 p-2 outline-none cursor-pointer w-full sm:w-auto rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] transition-colors"
+                className="text-xs font-bold uppercase text-slate-200 p-2 outline-none cursor-pointer w-full sm:w-auto rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] transition-colors min-h-[40px] sm:min-h-0"
               >
                 <option value="ALL" className="bg-[var(--color-brand-card)]">-- ALL LOCATIONS (COMPANY-WIDE) --</option>
                 {locations.map(loc => (
@@ -612,7 +599,7 @@ export default function ManagerDashboard() {
           )}
 
           {/* SCROLLABLE MOBILE TAB BAR */}
-          <div className="flex gap-2 sm:gap-4 pb-px overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0 border-b border-[var(--color-brand-border)]">
+          <div className="flex gap-2 sm:gap-4 pb-px overflow-x-auto -mx-3.5 px-3.5 sm:mx-0 sm:px-0 border-b border-[var(--color-brand-border)] no-scrollbar">
             {[
               { id: 'safety', label: 'Safety & Hazards' }, 
               { id: 'users', label: 'Manage Users' }, 
@@ -623,7 +610,7 @@ export default function ManagerDashboard() {
             ].map(tab => (
               <button 
                 key={tab.id} onClick={() => setActiveTab(tab.id)}
-                className={`pb-3 px-3 sm:px-4 text-xs font-bold uppercase tracking-widest transition-colors whitespace-nowrap border-b-2 cursor-pointer ${
+                className={`pb-2.5 sm:pb-3 px-2.5 sm:px-4 text-[11px] sm:text-xs font-bold uppercase tracking-wider sm:tracking-widest transition-colors whitespace-nowrap border-b-2 cursor-pointer ${
                   activeTab === tab.id 
                     ? 'border-[var(--color-brand-blue)] text-[var(--color-brand-blue)]' 
                     : 'border-transparent text-slate-400 hover:text-slate-200'
@@ -636,14 +623,9 @@ export default function ManagerDashboard() {
         </motion.header>
 
         {/* TAB 1: SAFETY & HAZARDS CONTROL CENTER */}
-        <div className={activeTab === 'safety' ? 'block print:hidden space-y-6' : 'hidden'}>
-          {/* LOCATION-AWARE HAZARD CONTROL PANEL */}
+        <div className={activeTab === 'safety' ? 'block print:hidden space-y-4 sm:space-y-6' : 'hidden'}>
           <HazardControlPanel selectedLocation={selectedLocation} />
-
-          {/* MANAGER BRIEFING SELECTOR OVERRIDE PANEL */}
           <ManagerBriefingSelector locations={locations} />
-
-          {/* INITIATE RECOGNITION (FULL-WIDTH) */}
           <RecognitionForm 
             employees={allUsers} 
             onAwardSuccess={async () => {
@@ -654,37 +636,41 @@ export default function ManagerDashboard() {
           />
         </div>
 
-        {/* TAB 2: MANAGE USERS (TRAININGS & CREW TRANSFERS) */}
-        <div className={activeTab === 'users' ? 'block print:hidden space-y-6' : 'hidden'}>
-          <EmployeeCertManager 
-            supabase={supabase} 
-            allUsers={allUsers} 
-          />
+        {/* TAB 2: MANAGE USERS (CREW LOCATION ON TOP ON MOBILE, NORMAL ORDER ON DESKTOP) */}
+        <div className={activeTab === 'users' ? 'flex flex-col md:block print:hidden space-y-4 sm:space-y-6' : 'hidden'}>
+          <div className="order-2 md:order-1">
+            <EmployeeCertManager 
+              supabase={supabase} 
+              allUsers={allUsers} 
+            />
+          </div>
 
-          <CrewLocationManager
-            supabase={supabase}
-            allUsers={allUsers}
-            locations={locations}
-            onLocationUpdated={async () => {
-              const { data: { user } } = await supabase.auth.getUser();
-              if (user) await fetchMasterData(user.id);
-            }}
-          />
+          <div className="order-1 md:order-2">
+            <CrewLocationManager
+              supabase={supabase}
+              allUsers={allUsers}
+              locations={locations}
+              onLocationUpdated={async () => {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (user) await fetchMasterData(user.id);
+              }}
+            />
+          </div>
         </div>
 
         {/* TAB 3: TELEMETRY ENGINE & ANALYTICS */}
-        <div className={activeTab === 'telemetry' ? 'block print:hidden space-y-6' : 'hidden'}>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+        <div className={activeTab === 'telemetry' ? 'block print:hidden space-y-4 sm:space-y-6' : 'hidden'}>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4">
             {[
               { label: "Total Points Awarded", value: globalStats.totalAwarded.toLocaleString(), color: "text-[var(--color-metric-safe-acts)]" },
               { label: "Total Requisitions", value: globalStats.requisitions.toString(), color: "text-[var(--color-brand-blue)]" },
               { label: "Daily Safe Acts", value: globalStats.safeActsToday.toString(), color: "text-[var(--color-metric-meetings)]" },
               { label: "Active Team Members", value: globalStats.activeMembers.toString(), color: "text-slate-100" }
             ].map((stat, i) => (
-              <div key={`stat-card-${i}`} className="border p-4 sm:p-5 shadow-xl relative overflow-hidden group rounded-sm bg-[var(--color-brand-card)] border-[var(--color-brand-border)]">
+              <div key={`stat-card-${i}`} className="border p-3 sm:p-5 shadow-xl relative overflow-hidden group rounded-sm bg-[var(--color-brand-card)] border-[var(--color-brand-border)]">
                 <div className="absolute top-0 left-0 w-full h-[2px] bg-[var(--color-brand-border)] group-hover:bg-[var(--color-brand-blue)] transition-colors duration-300" />
-                <p className="text-slate-400 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest mb-1 sm:mb-2">{stat.label}</p>
-                <p className={`text-2xl sm:text-3xl font-black tabular-nums tracking-tighter ${stat.color}`}>{stat.value}</p>
+                <p className="text-slate-400 text-[8px] sm:text-[10px] font-bold uppercase tracking-wider sm:tracking-widest mb-1 sm:mb-2">{stat.label}</p>
+                <p className={`text-xl sm:text-3xl font-black tabular-nums tracking-tighter ${stat.color}`}>{stat.value}</p>
               </div>
             ))}
           </div>
@@ -726,7 +712,6 @@ export default function ManagerDashboard() {
             itemVariants={itemVariants} 
           />
 
-          {/* DEDICATED SAFE ACT AUDIT & LOG TRACKER */}
           <SafeActTracker 
             rawSafeActs={locationFilteredSafeActs}
             rawAwards={locationFilteredAwards}

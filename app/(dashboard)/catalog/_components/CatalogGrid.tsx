@@ -32,7 +32,7 @@ export default function CatalogGrid({
       variants={containerVariants}
       initial="hidden"
       animate="show"
-      className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-12 font-mono"
+      className="w-full grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 pb-12 font-mono"
     >
       {items.map((item) => {
         const canAfford = points >= item.cost_in_points;
@@ -56,7 +56,7 @@ export default function CatalogGrid({
             key={item.id}
             variants={itemVariants}
             onClick={() => onSelectItem(item)}
-            className="group relative w-full flex flex-col border transition-all duration-300 shadow-xl rounded-sm min-h-[420px] overflow-hidden cursor-pointer hover:-translate-y-1"
+            className="group relative w-full flex flex-col border transition-all duration-300 shadow-xl rounded-sm sm:min-h-[420px] overflow-hidden cursor-pointer hover:-translate-y-1 active:scale-[0.99]"
             style={{
               backgroundColor: "var(--color-brand-card)",
               borderColor: canAfford ? "color-mix(in srgb, var(--color-brand-green) 40%, transparent)" : "var(--color-brand-border)"
@@ -70,14 +70,14 @@ export default function CatalogGrid({
 
             {/* Featured Badge Spotlight */}
             {item.is_featured && (
-              <div className="absolute top-0 right-0 z-20 bg-amber-500 text-black font-black text-[8px] uppercase tracking-widest px-3 py-0.5 rounded-bl-sm shadow-md">
-                ★ FEATURED REWARD
+              <div className="absolute top-0 right-0 z-20 bg-amber-500 text-black font-black text-[7px] sm:text-[8px] uppercase tracking-wider sm:tracking-widest px-1.5 sm:px-3 py-0.5 rounded-bl-sm shadow-md">
+                ★ <span className="sm:inline hidden">FEATURED REWARD</span><span className="sm:hidden inline">FEATURED</span>
               </div>
             )}
 
             {/* Tactical Image Background & Gallery Swiper Container */}
             <div 
-              className="relative w-full h-48 overflow-hidden z-0 bg-[var(--color-brand-bg)]"
+              className="relative w-full h-28 sm:h-48 overflow-hidden z-0 bg-[var(--color-brand-bg)]"
             >
               <img 
                 src={currentDisplayImage} 
@@ -89,12 +89,12 @@ export default function CatalogGrid({
 
               {/* Multiple Image Gallery Dot Selectors */}
               {imageGallery.length > 1 && (
-                <div className="absolute bottom-2 left-0 right-0 z-20 flex justify-center gap-1.5 px-2">
+                <div className="absolute bottom-1.5 sm:bottom-2 left-0 right-0 z-20 flex justify-center gap-1 sm:gap-1.5 px-2">
                   {imageGallery.map((_, idx) => (
                     <button
                       key={idx}
                       onClick={(e) => handleSelectImageIndex(item.id, idx, e)}
-                      className={`w-2 h-2 rounded-full border transition-all cursor-pointer ${
+                      className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full border transition-all cursor-pointer ${
                         idx === activePhotoIndex 
                           ? 'bg-[var(--color-brand-blue)] border-[var(--color-brand-blue)] scale-125' 
                           : 'bg-black/60 border-slate-400 hover:bg-white'
@@ -114,13 +114,13 @@ export default function CatalogGrid({
             </div>
 
             {/* Card Content Details Section */}
-            <div className="relative z-10 p-5 flex flex-col flex-1 justify-between">
+            <div className="relative z-10 p-3 sm:p-5 flex flex-col flex-1 justify-between">
               
               <div>
                 {/* Category & Availability Badges */}
-                <div className="flex justify-between items-center mb-3">
+                <div className="flex justify-between items-center mb-2 sm:mb-3 gap-1">
                   <span 
-                    className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-300 px-2.5 py-0.5 border backdrop-blur-md rounded-sm"
+                    className="text-[8px] sm:text-[10px] font-bold uppercase tracking-wider sm:tracking-[0.2em] text-slate-300 px-1.5 sm:px-2.5 py-0.5 border backdrop-blur-md rounded-sm truncate"
                     style={{
                       backgroundColor: "color-mix(in srgb, var(--color-brand-bg) 80%, transparent)",
                       borderColor: "var(--color-brand-border)"
@@ -131,7 +131,7 @@ export default function CatalogGrid({
                   
                   {!hasStock ? (
                     <span 
-                      className="text-[9px] font-bold uppercase tracking-widest px-2.5 py-0.5 border rounded-sm"
+                      className="text-[7px] sm:text-[9px] font-bold uppercase tracking-wider sm:tracking-widest px-1.5 sm:px-2.5 py-0.5 border rounded-sm shrink-0"
                       style={{
                         color: "#eab308",
                         borderColor: "color-mix(in srgb, #eab308 40%, transparent)",
@@ -142,64 +142,64 @@ export default function CatalogGrid({
                     </span>
                   ) : canAfford ? (
                     <span 
-                      className="text-[9px] font-bold uppercase tracking-widest flex items-center gap-1.5 px-2.5 py-0.5 border rounded-sm"
+                      className="text-[7px] sm:text-[9px] font-bold uppercase tracking-wider sm:tracking-widest flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2.5 py-0.5 border rounded-sm shrink-0"
                       style={{
                         color: "var(--color-brand-green)",
                         borderColor: "color-mix(in srgb, var(--color-brand-green) 50%, transparent)",
                         backgroundColor: "color-mix(in srgb, var(--color-brand-green) 15%, transparent)"
                       }}
                     >
-                      <span className="w-1.5 h-1.5 rounded-full animate-pulse bg-[var(--color-brand-green)]" />
+                      <span className="w-1 sm:w-1.5 h-1 sm:h-1.5 rounded-full animate-pulse bg-[var(--color-brand-green)]" />
                       Authorized
                     </span>
                   ) : (
                     <span 
-                      className="text-[9px] font-bold uppercase tracking-widest flex items-center gap-1.5 px-2.5 py-0.5 border rounded-sm text-slate-400 border-[var(--color-brand-border)] bg-[var(--color-brand-bg)]"
+                      className="text-[7px] sm:text-[9px] font-bold uppercase tracking-wider sm:tracking-widest flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2.5 py-0.5 border rounded-sm text-slate-400 border-[var(--color-brand-border)] bg-[var(--color-brand-bg)] shrink-0"
                     >
-                      <span className="w-1.5 h-1.5 rounded-none bg-slate-500" />
+                      <span className="w-1 sm:w-1.5 h-1 sm:h-1.5 rounded-none bg-slate-500" />
                       Locked ({progress}%)
                     </span>
                   )}
                 </div>
 
                 {/* Title & Description Breakdown */}
-                <h3 className="font-black text-slate-100 uppercase tracking-tight text-lg sm:text-xl leading-snug mb-2">
+                <h3 className="font-black text-slate-100 uppercase tracking-tight text-xs sm:text-xl leading-tight sm:leading-snug mb-1 sm:mb-2 line-clamp-2">
                   {item.item_name}
                 </h3>
 
-                <p className="text-slate-400 text-xs font-sans leading-relaxed line-clamp-2 mb-4">
+                <p className="text-slate-400 text-[10px] sm:text-xs font-sans leading-snug sm:leading-relaxed line-clamp-2 mb-3 sm:mb-4">
                   {item.description || "No specific detailed description provided for this catalog item."}
                 </p>
               </div>
 
               {/* Price & Requisition Action Trigger */}
               <div>
-                <div className="flex items-end justify-between border-t border-[var(--color-brand-border)] pt-4 mb-4">
-                  <div className="flex items-end gap-1.5">
+                <div className="flex items-end justify-between border-t border-[var(--color-brand-border)] pt-2.5 sm:pt-4 mb-2.5 sm:mb-4">
+                  <div className="flex items-end gap-1 sm:gap-1.5">
                     <span 
-                      className={`font-black text-3xl tabular-nums tracking-tighter ${canAfford ? '' : 'text-slate-300'}`}
+                      className={`font-black text-lg sm:text-3xl tabular-nums tracking-tighter leading-none ${canAfford ? '' : 'text-slate-300'}`}
                       style={{ color: canAfford ? activeThemeColor : undefined }}
                     >
                       {item.cost_in_points}
                     </span>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pb-1">
+                    <span className="text-[8px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest pb-0.5 sm:pb-1">
                       PTS
                     </span>
                   </div>
 
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                  <span className="text-[8px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                     {item.quantity_in_stock} Units Left
                   </span>
                 </div>
 
                 {/* Progress Bar for Unaffordable Items */}
                 {!canAfford && hasStock && (
-                  <div className="w-full mb-3">
-                    <div className="flex justify-between text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-1">
+                  <div className="w-full mb-2 sm:mb-3">
+                    <div className="flex justify-between text-[7px] sm:text-[9px] font-bold uppercase tracking-wider sm:tracking-widest text-slate-400 mb-0.5 sm:mb-1">
                       <span>Points Goal</span>
                       <span className="tabular-nums">{points} / {item.cost_in_points} PTS ({progress}%)</span>
                     </div>
-                    <div className="w-full h-1.5 border rounded-full overflow-hidden bg-[var(--color-brand-bg)] border-[var(--color-brand-border)]">
+                    <div className="w-full h-1 sm:h-1.5 border rounded-full overflow-hidden bg-[var(--color-brand-bg)] border-[var(--color-brand-border)]">
                       <div 
                         className="h-full transition-all duration-700 bg-[var(--color-brand-blue)]"
                         style={{ width: `${progress}%` }}
@@ -214,13 +214,14 @@ export default function CatalogGrid({
                     e.stopPropagation();
                     onSelectItem(item);
                   }}
-                  className={`w-full font-bold uppercase tracking-[0.2em] text-[10px] py-3.5 transition-all duration-200 rounded-sm cursor-pointer border outline-none shadow-md ${
+                  className={`w-full font-bold uppercase tracking-wider sm:tracking-[0.2em] text-[9px] sm:text-[10px] py-2 sm:py-3.5 transition-all duration-200 rounded-sm cursor-pointer border outline-none shadow-md ${
                     canAfford 
                       ? 'bg-[var(--color-brand-green)] border-[var(--color-brand-green)] text-slate-950 hover:bg-white hover:border-white' 
                       : 'bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] text-slate-200 hover:border-[var(--color-brand-blue)] hover:text-white'
                   }`}
                 >
-                  {canAfford ? "View Details to Purchase ↗" : "View Details 🔒"}
+                  <span className="sm:hidden inline">{canAfford ? "Redeem ↗" : "Details 🔒"}</span>
+                  <span className="hidden sm:inline">{canAfford ? "View Details to Purchase ↗" : "View Details 🔒"}</span>
                 </button>
               </div>
 

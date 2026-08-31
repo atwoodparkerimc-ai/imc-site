@@ -25,7 +25,7 @@ import {
 import FirstLoginPasswordModal from "./_components/FirstLoginPasswordModal";
 import TermsAcceptanceModal from "./_components/TermsAcceptanceModal";
 
-// --- NEON PARTICLE CLOUD (Adapted for Dashboard) ---
+// --- NEON PARTICLE CLOUD ---
 const ParticleCloud = ({ r, g, b }: { r: number, g: number, b: number }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -43,7 +43,7 @@ const ParticleCloud = ({ r, g, b }: { r: number, g: number, b: number }) => {
     ctx.scale(2, 2);
 
     const particles: { x: number, y: number, r: number, a: number, speed: number, dist: number, baseAlpha: number, isWhite: boolean }[] = [];
-    const particleCount = 200; 
+    const particleCount = 120; // Reduced density for optimized mobile rendering
     const center = size / 2;
 
     for (let i = 0; i < particleCount; i++) {
@@ -88,7 +88,7 @@ const ParticleCloud = ({ r, g, b }: { r: number, g: number, b: number }) => {
   return <canvas ref={canvasRef} className="absolute inset-0 rounded-full mix-blend-screen pointer-events-none" />;
 };
 
-// --- SHARED GAUGE WIDGET (Dynamic Sizing & Branding) ---
+// --- SHARED GAUGE WIDGET ---
 function DashboardGauge({ 
   value, 
   label, 
@@ -96,9 +96,9 @@ function DashboardGauge({
   primaryColor, 
   shadowColor,
   rgb,
-  sizeClasses = "w-72 h-72",
-  valueClasses = "text-7xl",
-  labelClasses = "text-[10px]"
+  sizeClasses = "w-64 h-64 sm:w-72 sm:h-72",
+  valueClasses = "text-6xl sm:text-7xl",
+  labelClasses = "text-[9px] sm:text-[10px]"
 }: { 
   value: string | number; 
   label: string; 
@@ -114,7 +114,7 @@ function DashboardGauge({
     <div className="flex flex-col items-center justify-center w-full group cursor-default">
       <div className={`relative ${sizeClasses} flex items-center justify-center transition-transform duration-500 group-hover:scale-105`}>
         
-        {/* Primary Neon Orbit Ring (Forward) */}
+        {/* Primary Neon Orbit Ring */}
         <div 
           className="absolute -inset-1.5 rounded-full border border-transparent opacity-80 animate-[spin_8s_linear_infinite] pointer-events-none transition-all duration-300 group-hover:opacity-100"
           style={{
@@ -124,7 +124,7 @@ function DashboardGauge({
           }}
         />
         
-        {/* Secondary Accent Orbit Ring (Reverse) */}
+        {/* Secondary Accent Orbit Ring */}
         <div 
           className="absolute -inset-3.5 rounded-full border border-transparent opacity-60 animate-[spin_14s_linear_infinite_reverse] pointer-events-none transition-all duration-300 group-hover:opacity-90"
           style={{
@@ -154,7 +154,7 @@ function DashboardGauge({
           </div>
 
           {/* Label */}
-          <div className="relative z-10 mt-2">
+          <div className="relative z-10 mt-1 sm:mt-2">
             <span 
               className={`${labelClasses} font-black uppercase tracking-[0.14em] leading-tight block transition-colors duration-300`}
               style={{ color: primaryColor }}
@@ -162,7 +162,7 @@ function DashboardGauge({
               {label}
             </span>
             {subLabel && (
-              <span className="text-[9px] text-slate-400 mt-2 border-t border-[var(--color-brand-border)] pt-2 px-4 block tracking-widest uppercase font-bold">
+              <span className="text-[8px] sm:text-[9px] text-slate-400 mt-1 sm:mt-2 border-t border-[var(--color-brand-border)] pt-1.5 sm:pt-2 px-3 sm:px-4 block tracking-widest uppercase font-bold">
                 {subLabel}
               </span>
             )}
@@ -186,19 +186,18 @@ interface ActivityLogItem {
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { staggerChildren: 0.1, delayChildren: 0.1 } }
+  show: { opacity: 1, transition: { staggerChildren: 0.08, delayChildren: 0.05 } }
 };
 
 const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 12 },
-  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 120 } }
+  hidden: { opacity: 0, y: 10 },
+  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 140, damping: 18 } }
 };
 
 const DEFAULT_NEXT_GOAL = 250;
 const DEFAULT_LOCATION = "Springville Shop";
 const DEFAULT_INCIDENT_DATE = "2025-11-27T00:00:00";
 
-// --- MAIN PAGE ---
 export default function DashboardPage() {
   const router = useRouter();
   const [supabase] = useState(() => createClient());
@@ -223,7 +222,6 @@ export default function DashboardPage() {
         getActiveSiteBriefingId(supabase, empLocation)
       ]);
 
-      // Resolve site-specific briefing module or fallback to calendar rotation
       if (siteOverrideId) {
         const customBriefing = getBriefingById(siteOverrideId);
         if (customBriefing) {
@@ -238,7 +236,7 @@ export default function DashboardPage() {
       setYesterdayHazards(siteHazardScore);
 
       animate(displayPoints, userProfile.points_balance || 0, {
-        duration: 1.5,
+        duration: 1.2,
         ease: "easeOut",
         onUpdate: (latest) => setDisplayPoints(Math.round(latest)),
       });
@@ -283,7 +281,6 @@ export default function DashboardPage() {
     fetchData();
   }, [supabase, router]);
 
-  // Safe Days Logic
   const safeDaysCount = useMemo(() => {
     const startDate = new Date(DEFAULT_INCIDENT_DATE);
     const now = new Date();
@@ -293,7 +290,6 @@ export default function DashboardPage() {
     return days > 0 ? days : 0;
   }, []);
 
-  // Hazard Color Logic dynamically linked to hazard severity
   const hazardLevel = Math.min(Math.max(yesterdayHazards, 0), 5);
   const hazardColorTokens = useMemo(() => {
     if (hazardLevel <= 1) return { p: "var(--color-brand-green, #00ff9d)", shadow: "rgba(0, 255, 157, 0.6)", rgb: [0, 255, 157] as [number, number, number] }; 
@@ -304,7 +300,7 @@ export default function DashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="h-full flex flex-col justify-center items-center px-4 relative overflow-hidden min-h-screen font-mono bg-transparent">
+      <div className="flex flex-col justify-center items-center px-4 relative overflow-hidden min-h-[100dvh] font-mono bg-transparent">
         <p className="text-[var(--color-brand-blue)] animate-pulse uppercase tracking-widest text-xs font-black z-10">
           Initializing System Console Terminal...
         </p>
@@ -318,8 +314,12 @@ export default function DashboardPage() {
   const assignedLocationDisplay = (profile?.location || DEFAULT_LOCATION).toUpperCase();
 
   return (
-    <motion.div className="max-w-7xl mx-auto relative z-10 p-4 sm:p-8 pt-6 pb-20 w-full font-mono text-slate-100 bg-transparent" variants={containerVariants} initial="hidden" animate="show">
-      
+    <motion.div 
+      className="max-w-7xl mx-auto relative z-10 p-4 sm:p-8 pt-4 sm:pt-6 pb-28 sm:pb-20 w-full font-mono text-slate-100 bg-transparent min-h-[100dvh]"
+      variants={containerVariants} 
+      initial="hidden" 
+      animate="show"
+    >
       {/* 1. FIRST LOGIN PASSWORD RESET MODAL */}
       {profile && profile.must_change_password && (
         <FirstLoginPasswordModal 
@@ -341,35 +341,21 @@ export default function DashboardPage() {
       )}
 
       {/* HEADER BANNER */}
-      <motion.header variants={itemVariants} className="mb-8 text-center border border-[var(--color-brand-border)] tactical-card p-6 rounded-sm relative overflow-hidden shadow-lg">
+      <motion.header variants={itemVariants} className="mb-6 sm:mb-8 text-center border border-[var(--color-brand-border)] tactical-card p-4 sm:p-6 rounded-sm relative overflow-hidden shadow-lg">
         <div className="absolute top-0 left-0 w-full h-[2px] bg-[var(--color-brand-blue)]" />
-        <h1 className="text-3xl sm:text-4xl font-black text-slate-100 uppercase tracking-tighter">
+        <h1 className="text-2xl sm:text-4xl font-black text-slate-100 uppercase tracking-tighter">
           Welcome, {getDisplayName(profile)}!
         </h1>
-        <p className="text-slate-400 text-xs uppercase tracking-[0.25em] font-black mt-2">
+        <p className="text-slate-400 text-[10px] sm:text-xs uppercase tracking-[0.2em] sm:tracking-[0.25em] font-black mt-2">
           Assigned Site Location: <span className="text-[var(--color-brand-blue)] font-black">[{assignedLocationDisplay}]</span>
         </p>
       </motion.header>
 
       {/* TELEMETRY METRIC GAUGES */}
-      <motion.div variants={itemVariants} className="flex flex-col md:flex-row items-center justify-between gap-6 md:gap-4 mb-12 relative w-full px-2 bg-transparent">
+      <motion.div variants={itemVariants} className="flex flex-col md:flex-row items-center justify-between gap-6 md:gap-4 mb-8 sm:mb-12 relative w-full px-2 bg-transparent">
         
-        {/* Safe Days - Small Flank */}
-        <div className="flex-1 flex justify-center md:justify-start">
-          <DashboardGauge 
-            value={safeDaysCount} 
-            label="Safe Days" 
-            primaryColor="var(--color-brand-blue)" 
-            shadowColor="rgba(0, 136, 255, 0.6)" 
-            rgb={[0, 136, 255]}
-            sizeClasses="w-32 h-32"
-            valueClasses="text-3xl"
-            labelClasses="text-[8px]"
-          />
-        </div>
-
-        {/* Main Center Metric */}
-        <div className="flex-shrink-0 flex justify-center">
+        {/* Main Center Metric (Top on Mobile, Center on Desktop) */}
+        <div className="order-1 md:order-2 flex-shrink-0 flex justify-center w-full md:w-auto">
           <DashboardGauge 
             value={displayPoints} 
             label="Active Balance" 
@@ -377,35 +363,54 @@ export default function DashboardPage() {
             primaryColor="var(--color-brand-blue)" 
             shadowColor="rgba(0, 136, 255, 0.6)" 
             rgb={[0, 136, 255]} 
-            sizeClasses="w-72 h-72"
-            valueClasses="text-7xl"
-            labelClasses="text-[10px]"
+            sizeClasses="w-64 h-64 sm:w-72 sm:h-72"
+            valueClasses="text-6xl sm:text-7xl"
+            labelClasses="text-[9px] sm:text-[10px]"
           />
         </div>
 
-        {/* Hazards - Small Flank */}
-        <div className="flex-1 flex justify-center md:justify-end">
-          <DashboardGauge 
-            value={hazardLevel} 
-            label="Hazards" 
-            primaryColor={hazardColorTokens.p} 
-            shadowColor={hazardColorTokens.shadow} 
-            rgb={hazardColorTokens.rgb}
-            sizeClasses="w-32 h-32"
-            valueClasses="text-3xl"
-            labelClasses="text-[8px]"
-          />
+        {/* Mobile Dual Flanks Container (Side-by-side below main gauge) */}
+        <div className="order-2 md:order-1 flex md:contents w-full justify-center items-center gap-4 sm:gap-6">
+          
+          {/* Safe Days */}
+          <div className="flex-1 flex justify-center md:justify-start">
+            <DashboardGauge 
+              value={safeDaysCount} 
+              label="Safe Days" 
+              primaryColor="var(--color-brand-blue)" 
+              shadowColor="rgba(0, 136, 255, 0.6)" 
+              rgb={[0, 136, 255]}
+              sizeClasses="w-28 h-28 sm:w-32 sm:h-32"
+              valueClasses="text-2xl sm:text-3xl"
+              labelClasses="text-[7px] sm:text-[8px]"
+            />
+          </div>
+
+          {/* Hazards */}
+          <div className="order-3 flex-1 flex justify-center md:justify-end">
+            <DashboardGauge 
+              value={hazardLevel} 
+              label="Hazards" 
+              primaryColor={hazardColorTokens.p} 
+              shadowColor={hazardColorTokens.shadow} 
+              rgb={hazardColorTokens.rgb}
+              sizeClasses="w-28 h-28 sm:w-32 sm:h-32"
+              valueClasses="text-2xl sm:text-3xl"
+              labelClasses="text-[7px] sm:text-[8px]"
+            />
+          </div>
+
         </div>
 
       </motion.div>
 
       {/* QUICK ACTIONS ROUTER BLOCK */}
-      <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-8">
         
         {/* DAILY SAFETY CARD */}
         <Link 
           href="/safety" 
-          className={`group p-5 tactical-card-interactive border transition-all duration-300 relative overflow-hidden rounded-sm flex flex-col justify-center shadow-md hover:-translate-y-0.5 ${
+          className={`group p-4 sm:p-5 tactical-card-interactive border transition-all duration-300 relative overflow-hidden rounded-sm flex flex-col justify-center shadow-md active:scale-[0.99] ${
             isSafetyComplete 
               ? "border-[var(--color-brand-green,#00ff9d)]" 
               : "border-[var(--color-brand-blue)]"
@@ -418,7 +423,7 @@ export default function DashboardPage() {
           }`} />
           <div className="relative z-10 flex justify-between items-center w-full">
             <div>
-              <h3 className={`text-base font-black uppercase tracking-wide transition-colors ${
+              <h3 className={`text-sm sm:text-base font-black uppercase tracking-wide transition-colors ${
                 isSafetyComplete 
                   ? "text-[var(--color-brand-green,#00ff9d)]" 
                   : "text-[var(--color-brand-blue)]"
@@ -448,14 +453,14 @@ export default function DashboardPage() {
         </Link>
         
         {/* REWARDS CATALOG */}
-        <Link href="/catalog" className="group p-5 tactical-card-interactive border border-[var(--color-brand-border)] hover:border-[var(--color-brand-blue)] transition-all duration-300 relative overflow-hidden rounded-sm flex flex-col justify-center shadow-md hover:-translate-y-0.5">
+        <Link href="/catalog" className="group p-4 sm:p-5 tactical-card-interactive border border-[var(--color-brand-border)] hover:border-[var(--color-brand-blue)] transition-all duration-300 relative overflow-hidden rounded-sm flex flex-col justify-center shadow-md active:scale-[0.99]">
           <div className="absolute top-0 left-0 w-full h-[2px] bg-[var(--color-brand-border)] group-hover:bg-[var(--color-brand-blue)] transition-colors z-20" />
           <div className="absolute inset-0 z-0 opacity-30 group-hover:opacity-70 transition-opacity duration-500 overflow-hidden">
              <ParticleCloud r={0} g={136} b={255} />
           </div>
           <div className="relative z-10 flex justify-between items-center w-full">
             <div>
-              <h3 className="text-base font-black text-slate-100 uppercase tracking-wide">Rewards</h3>
+              <h3 className="text-sm sm:text-base font-black text-slate-100 uppercase tracking-wide">Rewards</h3>
               <p className="text-[10px] text-slate-400 uppercase tracking-wider font-black mt-1">Access Catalog</p>
             </div>
             <div className="w-8 h-8 border border-[var(--color-brand-border)] flex items-center justify-center bg-black/40 flex-shrink-0 group-hover:border-[var(--color-brand-blue)] transition-colors">
@@ -467,7 +472,7 @@ export default function DashboardPage() {
         {/* REPORT SAFE ACT CARD */}
         <Link 
           href="/reporting" 
-          className={`group p-5 tactical-card-interactive border transition-all duration-300 relative overflow-hidden rounded-sm flex flex-col justify-center shadow-md hover:-translate-y-0.5 ${
+          className={`group p-4 sm:p-5 tactical-card-interactive border transition-all duration-300 relative overflow-hidden rounded-sm flex flex-col justify-center shadow-md active:scale-[0.99] ${
             isReportingComplete 
               ? "border-[var(--color-brand-green,#00ff9d)]" 
               : "border-[var(--color-brand-blue)]"
@@ -480,7 +485,7 @@ export default function DashboardPage() {
           }`} />
           <div className="relative z-10 flex justify-between items-center w-full">
             <div>
-              <h3 className={`text-base font-black uppercase tracking-wide transition-colors ${
+              <h3 className={`text-sm sm:text-base font-black uppercase tracking-wide transition-colors ${
                 isReportingComplete 
                   ? "text-[var(--color-brand-green,#00ff9d)]" 
                   : "text-[var(--color-brand-blue)]"
@@ -514,22 +519,22 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
         {/* INTERACTIVE DAILY BRIEFING CARD */}
-        <motion.div variants={itemVariants} className="p-6 tactical-card border border-[var(--color-brand-border)] rounded-sm relative flex flex-col justify-between shadow-lg overflow-hidden">
+        <motion.div variants={itemVariants} className="p-5 sm:p-6 tactical-card border border-[var(--color-brand-border)] rounded-sm relative flex flex-col justify-between shadow-lg overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-[2px] bg-[var(--color-brand-blue)]" />
           <div>
-            <div className="flex justify-between items-center mb-4 border-b border-[var(--color-brand-border)] pb-3">
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 bg-[var(--color-brand-blue)] animate-pulse" />
-                <h3 className="text-[var(--color-brand-blue)] text-xs uppercase font-black tracking-widest">
+            <div className="flex justify-between items-center mb-4 border-b border-[var(--color-brand-border)] pb-3 gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="w-2 h-2 bg-[var(--color-brand-blue)] animate-pulse flex-shrink-0" />
+                <h3 className="text-[var(--color-brand-blue)] text-xs uppercase font-black tracking-widest truncate">
                   Daily Safety Module
                 </h3>
               </div>
               {isSafetyComplete ? (
-                <span className="text-[9px] font-black text-[var(--color-brand-green,#00ff9d)] border border-[var(--color-brand-green,#00ff9d)]/50 bg-[var(--color-brand-green,#00ff9d)]/10 px-2.5 py-0.5 uppercase tracking-wider">
-                  [COMPLETED TODAY]
+                <span className="text-[8px] sm:text-[9px] font-black text-[var(--color-brand-green,#00ff9d)] border border-[var(--color-brand-green,#00ff9d)]/50 bg-[var(--color-brand-green,#00ff9d)]/10 px-2 py-0.5 uppercase tracking-wider whitespace-nowrap">
+                  [COMPLETED]
                 </span>
               ) : (
-                <span className="text-[9px] font-black text-[var(--color-brand-bg)] bg-[var(--color-brand-blue)] px-2.5 py-0.5 uppercase tracking-wider">
+                <span className="text-[8px] sm:text-[9px] font-black text-[var(--color-brand-bg)] bg-[var(--color-brand-blue)] px-2 py-0.5 uppercase tracking-wider whitespace-nowrap">
                   [ACTION REQUIRED]
                 </span>
               )}
@@ -547,7 +552,7 @@ export default function DashboardPage() {
 
             {/* Core Policy Highlight Snippet */}
             {dailyBriefing.core_reminder ? (
-              <div className="p-3.5 mb-6 rounded-sm border bg-[var(--color-brand-red)]/10 border-[var(--color-brand-red)]/30 text-slate-200">
+              <div className="p-3 sm:p-3.5 mb-5 sm:mb-6 rounded-sm border bg-[var(--color-brand-red)]/10 border-[var(--color-brand-red)]/30 text-slate-200">
                 <p className="text-[10px] font-mono font-bold uppercase text-[var(--color-brand-red)] tracking-wider mb-1 flex items-center gap-1.5">
                   <span>🛑</span> Core Policy Reminder:
                 </p>
@@ -556,13 +561,13 @@ export default function DashboardPage() {
                 </p>
               </div>
             ) : (
-              <p className="text-slate-300 text-xs sm:text-sm font-sans mb-6 line-clamp-3 leading-relaxed">
+              <p className="text-slate-300 text-xs sm:text-sm font-sans mb-5 sm:mb-6 line-clamp-3 leading-relaxed">
                 {dailyBriefing.intro}
               </p>
             )}
           </div>
 
-          {/* Navigation Route to Safety Section */}
+          {/* Navigation Route */}
           {!isSafetyComplete ? (
             <Link
               href="/safety"
@@ -583,7 +588,7 @@ export default function DashboardPage() {
         </motion.div>
 
         {/* RECENT ACTIVITY CARD */}
-        <motion.div variants={itemVariants} className="p-6 tactical-card border border-[var(--color-brand-border)] rounded-sm flex flex-col shadow-lg relative overflow-hidden">
+        <motion.div variants={itemVariants} className="p-5 sm:p-6 tactical-card border border-[var(--color-brand-border)] rounded-sm flex flex-col shadow-lg relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-[2px] bg-[var(--color-brand-border)]" />
           <div className="flex justify-between items-center border-b border-[var(--color-brand-border)] pb-3 mb-4">
             <h3 className="text-slate-100 text-xs uppercase font-black tracking-widest">
@@ -594,15 +599,15 @@ export default function DashboardPage() {
             </Link>
           </div>
           
-          <div className="flex flex-col gap-3.5 flex-1 overflow-hidden">
+          <div className="flex flex-col gap-3 flex-1 overflow-hidden">
             {recentActivity.length === 0 ? (
               <p className="text-[10px] font-black text-slate-500 mt-2 py-4 text-center border border-dashed border-[var(--color-brand-border)]">
                 NO RECENT ACTIVITY
               </p>
             ) : recentActivity.map((log) => (
               <div key={log.id} className="flex justify-between items-start gap-3 border-b border-[var(--color-brand-border)]/50 pb-2.5 last:border-none last:pb-0">
-                <div className="flex-1">
-                  <p className="text-slate-100 text-xs font-black uppercase leading-snug">
+                <div className="flex-1 min-w-0">
+                  <p className="text-slate-100 text-xs font-black uppercase leading-snug truncate">
                     {log.action}
                   </p>
                   <p className="text-slate-500 text-[9px] mt-0.5 tracking-wider font-black font-mono">

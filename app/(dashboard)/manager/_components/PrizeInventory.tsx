@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { motion, Variants } from "framer-motion";
 
@@ -23,6 +23,9 @@ const CATEGORIES = ["Outdoor", "Apparel", "Tools", "Family", "Electronics"];
 export default function PrizeInventory({ inventory = [], fetchInventory, itemVariants }: PrizeInventoryProps) {
   const [supabase] = useState(() => createClient());
 
+  // Form Container Ref for smooth auto-scroll on mobile
+  const formRef = useRef<HTMLDivElement>(null);
+
   // Editing vs Adding Mode State
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -37,7 +40,7 @@ export default function PrizeInventory({ inventory = [], fetchInventory, itemVar
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-  // Load item into form for editing
+  // Load item into form for editing & auto-scroll on mobile
   const startEditing = (item: InventoryItem) => {
     setEditingId(item.id);
     setItemName(item.item_name || "");
@@ -55,6 +58,13 @@ export default function PrizeInventory({ inventory = [], fetchInventory, itemVar
       setItemImages([""]);
     }
     setFormError(null);
+
+    // Auto-scroll directly to the editor on mobile
+    if (typeof window !== "undefined" && window.innerWidth < 1024) {
+      setTimeout(() => {
+        formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 50);
+    }
   };
 
   // Reset form back to "Add" mode
@@ -144,219 +154,122 @@ export default function PrizeInventory({ inventory = [], fetchInventory, itemVar
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 font-mono text-slate-100">
-      {/* Form: Add or Edit Store Item */}
+    <div className="flex flex-col lg:grid lg:grid-cols-3 gap-6 font-mono text-slate-100">
+      
+      {/* 1. CURRENT STOCK (ORDER-1 ON MOBILE, LG:ORDER-2 ON DESKTOP) */}
       <motion.div 
         variants={itemVariants} 
-        className="border p-4 sm:p-6 shadow-2xl relative overflow-hidden group rounded-sm bg-[var(--color-brand-card)] border-[var(--color-brand-border)]"
-      >
-        {/* Top Accent Line (Amber when editing, Blue when creating) */}
-        <div 
-          className={`absolute top-0 left-0 w-full h-[2px] transition-colors duration-300 ${
-            editingId ? "bg-amber-400" : "bg-[var(--color-brand-blue)]"
-          }`} 
-        />
-        
-        <div className="mb-6 border-b pb-4 border-[var(--color-brand-border)] flex justify-between items-start">
-          <div>
-            <h2 className="text-slate-100 font-black uppercase tracking-widest text-sm sm:text-base flex items-center gap-2">
-              <span className={`w-2 h-2 rounded-none animate-pulse ${editingId ? "bg-amber-400" : "bg-[var(--color-brand-blue)]"}`} />
-              {editingId ? "Edit Catalog Item" : "Provision Store Item"}
-            </h2>
-            <p className="text-[11px] sm:text-xs text-slate-400 font-bold uppercase tracking-wider mt-0.5">
-              {editingId ? "Update Valuation, Inventory Stock & Media Assets" : "Add Rich Product Details, Gallery Photos & Specs"}
-            </p>
-          </div>
-          {editingId && (
-            <button 
-              type="button"
-              onClick={cancelEditing}
-              className="text-[10px] font-bold uppercase text-slate-400 hover:text-white px-2 py-1 border border-slate-700 bg-slate-900 rounded-sm cursor-pointer"
-            >
-              Cancel
-            </button>
-          )}
-        </div>
-        
-        {formError && (
-          <div className="mb-4 p-3 border text-xs font-bold uppercase tracking-wider rounded-sm bg-amber-500/10 border-amber-500/50 text-[var(--color-metric-observation)]">
-            {formError}
-          </div>
-        )}
-
-        <form onSubmit={handleFormSubmit} className="space-y-4">
-          <div>
-            <label className="text-[10px] font-bold uppercase text-slate-300 tracking-widest block mb-1">Item Title</label>
-            <input 
-              type="text" 
-              value={itemName} 
-              onChange={(e) => setItemName(e.target.value)} 
-              required 
-              placeholder="e.g. Carhartt Heavyweight Hoodie" 
-              className="w-full p-3 text-slate-100 text-xs font-bold uppercase outline-none transition-colors rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)]" 
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-[10px] font-bold uppercase text-slate-300 tracking-widest block mb-1">Point Valuation</label>
-              <input 
-                type="number" 
-                value={itemCost} 
-                onChange={(e) => setItemCost(e.target.value)} 
-                required 
-                placeholder="Points" 
-                className="w-full p-3 text-slate-100 text-xs font-bold uppercase outline-none transition-colors rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)]" 
-              />
-            </div>
-
-            <div>
-              <label className="text-[10px] font-bold uppercase text-slate-300 tracking-widest block mb-1">Stock Quantity</label>
-              <input 
-                type="number" 
-                value={itemStock} 
-                onChange={(e) => setItemStock(e.target.value)} 
-                required 
-                placeholder="In Stock QTY" 
-                className="w-full p-3 text-slate-100 text-xs font-bold uppercase outline-none transition-colors rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)]" 
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="text-[10px] font-bold uppercase text-slate-300 tracking-widest block mb-1">Category Classification</label>
-            <select
-              value={itemCategory}
-              onChange={(e) => setItemCategory(e.target.value)}
-              className="w-full p-3 text-slate-100 text-xs font-bold uppercase outline-none cursor-pointer rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)]"
-            >
-              {CATEGORIES.map(cat => (
-                <option key={cat} value={cat} style={{ backgroundColor: "var(--color-brand-card)" }}>
-                  {cat}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="text-[10px] font-bold uppercase text-slate-300 tracking-widest block mb-1">
-              Product Description & Specs
-            </label>
-            <textarea 
-              value={itemDescription}
-              onChange={(e) => setItemDescription(e.target.value)}
-              placeholder="Detail sizing, material quality, warranty, or pickup instructions..."
-              className="w-full p-3 text-slate-100 text-xs font-sans h-24 outline-none resize-none transition-colors rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)]"
-            />
-          </div>
-
-          {/* Photo Gallery Link Array */}
-          <div>
-            <div className="flex justify-between items-center mb-1">
-              <label className="text-[10px] font-bold uppercase text-slate-300 tracking-widest block">
-                Photo Gallery URLs
-              </label>
-              <button
-                type="button"
-                onClick={addImageField}
-                className="text-[9px] font-bold uppercase text-[var(--color-brand-blue)] hover:underline cursor-pointer"
-              >
-                + Add Photo URL
-              </button>
-            </div>
-
-            <div className="space-y-2">
-              {itemImages.map((imgUrl, index) => (
-                <div key={index} className="flex gap-2 items-center">
-                  <input 
-                    type="url" 
-                    value={imgUrl} 
-                    onChange={(e) => handleImageChange(index, e.target.value)} 
-                    placeholder={index === 0 ? "Primary Image URL (HTTPS)" : `Gallery Photo #${index + 1} URL`} 
-                    className="flex-1 p-2.5 text-slate-100 text-xs font-mono outline-none transition-colors rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)]" 
-                  />
-                  {itemImages.length > 1 && (
-                    <button 
-                      type="button"
-                      onClick={() => removeImageField(index)}
-                      className="px-2.5 py-2 text-xs font-bold text-[var(--color-brand-red)] border border-[var(--color-brand-border)] hover:bg-red-950/40 rounded-sm cursor-pointer"
-                    >
-                      ✕
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Featured Spotlight Toggle */}
-          <div className="flex items-center gap-3 pt-2">
-            <input 
-              type="checkbox"
-              id="isFeatured"
-              checked={isFeatured}
-              onChange={(e) => setIsFeatured(e.target.checked)}
-              className="w-4 h-4 cursor-pointer accent-[var(--color-brand-blue)]"
-            />
-            <label htmlFor="isFeatured" className="text-xs font-bold uppercase tracking-wider text-slate-200 cursor-pointer">
-              Feature Item in Store Banner
-            </label>
-          </div>
-
-          <div className="flex gap-2 pt-2">
-            {editingId && (
-              <button
-                type="button"
-                onClick={cancelEditing}
-                className="flex-1 py-3.5 border border-slate-700 text-slate-300 font-bold uppercase tracking-wider text-xs hover:bg-slate-800 transition-colors rounded-sm cursor-pointer"
-              >
-                Cancel
-              </button>
-            )}
-            <button 
-              type="submit" 
-              disabled={isSubmitting}
-              className={`flex-1 py-3.5 font-bold uppercase tracking-wider text-xs transition-all duration-200 cursor-pointer rounded-sm ${
-                editingId 
-                  ? "bg-amber-400 hover:bg-white text-black shadow-[0_0_15px_rgba(251,191,36,0.25)]" 
-                  : "bg-[var(--color-brand-blue)] hover:bg-white hover:text-black text-white shadow-[0_0_15px_rgba(0,136,255,0.25)]"
-              }`}
-            >
-              {isSubmitting 
-                ? "Saving..." 
-                : editingId 
-                ? "✓ Save Catalog Changes ↗" 
-                : "+ Commit Item To Catalog ↗"}
-            </button>
-          </div>
-        </form>
-      </motion.div>
-
-      {/* Current Stock Table */}
-      <motion.div 
-        variants={itemVariants} 
-        className="lg:col-span-2 border p-4 sm:p-6 shadow-2xl relative overflow-hidden group rounded-sm bg-[var(--color-brand-card)] border-[var(--color-brand-border)] flex flex-col justify-between"
+        className="order-1 lg:order-2 lg:col-span-2 border p-3.5 sm:p-6 shadow-2xl relative overflow-hidden group rounded-sm bg-[var(--color-brand-card)] border-[var(--color-brand-border)] flex flex-col justify-between"
       >
         <div className="absolute top-0 left-0 w-full h-[2px] bg-[var(--color-brand-border)] group-hover:bg-[var(--color-brand-blue)] transition-colors duration-300" />
 
         <div>
-          <div className="flex flex-col xs:flex-row justify-between items-start xs:items-center gap-2 mb-6 border-b pb-4 border-[var(--color-brand-border)]">
+          <div className="flex justify-between items-center mb-4 sm:mb-6 border-b pb-3 sm:pb-4 border-[var(--color-brand-border)]">
             <div>
-              <h2 className="text-slate-100 font-black uppercase tracking-widest text-sm sm:text-base flex items-center gap-2">
-                <span className="w-2 h-2 bg-[var(--color-brand-blue)] rounded-none animate-pulse" />
+              <h2 className="text-slate-100 font-black uppercase tracking-widest text-xs sm:text-base flex items-center gap-2">
+                <span className="w-2 h-2 bg-[var(--color-brand-blue)] rounded-none animate-pulse flex-shrink-0" />
                 Active Store Catalog
               </h2>
-              <p className="text-[11px] sm:text-xs text-slate-400 font-bold uppercase tracking-wider mt-0.5">
+              <p className="text-[10px] sm:text-xs text-slate-400 font-bold uppercase tracking-wider mt-0.5">
                 Manage Details, Photo Assets & Available Stock
               </p>
             </div>
-            <span className="text-xs text-slate-300 font-bold uppercase">
-              {(inventory || []).length} Items Indexed
+            <span className="text-[10px] sm:text-xs text-slate-300 font-bold uppercase">
+              {(inventory || []).length} Items
             </span>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse min-w-[500px]">
+          {/* MOBILE CARD VIEW */}
+          <div className="block lg:hidden space-y-3">
+            {(inventory || []).length > 0 ? (
+              inventory.map(item => {
+                const photosCount = (item.images?.length || (item.image_url ? 1 : 0));
+                const primaryThumb = item.images?.[0] || item.image_url;
+                const isCurrentlyEditing = editingId === item.id;
+
+                return (
+                  <div
+                    key={`mob-${item.id}`}
+                    className={`p-3 border rounded-sm transition-all duration-150 flex gap-3 items-start bg-[var(--color-brand-bg)] ${
+                      isCurrentlyEditing
+                        ? "border-amber-400 bg-amber-400/5 shadow-[0_0_10px_rgba(251,191,36,0.15)]"
+                        : "border-[var(--color-brand-border)]"
+                    }`}
+                  >
+                    {/* Fixed Product Thumbnail */}
+                    <div className="relative w-16 h-16 shrink-0 bg-black/60 border border-[var(--color-brand-border)] rounded-xs overflow-hidden flex items-center justify-center">
+                      {primaryThumb ? (
+                        <img 
+                          src={primaryThumb} 
+                          alt={item.item_name}
+                          className="w-full h-full object-cover" 
+                        />
+                      ) : (
+                        <span className="text-[8px] text-slate-500 font-bold uppercase text-center p-1">No Image</span>
+                      )}
+                      {item.is_featured && (
+                        <div className="absolute top-0 right-0 bg-amber-500 text-black font-black text-[6px] px-1 py-0.2">
+                          ★
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Metadata & Actions */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between items-start gap-1">
+                        <h4 className="text-xs font-black uppercase text-slate-100 truncate">
+                          {item.item_name}
+                        </h4>
+                        <span className="text-[9px] uppercase font-bold text-slate-400 px-1.5 py-0.5 border border-[var(--color-brand-border)] bg-[var(--color-brand-card)] shrink-0">
+                          {item.category || "General"}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-3 mt-1.5 text-[11px] font-bold tabular-nums">
+                        <span className="text-[var(--color-metric-safe-acts)]">
+                          {item.cost_in_points} PTS
+                        </span>
+                        <span className="text-slate-600">•</span>
+                        <span className={item.quantity_in_stock > 0 ? 'text-slate-300' : 'text-[var(--color-metric-assistance)]'}>
+                          {item.quantity_in_stock > 0 ? `${item.quantity_in_stock} in stock` : 'Out of Stock'}
+                        </span>
+                      </div>
+
+                      <div className="flex justify-between items-center mt-2.5 pt-2 border-t border-[var(--color-brand-border)]/60 text-[10px] font-bold uppercase">
+                        <span className="text-[9px] text-[var(--color-brand-blue)]">
+                          📷 {photosCount} {photosCount === 1 ? 'Asset' : 'Assets'}
+                        </span>
+                        <div className="space-x-3">
+                          <button
+                            type="button"
+                            onClick={() => startEditing(item)}
+                            className="text-[var(--color-brand-blue)] hover:underline active:scale-95 cursor-pointer font-bold"
+                          >
+                            Edit ↗
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteItem(item.id)}
+                            className="text-[var(--color-brand-red)] hover:underline active:scale-95 cursor-pointer font-bold"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="py-8 text-center text-slate-500 text-xs font-bold uppercase tracking-widest border border-dashed border-[var(--color-brand-border)]">
+                [ NO ITEMS CURRENTLY INDEXED ]
+              </div>
+            )}
+          </div>
+
+          {/* DESKTOP TABLE VIEW */}
+          <div className="hidden lg:block overflow-x-auto">
+            <table className="w-full text-left text-xs border-collapse">
               <thead>
                 <tr className="text-slate-400 text-[10px] font-bold uppercase tracking-wider border-b bg-[var(--color-brand-bg)] border-[var(--color-brand-border)]">
                   <th className="py-3 px-3">Item Details</th>
@@ -460,7 +373,194 @@ export default function PrizeInventory({ inventory = [], fetchInventory, itemVar
           <span>ONLINE CATALOG SYSTEM</span>
         </div>
       </motion.div>
+
+      {/* 2. FORM: ADD OR EDIT STORE ITEM (ORDER-2 ON MOBILE, LG:ORDER-1 ON DESKTOP) */}
+      <motion.div 
+        ref={formRef}
+        variants={itemVariants} 
+        className="order-2 lg:order-1 border p-3.5 sm:p-6 shadow-2xl relative overflow-hidden group rounded-sm bg-[var(--color-brand-card)] border-[var(--color-brand-border)] scroll-mt-6"
+      >
+        <div 
+          className={`absolute top-0 left-0 w-full h-[2px] transition-colors duration-300 ${
+            editingId ? "bg-amber-400" : "bg-[var(--color-brand-blue)]"
+          }`} 
+        />
+        
+        <div className="mb-4 sm:mb-6 border-b pb-3 sm:pb-4 border-[var(--color-brand-border)] flex justify-between items-start">
+          <div>
+            <h2 className="text-slate-100 font-black uppercase tracking-widest text-xs sm:text-base flex items-center gap-2">
+              <span className={`w-2 h-2 rounded-none animate-pulse ${editingId ? "bg-amber-400" : "bg-[var(--color-brand-blue)]"}`} />
+              {editingId ? "Edit Catalog Item" : "Provision Store Item"}
+            </h2>
+            <p className="text-[10px] sm:text-xs text-slate-400 font-bold uppercase tracking-wider mt-0.5">
+              {editingId ? "Update Valuation, Stock & Assets" : "Add Rich Details, Photos & Specs"}
+            </p>
+          </div>
+          {editingId && (
+            <button 
+              type="button"
+              onClick={cancelEditing}
+              className="text-[10px] font-bold uppercase text-slate-400 hover:text-white px-2 py-1 border border-slate-700 bg-slate-900 rounded-sm cursor-pointer"
+            >
+              Cancel
+            </button>
+          )}
+        </div>
+        
+        {formError && (
+          <div className="mb-4 p-3 border text-xs font-bold uppercase tracking-wider rounded-sm bg-amber-500/10 border-amber-500/50 text-[var(--color-metric-observation)]">
+            {formError}
+          </div>
+        )}
+
+        <form onSubmit={handleFormSubmit} className="space-y-3.5 sm:space-y-4">
+          <div>
+            <label className="text-[10px] font-bold uppercase text-slate-300 tracking-widest block mb-1">Item Title</label>
+            <input 
+              type="text" 
+              value={itemName} 
+              onChange={(e) => setItemName(e.target.value)} 
+              required 
+              placeholder="e.g. Carhartt Heavyweight Hoodie" 
+              className="w-full p-2.5 sm:p-3 text-slate-100 text-xs font-bold uppercase outline-none transition-colors rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)]" 
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
+            <div>
+              <label className="text-[10px] font-bold uppercase text-slate-300 tracking-widest block mb-1">Point Valuation</label>
+              <input 
+                type="number" 
+                value={itemCost} 
+                onChange={(e) => setItemCost(e.target.value)} 
+                required 
+                placeholder="Points" 
+                className="w-full p-2.5 sm:p-3 text-slate-100 text-xs font-bold uppercase outline-none transition-colors rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)]" 
+              />
+            </div>
+
+            <div>
+              <label className="text-[10px] font-bold uppercase text-slate-300 tracking-widest block mb-1">Stock Quantity</label>
+              <input 
+                type="number" 
+                value={itemStock} 
+                onChange={(e) => setItemStock(e.target.value)} 
+                required 
+                placeholder="In Stock QTY" 
+                className="w-full p-2.5 sm:p-3 text-slate-100 text-xs font-bold uppercase outline-none transition-colors rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)]" 
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="text-[10px] font-bold uppercase text-slate-300 tracking-widest block mb-1">Category Classification</label>
+            <select
+              value={itemCategory}
+              onChange={(e) => setItemCategory(e.target.value)}
+              className="w-full p-2.5 sm:p-3 text-slate-100 text-xs font-bold uppercase outline-none cursor-pointer rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)]"
+            >
+              {CATEGORIES.map(cat => (
+                <option key={cat} value={cat} style={{ backgroundColor: "var(--color-brand-card)" }}>
+                  {cat}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="text-[10px] font-bold uppercase text-slate-300 tracking-widest block mb-1">
+              Product Description & Specs
+            </label>
+            <textarea 
+              value={itemDescription}
+              onChange={(e) => setItemDescription(e.target.value)}
+              placeholder="Detail sizing, material quality, warranty, or pickup instructions..."
+              className="w-full p-2.5 sm:p-3 text-slate-100 text-xs font-sans h-20 sm:h-24 outline-none resize-none transition-colors rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)]"
+            />
+          </div>
+
+          {/* Photo Gallery Link Array */}
+          <div>
+            <div className="flex justify-between items-center mb-1">
+              <label className="text-[10px] font-bold uppercase text-slate-300 tracking-widest block">
+                Photo Gallery URLs
+              </label>
+              <button
+                type="button"
+                onClick={addImageField}
+                className="text-[9px] font-bold uppercase text-[var(--color-brand-blue)] hover:underline cursor-pointer"
+              >
+                + Add Photo URL
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              {itemImages.map((imgUrl, index) => (
+                <div key={index} className="flex gap-2 items-center">
+                  <input 
+                    type="url" 
+                    value={imgUrl} 
+                    onChange={(e) => handleImageChange(index, e.target.value)} 
+                    placeholder={index === 0 ? "Primary Image URL (HTTPS)" : `Gallery Photo #${index + 1} URL`} 
+                    className="flex-1 p-2 sm:p-2.5 text-slate-100 text-xs font-mono outline-none transition-colors rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)]" 
+                  />
+                  {itemImages.length > 1 && (
+                    <button 
+                      type="button"
+                      onClick={() => removeImageField(index)}
+                      className="px-2.5 py-2 text-xs font-bold text-[var(--color-brand-red)] border border-[var(--color-brand-border)] hover:bg-red-950/40 rounded-sm cursor-pointer"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Featured Spotlight Toggle */}
+          <div className="flex items-center gap-3 pt-1 sm:pt-2">
+            <input 
+              type="checkbox"
+              id="isFeatured"
+              checked={isFeatured}
+              onChange={(e) => setIsFeatured(e.target.checked)}
+              className="w-4 h-4 cursor-pointer accent-[var(--color-brand-blue)]"
+            />
+            <label htmlFor="isFeatured" className="text-xs font-bold uppercase tracking-wider text-slate-200 cursor-pointer">
+              Feature Item in Store Banner
+            </label>
+          </div>
+
+          <div className="flex gap-2 pt-2">
+            {editingId && (
+              <button
+                type="button"
+                onClick={cancelEditing}
+                className="flex-1 py-3 sm:py-3.5 border border-slate-700 text-slate-300 font-bold uppercase tracking-wider text-xs hover:bg-slate-800 transition-colors rounded-sm cursor-pointer"
+              >
+                Cancel
+              </button>
+            )}
+            <button 
+              type="submit" 
+              disabled={isSubmitting}
+              className={`flex-1 py-3 sm:py-3.5 font-bold uppercase tracking-wider text-xs transition-all duration-200 cursor-pointer rounded-sm ${
+                editingId 
+                  ? "bg-amber-400 hover:bg-white text-black shadow-[0_0_15px_rgba(251,191,36,0.25)]" 
+                  : "bg-[var(--color-brand-blue)] hover:bg-white hover:text-black text-white shadow-[0_0_15px_rgba(0,136,255,0.25)]"
+              }`}
+            >
+              {isSubmitting 
+                ? "Saving..." 
+                : editingId 
+                ? "✓ Save Changes ↗" 
+                : "+ Commit To Catalog ↗"}
+            </button>
+          </div>
+        </form>
+      </motion.div>
+
     </div>
   );
 }
-

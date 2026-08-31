@@ -54,7 +54,6 @@ export default function ProfilePage() {
       if (userProfile) {
         setDisplayName(userProfile.nickname || userProfile.first_name || "");
 
-        // Fetch certifications, paperwork URL, ledger, AND lifetime career points concurrently
         const [certList, siteUrl, ledgerData, careerPoints] = await Promise.all([
           getEmployeeCertifications(supabase, user.id, userProfile.role),
           getLocationPaperworkUrl(supabase, userProfile.location),
@@ -62,7 +61,6 @@ export default function ProfilePage() {
           getUserLifetimePoints(supabase, user.id)
         ]);
 
-        // Attach calculated career total to local state
         setProfile({
           ...userProfile,
           lifetime_points: careerPoints
@@ -141,7 +139,7 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <div 
-        className="p-10 min-h-screen flex items-center justify-center font-mono text-xs uppercase tracking-widest"
+        className="p-10 min-h-[100dvh] flex items-center justify-center font-mono text-xs uppercase tracking-widest"
         style={{ color: "var(--color-brand-blue)" }}
       >
         INITIALIZING PERSONNEL FILE SYSTEM...
@@ -167,11 +165,11 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-4 sm:p-8 space-y-6 min-h-screen relative z-10 font-mono text-slate-100">
+    <div className="w-full max-w-4xl mx-auto px-3.5 sm:px-8 py-4 sm:py-8 space-y-4 sm:space-y-6 min-h-[100dvh] pb-32 sm:pb-16 font-mono text-slate-100 overflow-x-hidden">
       
       {/* USER PASSPORT HEADER CARD */}
       <div 
-        className="border p-6 shadow-2xl relative overflow-hidden rounded-sm"
+        className="w-full border p-3.5 sm:p-6 shadow-2xl relative overflow-hidden rounded-sm"
         style={{
           backgroundColor: "var(--color-brand-card)",
           borderColor: "var(--color-brand-border)"
@@ -183,9 +181,9 @@ export default function ProfilePage() {
         />
         
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 sm:gap-4 min-w-0">
             <div 
-              className="w-14 h-14 border flex items-center justify-center text-xl font-black uppercase rounded-sm"
+              className="w-11 h-11 sm:w-14 sm:h-14 border flex items-center justify-center text-base sm:text-xl font-black uppercase rounded-sm shrink-0"
               style={{
                 backgroundColor: "var(--color-brand-bg)",
                 borderColor: "var(--color-brand-border)",
@@ -194,62 +192,60 @@ export default function ProfilePage() {
             >
               {(profile?.first_name || "E").slice(0, 2)}
             </div>
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-black text-slate-100 uppercase tracking-tighter">
+            <div className="min-w-0 flex-1">
+              <h1 className="text-lg sm:text-3xl font-black text-slate-100 uppercase tracking-tighter truncate">
                 {profile?.nickname || profile?.first_name}
               </h1>
-              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">
+              <p className="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5 truncate">
                 ID: <span className="text-slate-100 font-bold">{profile?.id.slice(0, 8)}</span> • {profile?.role.toUpperCase()}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
-            {/* CURRENT REDEEMABLE BALANCE */}
+          {/* METRIC PILLS */}
+          <div className="w-full sm:w-auto grid grid-cols-2 sm:flex sm:items-center gap-2 sm:gap-3">
             <div 
-              className="border px-4 py-2 text-right rounded-sm"
+              className="border p-2 sm:px-4 sm:py-2 text-center sm:text-right rounded-sm"
               style={{
                 backgroundColor: "var(--color-brand-bg)",
                 borderColor: "var(--color-brand-border)"
               }}
             >
-              <span className="text-[8px] uppercase tracking-widest text-slate-400 font-bold block">REDEEMABLE</span>
+              <span className="text-[7px] sm:text-[8px] uppercase tracking-wider text-slate-400 font-bold block truncate">REDEEMABLE</span>
               <span 
-                className="text-lg font-black tabular-nums"
+                className="text-xs sm:text-lg font-black tabular-nums block"
                 style={{ color: "var(--color-brand-green)" }}
               >
                 {profile?.points_balance || 0} PTS
               </span>
             </div>
 
-            {/* LIFETIME CAREER EARNINGS */}
             <div 
-              className="border px-4 py-2 text-right rounded-sm"
+              className="border p-2 sm:px-4 sm:py-2 text-center sm:text-right rounded-sm"
               style={{
                 backgroundColor: "var(--color-brand-bg)",
                 borderColor: "var(--color-brand-border)"
               }}
             >
-              <span className="text-[8px] uppercase tracking-widest text-slate-400 font-bold block">CAREER TOTAL</span>
+              <span className="text-[7px] sm:text-[8px] uppercase tracking-wider text-slate-400 font-bold block truncate">CAREER TOTAL</span>
               <span 
-                className="text-lg font-black tabular-nums"
+                className="text-xs sm:text-lg font-black tabular-nums block"
                 style={{ color: "var(--color-brand-blue)" }}
               >
                 {profile?.lifetime_points || 0} PTS
               </span>
             </div>
 
-            {/* ASSIGNED SITE */}
             <div 
-              className="border px-4 py-2 text-right rounded-sm"
+              className="col-span-2 sm:col-auto border p-2 sm:px-4 sm:py-2 text-center sm:text-right rounded-sm"
               style={{
                 backgroundColor: "var(--color-brand-bg)",
                 borderColor: "var(--color-brand-border)"
               }}
             >
-              <span className="text-[8px] uppercase tracking-widest text-slate-400 font-bold block">ASSIGNED SITE</span>
+              <span className="text-[7px] sm:text-[8px] uppercase tracking-wider text-slate-400 font-bold block truncate">ASSIGNED SITE</span>
               <span 
-                className="text-xs font-black uppercase"
+                className="text-[10px] sm:text-xs font-black uppercase truncate block"
                 style={{ color: "var(--color-brand-blue)" }}
               >
                 {assignedLocationDisplay}
@@ -258,13 +254,16 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* TAB NAVIGATION HEADER */}
+        {/* TAB NAVIGATION: Standardized typography to match Admin Portal nav matrix */}
         <div 
-          className="flex gap-2 border-b mt-6 pb-px overflow-x-auto"
-          style={{ borderColor: "var(--color-brand-border)" }}
+          className="flex gap-2 sm:gap-4 border-b mt-4 sm:mt-6 pb-px overflow-x-auto no-scrollbar -mx-3.5 px-3.5 sm:mx-0 sm:px-0"
+          style={{ 
+            borderColor: "var(--color-brand-border)",
+            WebkitOverflowScrolling: "touch"
+          }}
         >
           {[
-            { id: "overview", label: "Certifications & Field Tools" },
+            { id: "overview", label: "Certifications & Tools" },
             { id: "history", label: "Point Ledger Activity" },
             { id: "security", label: "Profile & Security" }
           ].map((tab) => {
@@ -273,7 +272,7 @@ export default function ProfilePage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className="pb-3 px-4 text-xs font-black uppercase tracking-widest border-b-2 transition-colors cursor-pointer whitespace-nowrap outline-none focus:outline-none focus:ring-0"
+                className="pb-2.5 sm:pb-3 px-2.5 sm:px-4 text-[11px] sm:text-xs font-bold uppercase tracking-wider sm:tracking-widest border-b-2 transition-colors cursor-pointer whitespace-nowrap outline-none focus:outline-none focus:ring-0 shrink-0"
                 style={{
                   borderColor: isActive ? "var(--color-brand-blue)" : "transparent",
                   color: isActive ? "var(--color-brand-blue)" : "rgb(148, 163, 184)"
@@ -288,22 +287,23 @@ export default function ProfilePage() {
 
       {/* TAB 1: CERTIFICATIONS & FIELD TOOLS */}
       {activeTab === "overview" && (
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="w-full space-y-4 sm:space-y-6">
           <div 
-            className="border p-6 shadow-xl rounded-sm"
+            className="w-full border p-3.5 sm:p-6 shadow-xl rounded-sm"
             style={{
               backgroundColor: "var(--color-brand-card)",
               borderColor: "var(--color-brand-border)"
             }}
           >
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex justify-between items-center mb-3 sm:mb-6">
               <div>
-                <h2 className="text-slate-100 font-black uppercase tracking-widest text-sm">Safety Certifications & Credentials</h2>
-                <p className="text-[11px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">Managed & Verified By IMC Safety.</p>
+                <h2 className="text-slate-100 font-black uppercase tracking-widest text-xs sm:text-sm">Safety Certifications & Credentials</h2>
+                <p className="text-[9px] sm:text-[11px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">Managed & Verified By IMC Safety.</p>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* 2-ROW / 2-COLUMN GRID ON MOBILE (grid-cols-2), 2-COLUMN ON DESKTOP (md:grid-cols-2) */}
+            <div className="grid grid-cols-2 md:grid-cols-2 gap-2 sm:gap-4 w-full">
               {certs.map((cert) => {
                 let badgeStyle = {
                   backgroundColor: "color-mix(in srgb, var(--color-brand-green) 15%, transparent)",
@@ -318,7 +318,7 @@ export default function ProfilePage() {
                     borderColor: "color-mix(in srgb, #eab308 50%, transparent)",
                     color: "#eab308"
                   };
-                  badgeText = `EXPIRING SOON (${cert.daysRemaining}d)`;
+                  badgeText = `EXP (${cert.daysRemaining}d)`;
                 } else if (cert.status === "EXPIRED") {
                   badgeStyle = {
                     backgroundColor: "color-mix(in srgb, var(--color-brand-red, #f87171) 15%, transparent)",
@@ -338,16 +338,18 @@ export default function ProfilePage() {
                 return (
                   <div 
                     key={cert.typeKey} 
-                    className="border p-4 rounded-sm flex flex-col justify-between gap-3"
+                    className="w-full border p-2 sm:p-4 rounded-sm flex flex-col justify-between gap-1.5 sm:gap-3"
                     style={{
                       backgroundColor: "var(--color-brand-bg)",
                       borderColor: "var(--color-brand-border)"
                     }}
                   >
-                    <div className="flex justify-between items-start gap-2">
-                      <p className="text-xs font-black text-slate-100 uppercase">{cert.title}</p>
+                    <div className="flex flex-col sm:flex-row justify-between items-start gap-1 sm:gap-2">
+                      <p className="text-[9px] sm:text-xs font-black text-slate-100 uppercase line-clamp-2 sm:truncate flex-1">
+                        {cert.title}
+                      </p>
                       <span 
-                        className="px-2 py-1 border text-[9px] font-black uppercase tracking-wider rounded-none"
+                        className="px-1 py-0.2 sm:px-2 sm:py-1 border text-[6px] sm:text-[9px] font-black uppercase tracking-wider rounded-none shrink-0"
                         style={badgeStyle}
                       >
                         {badgeText}
@@ -355,11 +357,11 @@ export default function ProfilePage() {
                     </div>
 
                     <div 
-                      className="flex justify-between text-[10px] text-slate-400 font-bold border-t pt-2"
+                      className="flex flex-col sm:flex-row justify-between text-[7px] sm:text-[10px] text-slate-400 font-bold border-t pt-1 sm:pt-2 gap-0.5"
                       style={{ borderColor: "color-mix(in srgb, var(--color-brand-border) 60%, transparent)" }}
                     >
-                      <span>ISSUED: {cert.issueDate || "--"}</span>
-                      <span>EXPIRES: {cert.expirationDate || "--"}</span>
+                      <span className="truncate">ISSUED: {cert.issueDate || "--"}</span>
+                      <span className="truncate">EXPIRES: {cert.expirationDate || "--"}</span>
                     </div>
                   </div>
                 );
@@ -369,28 +371,28 @@ export default function ProfilePage() {
             {/* LOCATION SPECIFIC PAPERWORK ACTION LINK */}
             {paperworkUrl && (
               <div 
-                className="mt-8 pt-6 border-t"
+                className="mt-4 sm:mt-8 pt-4 sm:pt-6 border-t w-full"
                 style={{ borderColor: "var(--color-brand-border)" }}
               >
                 <div 
-                  className="border p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-sm"
+                  className="w-full border p-3 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 rounded-sm"
                   style={{
                     backgroundColor: "var(--color-brand-bg)",
                     borderColor: "var(--color-brand-blue)"
                   }}
                 >
-                  <div>
+                  <div className="min-w-0">
                     <h3 
-                      className="text-xs font-black uppercase tracking-widest flex items-center gap-2"
+                      className="text-[10px] sm:text-xs font-black uppercase tracking-widest flex items-center gap-1.5"
                       style={{ color: "var(--color-brand-blue)" }}
                     >
                       <span 
-                        className="w-2 h-2 rounded-full animate-ping" 
+                        className="w-1.5 h-1.5 rounded-full animate-ping shrink-0" 
                         style={{ backgroundColor: "var(--color-brand-blue)" }}
                       />
                       Required Daily Site Paperwork
                     </h3>
-                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">
+                    <p className="text-[8px] sm:text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5 truncate">
                       Mandatory safety paperwork link for {assignedLocationDisplay}
                     </p>
                   </div>
@@ -398,26 +400,14 @@ export default function ProfilePage() {
                     href={paperworkUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-full sm:w-auto px-6 py-3 font-black text-xs uppercase tracking-widest transition-all duration-200 text-center rounded-sm shadow-md border outline-none focus:outline-none focus:ring-0"
+                    className="w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-3 font-black text-[10px] sm:text-xs uppercase tracking-widest transition-all duration-200 text-center rounded-sm shadow-md border outline-none"
                     style={{
                       backgroundColor: "var(--color-brand-blue)",
                       borderColor: "var(--color-brand-blue)",
                       color: "#ffffff"
                     }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = "#ffffff";
-                      e.currentTarget.style.borderColor = "#ffffff";
-                      e.currentTarget.style.color = "#0a0a0a";
-                      e.currentTarget.style.boxShadow = "0 0 12px color-mix(in srgb, #ffffff 40%, transparent)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = "var(--color-brand-blue)";
-                      e.currentTarget.style.borderColor = "var(--color-brand-blue)";
-                      e.currentTarget.style.color = "#ffffff";
-                      e.currentTarget.style.boxShadow = "none";
-                    }}
                   >
-                    Open Site Forms ↗
+                    Open Forms ↗
                   </a>
                 </div>
               </div>
@@ -428,19 +418,19 @@ export default function ProfilePage() {
 
       {/* TAB 2: POINT LEDGER HISTORY */}
       {activeTab === "history" && (
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="w-full">
           <div 
-            className="border p-6 shadow-xl rounded-sm"
+            className="w-full border p-3.5 sm:p-6 shadow-xl rounded-sm"
             style={{
               backgroundColor: "var(--color-brand-card)",
               borderColor: "var(--color-brand-border)"
             }}
           >
-            <h2 className="text-slate-100 font-black uppercase tracking-widest text-sm mb-6">Point Activity Log</h2>
-            <div className="flex flex-col">
+            <h2 className="text-slate-100 font-black uppercase tracking-widest text-xs sm:text-sm mb-3 sm:mb-6">Point Activity Log</h2>
+            <div className="flex flex-col w-full">
               {log.length === 0 ? (
                 <p 
-                  className="text-[10px] text-slate-400 font-bold tracking-wider py-8 text-center border border-dashed rounded-sm"
+                  className="text-[9px] sm:text-[10px] text-slate-400 font-bold tracking-wider py-8 text-center border border-dashed rounded-sm"
                   style={{
                     backgroundColor: "color-mix(in srgb, var(--color-brand-bg) 50%, transparent)",
                     borderColor: "var(--color-brand-border)"
@@ -452,13 +442,13 @@ export default function ProfilePage() {
                 log.map((entry) => (
                   <div 
                     key={entry.id} 
-                    className="text-[11px] border-b py-3.5 flex justify-between items-center group"
+                    className="text-[9px] sm:text-[11px] border-b py-2.5 sm:py-3.5 flex justify-between items-center gap-2"
                     style={{ borderColor: "color-mix(in srgb, var(--color-brand-border) 50%, transparent)" }}
                   >
-                    <span className={`${entry.color} font-black uppercase tracking-wide truncate pr-4 group-hover:text-white transition-colors`}>
+                    <span className={`${entry.color} font-black uppercase tracking-wide truncate flex-1`}>
                       {entry.label}
                     </span>
-                    <span className="text-slate-100 font-black tabular-nums text-right ml-4 whitespace-nowrap">
+                    <span className="text-slate-100 font-black tabular-nums text-right whitespace-nowrap shrink-0">
                       {entry.amountDisplay}
                     </span>
                   </div>
@@ -471,18 +461,16 @@ export default function ProfilePage() {
 
       {/* TAB 3: PROFILE & SECURITY SETTINGS */}
       {activeTab === "security" && (
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-          
-          {/* Display Settings */}
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="w-full space-y-4 sm:space-y-6">
           <div 
-            className="border p-6 shadow-xl rounded-sm"
+            className="w-full border p-3.5 sm:p-6 shadow-xl rounded-sm"
             style={{
               backgroundColor: "var(--color-brand-card)",
               borderColor: "var(--color-brand-border)"
             }}
           >
             <h2 
-              className="font-black uppercase tracking-widest text-xs mb-4"
+              className="font-black uppercase tracking-widest text-[11px] sm:text-xs mb-3 sm:mb-4"
               style={{ color: "var(--color-brand-blue)" }}
             >
               Display Preferences
@@ -490,7 +478,7 @@ export default function ProfilePage() {
             
             {formFeedback && (
               <div 
-                className="mb-4 p-3 text-[10px] font-bold uppercase tracking-wider border rounded-sm"
+                className="mb-3 sm:mb-4 p-2 sm:p-3 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider border rounded-sm"
                 style={{
                   backgroundColor: formFeedback.isError 
                     ? "color-mix(in srgb, var(--color-brand-red, #f87171) 10%, transparent)" 
@@ -507,12 +495,12 @@ export default function ProfilePage() {
               </div>
             )}
 
-            <div className="grid md:grid-cols-2 gap-4 items-center">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 sm:gap-4 items-center">
               <input 
                 value={displayName} 
                 onChange={(e) => setDisplayName(e.target.value)} 
                 placeholder="Display Nickname"
-                className="w-full border p-3 text-slate-100 text-xs font-bold outline-none focus:outline-none focus:ring-0 rounded-sm transition-colors" 
+                className="w-full border p-2.5 sm:p-3 text-slate-100 text-xs font-bold outline-none rounded-sm transition-colors min-h-[40px]" 
                 style={inputStyle}
                 onFocus={handleInputFocus}
                 onBlur={handleInputBlur}
@@ -520,20 +508,10 @@ export default function ProfilePage() {
               <button 
                 onClick={handleUpdate} 
                 disabled={isUpdating}
-                className="border text-slate-100 px-6 py-3 font-black uppercase text-[10px] tracking-widest transition-all rounded-sm cursor-pointer disabled:opacity-50 shadow-md outline-none focus:outline-none focus:ring-0"
+                className="w-full border text-slate-100 px-4 py-2.5 sm:px-6 sm:py-3 font-black uppercase text-[9px] sm:text-[10px] tracking-widest transition-all rounded-sm cursor-pointer disabled:opacity-50 min-h-[40px]"
                 style={{
                   backgroundColor: "var(--color-brand-bg)",
                   borderColor: "var(--color-brand-border)"
-                }}
-                onMouseEnter={(e) => {
-                  if (!isUpdating) {
-                    e.currentTarget.style.borderColor = "var(--color-brand-blue)";
-                    e.currentTarget.style.color = "var(--color-brand-blue)";
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = "var(--color-brand-border)";
-                  e.currentTarget.style.color = "#ffffff";
                 }}
               >
                 {isUpdating ? "SAVING..." : "Update Preferences"}
@@ -541,16 +519,15 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Password Security */}
           <div 
-            className="border p-6 shadow-xl rounded-sm"
+            className="w-full border p-3.5 sm:p-6 shadow-xl rounded-sm"
             style={{
               backgroundColor: "var(--color-brand-card)",
               borderColor: "var(--color-brand-border)"
             }}
           >
             <h2 
-              className="font-black uppercase tracking-widest text-xs mb-4"
+              className="font-black uppercase tracking-widest text-[11px] sm:text-xs mb-3 sm:mb-4"
               style={{ color: "var(--color-brand-blue)" }}
             >
               Security Credentials
@@ -558,7 +535,7 @@ export default function ProfilePage() {
 
             {passwordFeedback && (
               <div 
-                className="mb-4 p-3 text-[10px] font-bold uppercase tracking-wider border rounded-sm"
+                className="mb-3 sm:mb-4 p-2 sm:p-3 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider border rounded-sm"
                 style={{
                   backgroundColor: passwordFeedback.isError 
                     ? "color-mix(in srgb, var(--color-brand-red, #f87171) 10%, transparent)" 
@@ -575,10 +552,10 @@ export default function ProfilePage() {
               </div>
             )}
 
-            <form onSubmit={handlePasswordChange} className="space-y-4">
-              <div className="grid md:grid-cols-2 gap-4">
+            <form onSubmit={handlePasswordChange} className="space-y-3 sm:space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 sm:gap-4">
                 <div>
-                  <label className="text-[9px] uppercase font-bold tracking-widest text-slate-400 block mb-1">
+                  <label className="text-[8px] sm:text-[9px] uppercase font-bold tracking-widest text-slate-400 block mb-1">
                     New Password
                   </label>
                   <input
@@ -587,7 +564,7 @@ export default function ProfilePage() {
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full border p-3 text-xs text-slate-100 outline-none focus:outline-none focus:ring-0 rounded-sm transition-colors"
+                    className="w-full border p-2.5 sm:p-3 text-xs text-slate-100 outline-none rounded-sm transition-colors min-h-[40px]"
                     style={inputStyle}
                     onFocus={handleInputFocus}
                     onBlur={handleInputBlur}
@@ -595,7 +572,7 @@ export default function ProfilePage() {
                 </div>
 
                 <div>
-                  <label className="text-[9px] uppercase font-bold tracking-widest text-slate-400 block mb-1">
+                  <label className="text-[8px] sm:text-[9px] uppercase font-bold tracking-widest text-slate-400 block mb-1">
                     Confirm New Password
                   </label>
                   <input
@@ -604,7 +581,7 @@ export default function ProfilePage() {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full border p-3 text-xs text-slate-100 outline-none focus:outline-none focus:ring-0 rounded-sm transition-colors"
+                    className="w-full border p-2.5 sm:p-3 text-xs text-slate-100 outline-none rounded-sm transition-colors min-h-[40px]"
                     style={inputStyle}
                     onFocus={handleInputFocus}
                     onBlur={handleInputBlur}
@@ -615,25 +592,11 @@ export default function ProfilePage() {
               <button
                 type="submit"
                 disabled={isUpdatingPassword}
-                className="px-6 py-3 font-black uppercase text-[10px] tracking-widest transition-all rounded-sm cursor-pointer disabled:opacity-50 shadow-md border outline-none focus:outline-none focus:ring-0"
+                className="w-full sm:w-auto px-5 py-2.5 sm:px-6 sm:py-3 font-black uppercase text-[9px] sm:text-[10px] tracking-widest transition-all rounded-sm cursor-pointer disabled:opacity-50 border outline-none min-h-[40px]"
                 style={{
                   backgroundColor: "var(--color-brand-blue)",
                   borderColor: "var(--color-brand-blue)",
                   color: "#ffffff"
-                }}
-                onMouseEnter={(e) => {
-                  if (!isUpdatingPassword) {
-                    e.currentTarget.style.backgroundColor = "#ffffff";
-                    e.currentTarget.style.borderColor = "#ffffff";
-                    e.currentTarget.style.color = "#0a0a0a";
-                    e.currentTarget.style.boxShadow = "0 0 12px color-mix(in srgb, #ffffff 40%, transparent)";
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = "var(--color-brand-blue)";
-                  e.currentTarget.style.borderColor = "var(--color-brand-blue)";
-                  e.currentTarget.style.color = "#ffffff";
-                  e.currentTarget.style.boxShadow = "none";
                 }}
               >
                 {isUpdatingPassword ? "SAVING NEW CREDENTIALS..." : "Update Password"}
