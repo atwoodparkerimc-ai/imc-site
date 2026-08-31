@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 
 const PARTNERS = [
+  { name: "Aligned", logo: "/logos/Aligned.webp" },
   { name: "Strap Tank Brewery", logo: "/logos/Strap Tank Brewery.png" },
   { name: "Nestle Food", logo: "/logos/Nestle Food.png" },
   { name: "Stouffer's", logo: "/logos/stouffers .png" },
