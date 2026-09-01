@@ -47,12 +47,12 @@ export default function Home() {
   const phoneHref = ["tel:8013605735"].join("");
 
   return (
-    <main className="w-full relative overflow-x-hidden bg-[#0b0f19] text-slate-100 font-sans selection:bg-[#0088ff] selection:text-white">
+    <div className="w-full flex-1 flex flex-col relative bg-[#0b0f19] text-slate-100 font-sans selection:bg-[#0088ff] selection:text-white">
 
       {/* ========================================= */}
       {/* 1. HERO SECTION: DOCKED HUD APP LAYOUT   */}
       {/* ========================================= */}
-      <section className="relative w-full h-[calc(100dvh-5rem)] lg:min-h-[calc(100vh-5rem)] lg:h-auto flex flex-col lg:block bg-[#0b0f19] border-b border-slate-800/80 overflow-hidden">
+      <section className="relative w-full min-h-[calc(100vh-5rem)] flex flex-col justify-between lg:block bg-[#0b0f19] border-b border-slate-800/80 overflow-hidden">
 
         {/* Tactical Grid Background */}
         <div className="absolute inset-0 z-0 tactical-graph-paper opacity-30 pointer-events-none" />
@@ -67,16 +67,17 @@ export default function Home() {
         {/* MOBILE LAYOUT                             */}
         {/* ========================================= */}
         
-        {/* 1. Top Area: Dedicated 3D Stage (Shifted Higher Up) */}
-        <div className="block lg:hidden relative flex-1 w-full z-10 overflow-hidden -mt-6 sm:-mt-8">
-          <div className={`w-full h-full relative -translate-y-3 sm:-translate-y-4 ${isInteractive ? "pointer-events-auto touch-none" : "pointer-events-none"}`}>
+        {/* 1. Top Area: Dedicated 3D Stage */}
+        <div className="block lg:hidden relative flex-1 min-h-[360px] w-full z-10 overflow-hidden">
+          <div className={`w-full h-full relative ${isInteractive ? "pointer-events-auto touch-none" : "pointer-events-none"}`}>
             {/* @ts-ignore - Prop forwarded to internal Three.js canvas */}
             <AhuBlueprintAnimation interactive={isInteractive} />
           </div>
 
-          {/* Interactive Mode Mobile Toggle Button (Bottom-Right of Canvas, 48px Touch Area & Feedback) */}
+          {/* Interactive Mode Mobile Toggle Button */}
           <div className="absolute bottom-1 right-2 z-40 pointer-events-auto">
             <button
+              type="button"
               onClick={() => setIsInteractive(!isInteractive)}
               aria-label={isInteractive ? "Lock camera rotation" : "Inspect 3D model controls"}
               className={`inline-flex items-center justify-center p-3 font-mono text-[10px] font-bold uppercase tracking-widest transition-all active:scale-95 cursor-pointer touch-manipulation select-none ${
@@ -116,13 +117,13 @@ export default function Home() {
           <div className="flex flex-row items-center gap-3 w-full">
             <Link 
               href="/contact" 
-              className="flex-1 px-3 py-3.5 bg-[#ea1f27] hover:bg-[#d41920] active:bg-[#b5181e] text-white font-mono text-[11px] font-bold uppercase tracking-wider rounded-sm transition-all text-center whitespace-nowrap shadow-md active:scale-[0.97] touch-manipulation"
+              className="flex-1 min-h-[44px] px-3 py-3 bg-[#ea1f27] hover:bg-[#d41920] active:bg-[#b5181e] text-white font-mono text-[11px] font-bold uppercase tracking-wider rounded-sm transition-all text-center flex items-center justify-center whitespace-nowrap shadow-md active:scale-[0.97] touch-manipulation"
             >
               Initiate Bid
             </Link>
             <Link 
               href="/what-we-do" 
-              className="flex-1 px-3 py-3.5 bg-slate-900/80 hover:bg-slate-800 active:bg-slate-700 text-slate-100 border border-slate-700 hover:border-slate-500 font-mono text-[11px] font-bold uppercase tracking-wider rounded-sm transition-all text-center whitespace-nowrap shadow-md active:scale-[0.97] touch-manipulation"
+              className="flex-1 min-h-[44px] px-3 py-3 bg-slate-900/80 hover:bg-slate-800 active:bg-slate-700 text-slate-100 border border-slate-700 hover:border-slate-500 font-mono text-[11px] font-bold uppercase tracking-wider rounded-sm transition-all text-center flex items-center justify-center whitespace-nowrap shadow-md active:scale-[0.97] touch-manipulation"
             >
               Capabilities
             </Link>
@@ -134,9 +135,10 @@ export default function Home() {
         {/* ========================================= */}
         <div className="hidden lg:flex absolute inset-0 z-10 w-[60%] h-full items-center justify-center">
           
-          {/* Desktop Interactive Toggle (Top-Left of Screen) */}
+          {/* Desktop Interactive Toggle */}
           <div className="absolute top-8 left-8 z-40 pointer-events-auto">
             <button
+              type="button"
               onClick={() => setIsInteractive(!isInteractive)}
               aria-label={isInteractive ? "Lock camera rotation" : "Inspect 3D model controls"}
               className={`inline-flex items-center font-mono text-xs font-bold uppercase tracking-widest transition-all active:scale-95 cursor-pointer ${
@@ -463,12 +465,12 @@ export default function Home() {
               <p className="text-slate-300 text-xs sm:text-sm lg:text-base leading-relaxed font-normal">Installation and mechanical leveling of belt, roller, and sanitary food-grade conveyor layouts.</p>
             </div>
 
-            <div className="bg-[#030914] border border-slate-800 p-8 rounded-lg shadow-inner">
+            <div className="bg-[#030914] border border-slate-800 p-6 sm:p-8 rounded-lg shadow-inner">
               <h4 className="text-white font-black text-lg sm:text-xl uppercase tracking-tight mb-2 sm:mb-3">Air Handling & Duct</h4>
               <p className="text-slate-300 text-xs sm:text-sm lg:text-base leading-relaxed font-normal">Custom AHU duct routing, makeup air units, and dust extraction drops for production lines.</p>
             </div>
 
-            <div className="bg-[#030914] border border-slate-800 p-8 rounded-lg shadow-inner">
+            <div className="bg-[#030914] border border-slate-800 p-6 sm:p-8 rounded-lg shadow-inner">
               <h4 className="text-white font-black text-lg sm:text-xl uppercase tracking-tight mb-2 sm:mb-3">Utility Drops</h4>
               <p className="text-slate-300 text-xs sm:text-sm lg:text-base leading-relaxed font-normal">Compressed air, steam, chilled water, and CIP manifolds routed directly to machine hookups.</p>
             </div>
@@ -492,7 +494,7 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row items-center gap-4 w-full justify-center">
             <Link 
               href="/contact" 
-              className="w-full sm:w-auto px-8 sm:px-10 py-3.5 sm:py-4 bg-[#ea1f27] hover:bg-[#d41920] active:bg-[#b5181e] text-white font-mono text-xs font-bold uppercase tracking-[0.15em] rounded-xs shadow-lg transition-all duration-200 active:scale-[0.97] touch-manipulation flex items-center justify-center gap-3"
+              className="w-full sm:w-auto min-h-[48px] px-8 sm:px-10 py-3.5 sm:py-4 bg-[#ea1f27] hover:bg-[#d41920] active:bg-[#b5181e] text-white font-mono text-xs font-bold uppercase tracking-[0.15em] rounded-xs shadow-lg transition-all active:scale-[0.97] touch-manipulation flex items-center justify-center gap-3"
             >
               Contact Us <ArrowRight className="w-4 h-4" />
             </Link>
@@ -514,6 +516,6 @@ export default function Home() {
       {/* ========================================= */}
       <Footer />
 
-    </main>
+    </div>
   );
 }

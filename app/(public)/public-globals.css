@@ -13,13 +13,9 @@
 
   html {
     -webkit-text-size-adjust: 100%;
-    /* Locks the scrollbar width so content never shifts when vertical scrollbar appears */
-    scrollbar-gutter: stable;
-    /* Prevents horizontal overflow wobble */
+    /* Keep body as the sole scroll manager */
     overflow-x: hidden;
-    /* Prevents rubber-band fighting on mobile and desktop trackpads */
-    overscroll-behavior-y: none;
-    height: 100%;
+    background-color: #030914;
   }
 
   body {
@@ -27,9 +23,10 @@
     color: #f8fafc;
     font-feature-settings: "rlig" 1, "calt" 1;
     overflow-x: hidden;
-    min-height: 100%;
-    min-height: 100dvh;
-    overscroll-behavior-y: none;
+    /* Clean layout flexbox flow with auto-height */
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
   }
 
   ::selection {
