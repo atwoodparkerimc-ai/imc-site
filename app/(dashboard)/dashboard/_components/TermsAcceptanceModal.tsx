@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
 import { motion } from "framer-motion";
-import { ShieldCheck, CheckSquare, Square, AlertCircle, FileText } from "lucide-react";
+import { ShieldCheck, CheckSquare, Square, AlertCircle } from "lucide-react";
 
 interface TermsAcceptanceModalProps {
   userId: string;
@@ -24,9 +24,9 @@ export default function TermsAcceptanceModal({ userId, onAccepted }: TermsAccept
 
     try {
       const { error } = await supabase
-        .from('profiles')
+        .from("profiles")
         .update({ terms_accepted_at: new Date().toISOString() })
-        .eq('id', userId);
+        .eq("id", userId);
 
       if (error) throw error;
       onAccepted();
@@ -38,7 +38,7 @@ export default function TermsAcceptanceModal({ userId, onAccepted }: TermsAccept
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md font-mono">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md font-mono select-none">
       <motion.div 
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -76,7 +76,7 @@ export default function TermsAcceptanceModal({ userId, onAccepted }: TermsAccept
         <button 
           type="button"
           onClick={() => setHasAgreed(!hasAgreed)}
-          className="w-full flex items-center gap-3.5 p-4 bg-slate-900/60 border border-slate-800 hover:border-slate-700 rounded-sm cursor-pointer text-left transition-colors"
+          className="w-full min-h-[44px] flex items-center gap-3.5 p-4 bg-slate-900/60 border border-slate-800 hover:border-slate-700 active:border-slate-600 rounded-sm cursor-pointer text-left transition-all active:scale-[0.99] touch-manipulation focus:outline-none"
         >
           <div className="text-[var(--color-brand-blue,#0088ff)] shrink-0">
             {hasAgreed ? (
@@ -90,7 +90,7 @@ export default function TermsAcceptanceModal({ userId, onAccepted }: TermsAccept
             <Link 
               href="/employee-terms" 
               target="_blank" 
-              className="text-[var(--color-brand-blue,#0088ff)] underline hover:text-white"
+              className="text-[var(--color-brand-blue,#0088ff)] underline hover:text-white inline-block py-1 touch-manipulation"
               onClick={(e) => e.stopPropagation()}
             >
               Employee Terms of Use & Incentive Guidelines
@@ -109,7 +109,7 @@ export default function TermsAcceptanceModal({ userId, onAccepted }: TermsAccept
         <button
           onClick={handleConfirm}
           disabled={!hasAgreed || isSubmitting}
-          className="w-full mt-8 py-4 bg-[var(--color-brand-blue,#0088ff)] hover:bg-white hover:text-black disabled:opacity-40 disabled:hover:bg-[var(--color-brand-blue,#0088ff)] disabled:hover:text-white text-white font-bold uppercase tracking-[0.2em] text-sm transition-all duration-200 cursor-pointer rounded-sm shadow-[0_0_15px_rgba(0,136,255,0.25)]"
+          className="w-full min-h-[44px] mt-8 py-4 bg-[var(--color-brand-blue,#0088ff)] hover:bg-white hover:text-black active:bg-slate-200 disabled:opacity-40 disabled:hover:bg-[var(--color-brand-blue,#0088ff)] disabled:hover:text-white text-white font-bold uppercase tracking-[0.2em] text-sm transition-all duration-200 cursor-pointer rounded-sm shadow-[0_0_15px_rgba(0,136,255,0.25)] active:scale-[0.98] touch-manipulation focus:outline-none"
         >
           {isSubmitting ? "AUTHORIZING ACCESS..." : "CONFIRM & ENTER PORTAL ↗"}
         </button>

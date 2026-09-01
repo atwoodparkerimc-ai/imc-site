@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef, useMemo } from "react";
+import { useEffect, useState, useRef, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
@@ -25,7 +25,7 @@ import {
 import FirstLoginPasswordModal from "./_components/FirstLoginPasswordModal";
 import TermsAcceptanceModal from "./_components/TermsAcceptanceModal";
 
-// --- NEON PARTICLE CLOUD ---
+// --- NEON PARTICLE CLOUD (PERFORMANCE-OPTIMIZED) ---
 const ParticleCloud = ({ r, g, b }: { r: number, g: number, b: number }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -43,14 +43,14 @@ const ParticleCloud = ({ r, g, b }: { r: number, g: number, b: number }) => {
     ctx.scale(2, 2);
 
     const particles: { x: number, y: number, r: number, a: number, speed: number, dist: number, baseAlpha: number, isWhite: boolean }[] = [];
-    const particleCount = 120; // Reduced density for optimized mobile rendering
+    const particleCount = 80;
     const center = size / 2;
 
     for (let i = 0; i < particleCount; i++) {
       particles.push({
         x: 0, 
         y: 0,
-        r: Math.random() * 1.4 + 0.2,
+        r: Math.random() * 1.3 + 0.2,
         a: Math.random() * Math.PI * 2,
         dist: Math.random() * (center - 2),
         speed: (Math.random() - 0.5) * 0.008,
@@ -98,7 +98,7 @@ function DashboardGauge({
   rgb,
   sizeClasses = "w-64 h-64 sm:w-72 sm:h-72",
   valueClasses = "text-6xl sm:text-7xl",
-  labelClasses = "text-[9px] sm:text-[10px]"
+  labelClasses = "text-[10px] sm:text-[11px]"
 }: { 
   value: string | number; 
   label: string; 
@@ -162,7 +162,7 @@ function DashboardGauge({
               {label}
             </span>
             {subLabel && (
-              <span className="text-[8px] sm:text-[9px] text-slate-400 mt-1 sm:mt-2 border-t border-[var(--color-brand-border)] pt-1.5 sm:pt-2 px-3 sm:px-4 block tracking-widest uppercase font-bold">
+              <span className="text-[9px] sm:text-[10px] text-slate-400 mt-1 sm:mt-2 border-t border-[var(--color-brand-border)] pt-1.5 sm:pt-2 px-3 sm:px-4 block tracking-widest uppercase font-bold">
                 {subLabel}
               </span>
             )}
@@ -204,82 +204,103 @@ export default function DashboardPage() {
 
   const [profile, setProfile] = useState<UserProfile | null>(null);  
   const [displayPoints, setDisplayPoints] = useState<number>(0);
+  const displayPointsRef = useRef<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [recentActivity, setRecentActivity] = useState<ActivityLogItem[]>([]);
   const [dailyBriefing, setDailyBriefing] = useState<SafetyBriefing>(() => getDailyBriefing());
   const [yesterdayHazards, setYesterdayHazards] = useState<number>(0);
 
-  const refreshDashboardData = async (userId: string) => {
-    const userProfile = await getEmployeeProfile(supabase, userId);
-    
-    if (userProfile) {
-      setProfile(userProfile);
+  const refreshDashboardData = useCallback(async (userId: string) => {
+    try {
+      const userProfile = await getEmployeeProfile(supabase, userId);
+      
+      if (userProfile) {
+        setProfile(userProfile);
 
-      const empLocation = userProfile.location || DEFAULT_LOCATION;
-      const [ledgerData, siteHazardScore, siteOverrideId] = await Promise.all([
-        getUserLedgerActivity(supabase, userId),
-        getLatestHazardScore(supabase, empLocation),
-        getActiveSiteBriefingId(supabase, empLocation)
-      ]);
+        const empLocation = userProfile.location || DEFAULT_LOCATION;
+        const [ledgerData, siteHazardScore, siteOverrideId] = await Promise.all([
+          getUserLedgerActivity(supabase, userId),
+          getLatestHazardScore(supabase, empLocation),
+          getActiveSiteBriefingId(supabase, empLocation)
+        ]);
 
-      if (siteOverrideId) {
-        const customBriefing = getBriefingById(siteOverrideId);
-        if (customBriefing) {
-          setDailyBriefing(customBriefing);
+        if (siteOverrideId) {
+          const customBriefing = getBriefingById(siteOverrideId);
+          setDailyBriefing(customBriefing || getDailyBriefing());
         } else {
           setDailyBriefing(getDailyBriefing());
         }
-      } else {
-        setDailyBriefing(getDailyBriefing());
-      }
 
-      setYesterdayHazards(siteHazardScore);
+        setYesterdayHazards(siteHazardScore);
 
-      animate(displayPoints, userProfile.points_balance || 0, {
-        duration: 1.2,
-        ease: "easeOut",
-        onUpdate: (latest) => setDisplayPoints(Math.round(latest)),
-      });
+        const targetPoints = userProfile.points_balance || 0;
+        const startPoints = displayPointsRef.current;
 
-      const formatTime = (isoString: string) => {
-        if (!isoString) return "JUST NOW";
-        const date = new Date(isoString);
-        return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ", " + date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
-      };
+        animate(startPoints, targetPoints, {
+          duration: 1.2,
+          ease: "easeOut",
+          onUpdate: (latest) => {
+            const rounded = Math.round(latest);
+            displayPointsRef.current = rounded;
+            setDisplayPoints(rounded);
+          },
+        });
 
-      const unifiedLog: ActivityLogItem[] = ledgerData.map((entry: any) => {
-        const logTimestamp = entry.created_at ? new Date(entry.created_at).getTime() : 0;
-        const isRedemption = entry.type === 'redemption';
-
-        return {
-          id: entry.id,
-          action: String(entry.description).toUpperCase(),
-          points: isRedemption ? `-${entry.amount}` : `+${entry.amount}`,
-          color: isRedemption ? "text-slate-400" : "text-[var(--color-brand-blue)]",
-          time: formatTime(entry.created_at),
-          timestamp: logTimestamp
+        const formatTime = (isoString: string) => {
+          if (!isoString) return "JUST NOW";
+          const date = new Date(isoString);
+          return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ", " + date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
         };
-      });
 
-      unifiedLog.sort((a, b) => b.timestamp - a.timestamp);
-      setRecentActivity(unifiedLog.slice(0, 4));
+        const unifiedLog: ActivityLogItem[] = (ledgerData || []).map((entry: any) => {
+          const logTimestamp = entry.created_at ? new Date(entry.created_at).getTime() : 0;
+          const isRedemption = entry.type === 'redemption';
+
+          return {
+            id: entry.id,
+            action: String(entry.description).toUpperCase(),
+            points: isRedemption ? `-${entry.amount}` : `+${entry.amount}`,
+            color: isRedemption ? "text-slate-400" : "text-[var(--color-brand-blue)]",
+            time: formatTime(entry.created_at),
+            timestamp: logTimestamp
+          };
+        });
+
+        unifiedLog.sort((a, b) => b.timestamp - a.timestamp);
+        setRecentActivity(unifiedLog.slice(0, 4));
+      }
+    } catch (err) {
+      console.error("Failed to load dashboard data:", err);
     }
-  };
+  }, [supabase]);
 
   useEffect(() => {
-    async function fetchData() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        router.push("/login");
-        return;
-      }
+    let isMounted = true;
 
-      await refreshDashboardData(user.id);
-      setIsLoading(false);
+    async function fetchData() {
+      try {
+        const { data: { user }, error } = await supabase.auth.getUser();
+        if (error || !user) {
+          if (isMounted) router.push("/login");
+          return;
+        }
+
+        if (isMounted) {
+          await refreshDashboardData(user.id);
+          setIsLoading(false);
+        }
+      } catch (err) {
+        console.error("Auth fetch error:", err);
+        if (isMounted) setIsLoading(false);
+      }
     }
     
     fetchData();
-  }, [supabase, router]);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [supabase, router, refreshDashboardData]);
 
   const safeDaysCount = useMemo(() => {
     const startDate = new Date(DEFAULT_INCIDENT_DATE);
@@ -354,7 +375,7 @@ export default function DashboardPage() {
       {/* TELEMETRY METRIC GAUGES */}
       <motion.div variants={itemVariants} className="flex flex-col md:flex-row items-center justify-between gap-6 md:gap-4 mb-8 sm:mb-12 relative w-full px-2 bg-transparent">
         
-        {/* Main Center Metric (Top on Mobile, Center on Desktop) */}
+        {/* Main Center Metric */}
         <div className="order-1 md:order-2 flex-shrink-0 flex justify-center w-full md:w-auto">
           <DashboardGauge 
             value={displayPoints} 
@@ -365,11 +386,11 @@ export default function DashboardPage() {
             rgb={[0, 136, 255]} 
             sizeClasses="w-64 h-64 sm:w-72 sm:h-72"
             valueClasses="text-6xl sm:text-7xl"
-            labelClasses="text-[9px] sm:text-[10px]"
+            labelClasses="text-[10px] sm:text-[11px]"
           />
         </div>
 
-        {/* Mobile Dual Flanks Container (Side-by-side below main gauge) */}
+        {/* Mobile Dual Flanks Container */}
         <div className="order-2 md:order-1 flex md:contents w-full justify-center items-center gap-4 sm:gap-6">
           
           {/* Safe Days */}
@@ -382,7 +403,7 @@ export default function DashboardPage() {
               rgb={[0, 136, 255]}
               sizeClasses="w-28 h-28 sm:w-32 sm:h-32"
               valueClasses="text-2xl sm:text-3xl"
-              labelClasses="text-[7px] sm:text-[8px]"
+              labelClasses="text-[9px] sm:text-[10px]"
             />
           </div>
 
@@ -396,7 +417,7 @@ export default function DashboardPage() {
               rgb={hazardColorTokens.rgb}
               sizeClasses="w-28 h-28 sm:w-32 sm:h-32"
               valueClasses="text-2xl sm:text-3xl"
-              labelClasses="text-[7px] sm:text-[8px]"
+              labelClasses="text-[9px] sm:text-[10px]"
             />
           </div>
 
@@ -410,7 +431,7 @@ export default function DashboardPage() {
         {/* DAILY SAFETY CARD */}
         <Link 
           href="/safety" 
-          className={`group p-4 sm:p-5 tactical-card-interactive border transition-all duration-300 relative overflow-hidden rounded-sm flex flex-col justify-center shadow-md active:scale-[0.99] ${
+          className={`group p-4 sm:p-5 min-h-[72px] tactical-card-interactive border transition-all duration-200 relative overflow-hidden rounded-sm flex flex-col justify-center shadow-md active:scale-[0.98] touch-manipulation select-none cursor-pointer ${
             isSafetyComplete 
               ? "border-[var(--color-brand-green,#00ff9d)]" 
               : "border-[var(--color-brand-blue)]"
@@ -438,7 +459,7 @@ export default function DashboardPage() {
                 {isSafetyComplete ? "✓ Briefing Complete" : "Sign to earn 10 pts"}
               </p>
             </div>
-            <div className={`w-7 h-7 border flex items-center justify-center transition-colors flex-shrink-0 ${
+            <div className={`w-8 h-8 border flex items-center justify-center transition-colors flex-shrink-0 ${
               isSafetyComplete 
                 ? "border-[var(--color-brand-green,#00ff9d)] bg-[var(--color-brand-green,#00ff9d)]/10" 
                 : "border-[var(--color-brand-blue)] bg-[var(--color-brand-blue)]/20 animate-pulse"
@@ -453,11 +474,11 @@ export default function DashboardPage() {
         </Link>
         
         {/* REWARDS CATALOG */}
-        <Link href="/catalog" className="group p-4 sm:p-5 tactical-card-interactive border border-[var(--color-brand-border)] hover:border-[var(--color-brand-blue)] transition-all duration-300 relative overflow-hidden rounded-sm flex flex-col justify-center shadow-md active:scale-[0.99]">
+        <Link 
+          href="/catalog" 
+          className="group p-4 sm:p-5 min-h-[72px] tactical-card-interactive border border-[var(--color-brand-border)] hover:border-[var(--color-brand-blue)] transition-all duration-200 relative overflow-hidden rounded-sm flex flex-col justify-center shadow-md active:scale-[0.98] touch-manipulation select-none cursor-pointer"
+        >
           <div className="absolute top-0 left-0 w-full h-[2px] bg-[var(--color-brand-border)] group-hover:bg-[var(--color-brand-blue)] transition-colors z-20" />
-          <div className="absolute inset-0 z-0 opacity-30 group-hover:opacity-70 transition-opacity duration-500 overflow-hidden">
-             <ParticleCloud r={0} g={136} b={255} />
-          </div>
           <div className="relative z-10 flex justify-between items-center w-full">
             <div>
               <h3 className="text-sm sm:text-base font-black text-slate-100 uppercase tracking-wide">Rewards</h3>
@@ -472,7 +493,7 @@ export default function DashboardPage() {
         {/* REPORT SAFE ACT CARD */}
         <Link 
           href="/reporting" 
-          className={`group p-4 sm:p-5 tactical-card-interactive border transition-all duration-300 relative overflow-hidden rounded-sm flex flex-col justify-center shadow-md active:scale-[0.99] ${
+          className={`group p-4 sm:p-5 min-h-[72px] tactical-card-interactive border transition-all duration-200 relative overflow-hidden rounded-sm flex flex-col justify-center shadow-md active:scale-[0.98] touch-manipulation select-none cursor-pointer ${
             isReportingComplete 
               ? "border-[var(--color-brand-green,#00ff9d)]" 
               : "border-[var(--color-brand-blue)]"
@@ -500,7 +521,7 @@ export default function DashboardPage() {
                 {isReportingComplete ? "✓ Report Logged" : "Reward a coworker"}
               </p>
             </div>
-            <div className={`w-7 h-7 border flex items-center justify-center transition-colors flex-shrink-0 ${
+            <div className={`w-8 h-8 border flex items-center justify-center transition-colors flex-shrink-0 ${
               isReportingComplete 
                 ? "border-[var(--color-brand-green,#00ff9d)] bg-[var(--color-brand-green,#00ff9d)]/10" 
                 : "border-[var(--color-brand-blue)] bg-[var(--color-brand-blue)]/20 animate-pulse"
@@ -530,11 +551,11 @@ export default function DashboardPage() {
                 </h3>
               </div>
               {isSafetyComplete ? (
-                <span className="text-[8px] sm:text-[9px] font-black text-[var(--color-brand-green,#00ff9d)] border border-[var(--color-brand-green,#00ff9d)]/50 bg-[var(--color-brand-green,#00ff9d)]/10 px-2 py-0.5 uppercase tracking-wider whitespace-nowrap">
+                <span className="text-[9px] sm:text-[10px] font-black text-[var(--color-brand-green,#00ff9d)] border border-[var(--color-brand-green,#00ff9d)]/50 bg-[var(--color-brand-green,#00ff9d)]/10 px-2 py-0.5 uppercase tracking-wider whitespace-nowrap">
                   [COMPLETED]
                 </span>
               ) : (
-                <span className="text-[8px] sm:text-[9px] font-black text-[var(--color-brand-bg)] bg-[var(--color-brand-blue)] px-2 py-0.5 uppercase tracking-wider whitespace-nowrap">
+                <span className="text-[9px] sm:text-[10px] font-black text-[var(--color-brand-bg)] bg-[var(--color-brand-blue)] px-2 py-0.5 uppercase tracking-wider whitespace-nowrap">
                   [ACTION REQUIRED]
                 </span>
               )}
@@ -542,7 +563,7 @@ export default function DashboardPage() {
 
             {/* Briefing Category & Title */}
             <div className="mb-3">
-              <span className="text-[9px] font-mono font-bold text-slate-400 uppercase tracking-wider block mb-1">
+              <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider block mb-1">
                 {dailyBriefing.category}
               </span>
               <h4 className="text-base sm:text-lg font-black text-white uppercase tracking-tight leading-snug">
@@ -571,14 +592,14 @@ export default function DashboardPage() {
           {!isSafetyComplete ? (
             <Link
               href="/safety"
-              className="w-full bg-[var(--color-brand-blue)] hover:bg-white hover:text-[var(--color-brand-bg)] text-[var(--color-brand-bg)] border border-[var(--color-brand-blue)] font-black uppercase tracking-widest py-3 text-xs transition-all duration-200 text-center block rounded-sm shadow-[0_0_20px_rgba(0,136,255,0.4)]"
+              className="w-full min-h-[44px] flex items-center justify-center bg-[var(--color-brand-blue)] hover:bg-white hover:text-[var(--color-brand-bg)] text-[var(--color-brand-bg)] border border-[var(--color-brand-blue)] font-black uppercase tracking-widest py-3 px-4 text-xs transition-all duration-200 text-center rounded-sm shadow-[0_0_20px_rgba(0,136,255,0.4)] active:scale-[0.98] touch-manipulation select-none cursor-pointer"
             >
               Start Safety Briefing (+10 PTS) ↗
             </Link>
           ) : (
             <Link
               href="/safety"
-              className="w-full bg-black/40 hover:bg-black/60 border border-[var(--color-brand-border)] hover:border-slate-500 text-slate-300 p-3 text-center rounded-xs transition-colors block"
+              className="w-full min-h-[44px] flex items-center justify-center bg-black/40 hover:bg-black/60 border border-[var(--color-brand-border)] hover:border-slate-500 text-slate-300 p-3 text-center rounded-xs transition-colors active:scale-[0.98] touch-manipulation select-none"
             >
               <p className="text-[10px] font-mono uppercase tracking-wider font-black">
                 ✓ Signature Recorded For Today — View Policy ↗
@@ -594,7 +615,10 @@ export default function DashboardPage() {
             <h3 className="text-slate-100 text-xs uppercase font-black tracking-widest">
               Recent Activity
             </h3>
-            <Link href="/profile" className="text-[var(--color-brand-blue)] text-[10px] font-black uppercase tracking-widest hover:underline transition-all">
+            <Link 
+              href="/profile" 
+              className="text-[var(--color-brand-blue)] hover:text-white text-[10px] font-black uppercase tracking-widest py-1.5 px-2 -mr-2 min-h-[36px] inline-flex items-center transition-colors active:scale-95 touch-manipulation select-none"
+            >
               View All ↗
             </Link>
           </div>
@@ -610,7 +634,7 @@ export default function DashboardPage() {
                   <p className="text-slate-100 text-xs font-black uppercase leading-snug truncate">
                     {log.action}
                   </p>
-                  <p className="text-slate-500 text-[9px] mt-0.5 tracking-wider font-black font-mono">
+                  <p className="text-slate-500 text-[10px] mt-0.5 tracking-wider font-black font-mono">
                     {log.time}
                   </p>
                 </div>

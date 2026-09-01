@@ -17,9 +17,9 @@ interface FulfillmentBoardProps {
 }
 
 const STATUS_OPTIONS = [
-  { value: "pending_pickup", label: "PENDING", color: "text-amber-400", border: "border-amber-500/50" },
-  { value: "in_progress", label: "IN PROGRESS", color: "text-[var(--color-brand-blue)]", border: "border-[var(--color-brand-blue)]" },
-  { value: "ordered", label: "ORDERED / SHIPPING", color: "text-purple-400", border: "border-purple-500/50" },
+  { value: "pending_pickup", label: "PENDING", color: "text-[#eab308]", border: "border-[#eab308]/50" },
+  { value: "in_progress", label: "IN PROGRESS", color: "text-[var(--color-brand-blue,#0088ff)]", border: "border-[var(--color-brand-blue,#0088ff)]" },
+  { value: "ordered", label: "ORDERED / SHIPPING", color: "text-[#a855f7]", border: "border-[#a855f7]/50" },
   { value: "fulfilled", label: "FULFILLED", color: "text-[var(--color-brand-green,#00ff9d)]", border: "border-[var(--color-brand-green,#00ff9d)]" },
 ];
 
@@ -81,7 +81,7 @@ export default function FulfillmentBoard({ itemVariants, managers = [] }: Fulfil
   const cancelledOrders = orders.filter(o => o.status === 'cancelled');
 
   return (
-    <motion.div variants={itemVariants} className="space-y-6 font-mono text-slate-100 relative">
+    <motion.div variants={itemVariants} className="space-y-6 font-mono text-slate-100 relative select-none">
       
       {/* CANCEL & REFUND CONFIRMATION MODAL POPUP */}
       <AnimatePresence>
@@ -91,19 +91,19 @@ export default function FulfillmentBoard({ itemVariants, managers = [] }: Fulfil
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-[var(--color-brand-card,#070a10)] border border-[var(--color-brand-red,#ea1f27)] p-6 sm:p-7 rounded-sm shadow-2xl max-w-lg w-full relative overflow-hidden"
+              className="bg-[var(--color-brand-card,#070a10)] border border-[var(--color-brand-red,#ff3b5c)] p-6 sm:p-7 rounded-sm shadow-2xl max-w-lg w-full relative overflow-hidden"
             >
-              <div className="absolute top-0 left-0 w-full h-[2px] bg-[var(--color-brand-red,#ea1f27)]" />
+              <div className="absolute top-0 left-0 w-full h-[2px] bg-[var(--color-brand-red,#ff3b5c)]" />
               
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-8 h-8 rounded-sm bg-red-950/60 border border-red-800 flex items-center justify-center shrink-0">
-                  <span className="text-red-400 font-bold text-base">✕</span>
+                <div className="w-8 h-8 rounded-sm bg-red-950/60 border border-[var(--color-brand-red,#ff3b5c)]/60 flex items-center justify-center shrink-0">
+                  <span className="text-[var(--color-brand-red,#ff3b5c)] font-bold text-base">✕</span>
                 </div>
                 <div>
                   <h3 className="text-base font-black uppercase text-white tracking-tight">
                     Cancel & Refund Requisition?
                   </h3>
-                  <p className="text-[10px] text-slate-400 uppercase tracking-widest">
+                  <p className="text-[10px] sm:text-[11px] text-slate-400 uppercase tracking-widest">
                     Safety Reward Reversal Protocol
                   </p>
                 </div>
@@ -113,10 +113,10 @@ export default function FulfillmentBoard({ itemVariants, managers = [] }: Fulfil
                 <p>
                   Are you sure you want to cancel the order for <strong className="text-white uppercase">{cancellingOrder.item?.item_name}</strong>?
                 </p>
-                <ul className="list-disc list-inside text-slate-400 space-y-1 text-[11px] font-mono mt-2">
-                  <li><span className="text-red-400 font-bold">Status:</span> Marked as CANCELLED</li>
+                <ul className="list-disc list-inside text-slate-400 space-y-1 text-xs font-mono mt-2">
+                  <li><span className="text-[var(--color-brand-red,#ff3b5c)] font-bold">Status:</span> Marked as CANCELLED</li>
                   <li><span className="text-[var(--color-brand-green,#00ff9d)] font-bold">Refund:</span> +{cancellingOrder.points_spent} PTS returned to {cancellingOrder.employee?.nickname || cancellingOrder.employee?.first_name}</li>
-                  <li><span className="text-[var(--color-brand-blue)] font-bold">Inventory:</span> +1 unit restored to stock</li>
+                  <li><span className="text-[var(--color-brand-blue,#0088ff)] font-bold">Inventory:</span> +1 unit restored to stock</li>
                 </ul>
               </div>
 
@@ -125,7 +125,7 @@ export default function FulfillmentBoard({ itemVariants, managers = [] }: Fulfil
                   type="button"
                   onClick={() => setCancellingOrder(null)}
                   disabled={isProcessingCancel}
-                  className="flex-1 py-3 border border-slate-700 hover:border-slate-500 text-slate-300 font-bold uppercase text-[10px] tracking-wider rounded-sm transition-colors cursor-pointer"
+                  className="flex-1 min-h-[44px] py-2.5 px-4 border border-slate-700 hover:border-slate-500 text-slate-300 hover:text-white font-black uppercase text-xs tracking-wider rounded-sm transition-all cursor-pointer active:scale-[0.98] touch-manipulation focus:outline-none"
                 >
                   Nevermind
                 </button>
@@ -133,7 +133,7 @@ export default function FulfillmentBoard({ itemVariants, managers = [] }: Fulfil
                   type="button"
                   onClick={handleConfirmCancel}
                   disabled={isProcessingCancel}
-                  className="flex-1 py-3 bg-[var(--color-brand-red,#ea1f27)] hover:bg-red-600 text-white font-bold uppercase text-[10px] tracking-wider rounded-sm transition-colors cursor-pointer shadow-[0_0_15px_rgba(234,31,39,0.3)]"
+                  className="flex-1 min-h-[44px] py-2.5 px-4 bg-[var(--color-brand-red,#ff3b5c)] hover:bg-white active:bg-slate-200 text-white hover:text-black font-black uppercase text-xs tracking-wider rounded-sm transition-all cursor-pointer shadow-[0_0_15px_rgba(255,59,92,0.3)] active:scale-[0.98] touch-manipulation focus:outline-none"
                 >
                   {isProcessingCancel ? "Refunding..." : "Confirm & Refund ↗"}
                 </button>
@@ -153,7 +153,7 @@ export default function FulfillmentBoard({ itemVariants, managers = [] }: Fulfil
               <span className="w-2 h-2 bg-[var(--color-brand-blue)] animate-pulse rounded-none" />
               Active Fulfillment Queue
             </h2>
-            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">
+            <p className="text-[10px] sm:text-[11px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">
               Assign Order Lead & Track Requisition Status
             </p>
           </div>
@@ -164,7 +164,7 @@ export default function FulfillmentBoard({ itemVariants, managers = [] }: Fulfil
 
         <div className="space-y-4">
           {activeOrders.length === 0 ? (
-            <p className="text-center text-slate-500 text-[10px] uppercase font-bold py-8 border border-dashed border-[var(--color-brand-border)]">
+            <p className="text-center text-slate-500 text-xs uppercase font-bold py-8 border border-dashed border-[var(--color-brand-border)]">
               No pending orders in the queue.
             </p>
           ) : (
@@ -185,14 +185,14 @@ export default function FulfillmentBoard({ itemVariants, managers = [] }: Fulfil
                     {photo ? (
                       <img src={photo} alt="" className="w-14 h-14 object-cover border border-[var(--color-brand-border)] bg-black rounded-xs shrink-0" />
                     ) : (
-                      <div className="w-14 h-14 border border-[var(--color-brand-border)] bg-black/40 flex items-center justify-center text-[9px] text-slate-600 shrink-0">N/A</div>
+                      <div className="w-14 h-14 border border-[var(--color-brand-border)] bg-black/40 flex items-center justify-center text-[10px] text-slate-600 shrink-0">N/A</div>
                     )}
                     <div className="min-w-0">
                       <h3 className="text-xs sm:text-sm font-black text-slate-100 uppercase truncate">{itemName}</h3>
-                      <p className="text-[10px] text-slate-400 uppercase tracking-widest mt-0.5 truncate">
-                        <span className="text-[var(--color-metric-safe-acts)] font-bold">{order.points_spent} PTS</span> • {empName} • <span className="text-slate-300">{loc}</span>
+                      <p className="text-[10px] sm:text-[11px] text-slate-400 uppercase tracking-widest mt-0.5 truncate">
+                        <span className="text-[var(--color-brand-green,#00ff9d)] font-bold">{order.points_spent} PTS</span> • {empName} • <span className="text-slate-300">{loc}</span>
                       </p>
-                      <p className="text-[9px] text-slate-500 mt-1">
+                      <p className="text-[10px] text-slate-500 mt-1">
                         Placed: {new Date(order.created_at).toLocaleDateString()} at {new Date(order.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </p>
                     </div>
@@ -202,17 +202,17 @@ export default function FulfillmentBoard({ itemVariants, managers = [] }: Fulfil
                   <div className="flex flex-wrap sm:flex-nowrap items-end gap-3 w-full lg:w-auto shrink-0">
                     {/* Manager Dropdown */}
                     <div className="flex-1 sm:w-44">
-                      <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">
                         Assigned Lead:
                       </label>
                       <select
                         value={order.assigned_manager_id || ""}
                         onChange={(e) => handleManagerChange(order, e.target.value)}
-                        className="w-full p-2.5 text-[10px] font-bold uppercase outline-none cursor-pointer rounded-sm border bg-[var(--color-brand-card)] text-slate-200 border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)]"
+                        className="w-full min-h-[44px] p-2.5 sm:p-3 text-xs font-bold uppercase outline-none cursor-pointer rounded-sm border bg-[var(--color-brand-card)] text-slate-200 border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] touch-manipulation"
                       >
                         <option value="">-- UNASSIGNED --</option>
                         {managers.map(mgr => (
-                          <option key={mgr.id} value={mgr.id}>
+                          <option key={mgr.id} value={mgr.id} className="bg-[var(--color-brand-card)] text-white">
                             {mgr.nickname || mgr.first_name}
                           </option>
                         ))}
@@ -221,16 +221,16 @@ export default function FulfillmentBoard({ itemVariants, managers = [] }: Fulfil
 
                     {/* Status Dropdown */}
                     <div className="flex-1 sm:w-44">
-                      <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-1">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">
                         Order Status:
                       </label>
                       <select
                         value={order.status}
                         onChange={(e) => handleStatusChange(order, e.target.value)}
-                        className={`w-full p-2.5 text-[10px] font-bold uppercase outline-none cursor-pointer rounded-sm border bg-[var(--color-brand-card)] transition-colors ${statusConfig.color} border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)]`}
+                        className={`w-full min-h-[44px] p-2.5 sm:p-3 text-xs font-bold uppercase outline-none cursor-pointer rounded-sm border bg-[var(--color-brand-card)] transition-colors ${statusConfig.color} border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] touch-manipulation`}
                       >
                         {STATUS_OPTIONS.map(opt => (
-                          <option key={opt.value} value={opt.value} className="text-slate-200">
+                          <option key={opt.value} value={opt.value} className="bg-[var(--color-brand-card)] text-slate-200">
                             {opt.label}
                           </option>
                         ))}
@@ -238,15 +238,15 @@ export default function FulfillmentBoard({ itemVariants, managers = [] }: Fulfil
                     </div>
 
                     {/* Aligned Cancel & Refund Button */}
-                    <div className="shrink-0">
-                      <span className="text-[9px] font-bold text-transparent select-none uppercase tracking-widest block mb-1">
+                    <div className="shrink-0 w-full sm:w-auto">
+                      <span className="hidden sm:block text-[10px] font-bold text-transparent select-none uppercase tracking-widest mb-1">
                         Action
                       </span>
                       <button
                         type="button"
                         onClick={() => setCancellingOrder(order)}
                         title="Cancel order and refund points"
-                        className="px-3.5 py-2.5 border border-red-900/60 bg-red-950/30 hover:bg-red-900/60 text-red-400 hover:text-white rounded-sm text-[10px] font-bold uppercase tracking-wider transition-colors cursor-pointer whitespace-nowrap"
+                        className="w-full sm:w-auto min-h-[44px] px-4 py-2.5 border border-[var(--color-brand-red,#ff3b5c)]/60 bg-[var(--color-brand-red,#ff3b5c)]/10 hover:bg-[var(--color-brand-red,#ff3b5c)] hover:text-white text-[var(--color-brand-red,#ff3b5c)] rounded-sm text-xs font-black uppercase tracking-wider transition-all cursor-pointer whitespace-nowrap active:scale-[0.98] touch-manipulation focus:outline-none"
                       >
                         ✕ Cancel
                       </button>
@@ -269,17 +269,17 @@ export default function FulfillmentBoard({ itemVariants, managers = [] }: Fulfil
             <h2 className="text-slate-300 font-bold uppercase tracking-widest text-xs">
               Fulfilled Orders
             </h2>
-            <span className="text-[10px] text-slate-500 uppercase">{completedOrders.length} Completed</span>
+            <span className="text-[10px] sm:text-[11px] text-slate-500 uppercase font-bold">{completedOrders.length} Completed</span>
           </div>
           
           <div className="space-y-2 max-h-56 overflow-y-auto">
             {completedOrders.length === 0 ? (
-              <p className="text-slate-600 text-[10px] uppercase font-bold">No fulfilled orders yet.</p>
+              <p className="text-slate-600 text-xs uppercase font-bold">No fulfilled orders yet.</p>
             ) : (
               completedOrders.map(order => {
                 const managerName = order.manager ? (order.manager.nickname || order.manager.first_name) : null;
                 return (
-                  <div key={order.id} className="flex justify-between items-center py-2 border-b border-[var(--color-brand-border)]/50 last:border-0 text-[10px] uppercase font-bold tracking-wider">
+                  <div key={order.id} className="flex justify-between items-center py-2 border-b border-[var(--color-brand-border)]/50 last:border-0 text-[10px] sm:text-[11px] uppercase font-bold tracking-wider">
                     <span className="text-slate-400">
                       {order.employee?.nickname || order.employee?.first_name} • <span className="text-slate-200">{order.item?.item_name}</span>
                       {managerName && <span className="text-slate-500 font-normal"> ({managerName})</span>}
@@ -298,19 +298,19 @@ export default function FulfillmentBoard({ itemVariants, managers = [] }: Fulfil
             <h2 className="text-slate-300 font-bold uppercase tracking-widest text-xs">
               Cancelled / Refunded
             </h2>
-            <span className="text-[10px] text-slate-500 uppercase">{cancelledOrders.length} Voided</span>
+            <span className="text-[10px] sm:text-[11px] text-slate-500 uppercase font-bold">{cancelledOrders.length} Voided</span>
           </div>
           
           <div className="space-y-2 max-h-56 overflow-y-auto">
             {cancelledOrders.length === 0 ? (
-              <p className="text-slate-600 text-[10px] uppercase font-bold">No cancelled orders.</p>
+              <p className="text-slate-600 text-xs uppercase font-bold">No cancelled orders.</p>
             ) : (
               cancelledOrders.map(order => (
-                <div key={order.id} className="flex justify-between items-center py-2 border-b border-[var(--color-brand-border)]/50 last:border-0 text-[10px] uppercase font-bold tracking-wider">
+                <div key={order.id} className="flex justify-between items-center py-2 border-b border-[var(--color-brand-border)]/50 last:border-0 text-[10px] sm:text-[11px] uppercase font-bold tracking-wider">
                   <span className="text-slate-500 line-through">
                     {order.employee?.nickname || order.employee?.first_name} • {order.item?.item_name}
                   </span>
-                  <span className="text-red-400">REFUNDED (+{order.points_spent} PTS)</span>
+                  <span className="text-[var(--color-brand-red,#ff3b5c)]">REFUNDED (+{order.points_spent} PTS)</span>
                 </div>
               ))
             )}

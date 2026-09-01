@@ -42,7 +42,11 @@ export default function OperationalMap() {
         </div>
 
         <div className="relative">
-          <svg viewBox="0 0 959 593" className="w-full h-auto drop-shadow-[0_20px_50px_rgba(0,0,0,0.8)]" preserveAspectRatio="xMidYMid meet">
+          <svg 
+            viewBox="0 0 959 593" 
+            className="w-full h-auto drop-shadow-[0_20px_50px_rgba(0,0,0,0.8)] touch-manipulation select-none" 
+            preserveAspectRatio="xMidYMid meet"
+          >
             <defs>
               <style>{`
                 .state { fill: #384352; stroke: #0e1117; stroke-width: 1.5; transition: all 0.25s ease; cursor: pointer; }
@@ -111,12 +115,13 @@ export default function OperationalMap() {
               <circle className="state" onClick={(e: any) => handleStateClick(e, "Washington DC")} cx="801.6" cy="252.1" r="5" />
             </g>
           </svg>
-{/* {/* Tactical HUD Interactive Popup */}
+
+          {/* Tactical HUD Interactive Popup */}
           {popup && (
             <>
               {/* Invisible Click-Off Backdrop to dismiss anywhere outside */}
               <div 
-                className="fixed inset-0 z-[95] bg-black/40 sm:bg-transparent"
+                className="fixed inset-0 z-[95] bg-black/50 sm:bg-transparent touch-manipulation"
                 onClick={() => setPopup(null)}
                 aria-hidden="true"
               />
@@ -136,7 +141,7 @@ export default function OperationalMap() {
                   <span className="text-xs text-[#0088ff] font-bold uppercase tracking-widest">[ STATE NODE: {popup.name} ]</span>
                   <button 
                     onClick={() => setPopup(null)} 
-                    className="text-slate-200 hover:text-white font-bold text-xs cursor-pointer px-2.5 py-1 border border-slate-600 hover:border-slate-400 rounded-xs transition-colors bg-[#070d19]"
+                    className="text-slate-200 hover:text-white active:text-white font-bold text-xs cursor-pointer p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center border border-slate-600 hover:border-slate-400 active:scale-90 rounded-xs transition-all bg-[#070d19] touch-manipulation select-none"
                     aria-label="Close state information"
                   >
                     ✕
@@ -150,7 +155,7 @@ export default function OperationalMap() {
                     <span className="text-slate-400 font-bold uppercase block mb-1">Email:</span>
                     <a 
                       href={`mailto:${mapEmail}`} 
-                      className="block bg-[#070d19] border border-slate-600 hover:border-[#0088ff] px-3.5 py-2 rounded-xs font-mono text-xs font-bold text-white hover:text-[#0088ff] transition-all no-underline break-all"
+                      className="block bg-[#070d19] border border-slate-600 hover:border-[#0088ff] active:border-[#0088ff] px-3.5 py-2.5 rounded-xs font-mono text-xs font-bold text-white hover:text-[#0088ff] active:text-[#0088ff] active:scale-[0.98] transition-all no-underline break-all touch-manipulation"
                     >
                       {mapEmail}
                     </a>

@@ -9,8 +9,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "IMC Industrial Portal",
-  description: "Safety, Catalog, and Incentive Management Portal",
+  title: "Interwest Mechanical Contractors | Industrial Piping, HVAC & Conveyance",
+  description:
+    "Class A mechanical contractor specializing in high-purity process piping, heavy industrial refrigeration, commercial air handling, and packaging line setting.",
 };
 
 export default function PublicLayout({
@@ -19,10 +20,11 @@ export default function PublicLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className={`${inter.variable} font-sans antialiased bg-[#0e1117] min-h-screen text-slate-100`}>
+    <div
+      className={`${inter.variable} font-sans antialiased bg-[#0b0f19] min-h-screen text-slate-100 selection:bg-[#0088ff] selection:text-white flex flex-col`}
+    >
       <Navbar />
-      <main>{children}</main>
+      <main className="flex-1 w-full">{children}</main>
     </div>
   );
 }
-

@@ -74,14 +74,15 @@ export default function Home() {
             <AhuBlueprintAnimation interactive={isInteractive} />
           </div>
 
-          {/* Interactive Mode Mobile Toggle Button (Bottom-Right of Canvas) */}
-          <div className="absolute bottom-2 right-4 z-40 pointer-events-auto">
+          {/* Interactive Mode Mobile Toggle Button (Bottom-Right of Canvas, 48px Touch Area & Feedback) */}
+          <div className="absolute bottom-1 right-2 z-40 pointer-events-auto">
             <button
               onClick={() => setIsInteractive(!isInteractive)}
-              className={`inline-flex items-center font-mono text-[10px] font-bold uppercase tracking-widest transition-all cursor-pointer p-1 ${
+              aria-label={isInteractive ? "Lock camera rotation" : "Inspect 3D model controls"}
+              className={`inline-flex items-center justify-center p-3 font-mono text-[10px] font-bold uppercase tracking-widest transition-all active:scale-95 cursor-pointer touch-manipulation select-none ${
                 isInteractive 
-                  ? "text-[#ea1f27] hover:text-white" 
-                  : "text-slate-400 hover:text-white"
+                  ? "text-[#ea1f27] active:text-white" 
+                  : "text-slate-400 active:text-white"
               }`}
             >
               {isInteractive ? (
@@ -115,13 +116,13 @@ export default function Home() {
           <div className="flex flex-row items-center gap-3 w-full">
             <Link 
               href="/contact" 
-              className="flex-1 px-3 py-3.5 bg-[#ea1f27] hover:bg-[#d41920] text-white font-mono text-[11px] font-bold uppercase tracking-wider rounded-sm transition-all text-center whitespace-nowrap shadow-md active:scale-[0.98]"
+              className="flex-1 px-3 py-3.5 bg-[#ea1f27] hover:bg-[#d41920] active:bg-[#b5181e] text-white font-mono text-[11px] font-bold uppercase tracking-wider rounded-sm transition-all text-center whitespace-nowrap shadow-md active:scale-[0.97] touch-manipulation"
             >
               Initiate Bid
             </Link>
             <Link 
               href="/what-we-do" 
-              className="flex-1 px-3 py-3.5 bg-slate-900/80 hover:bg-slate-800 text-slate-100 border border-slate-700 hover:border-slate-500 font-mono text-[11px] font-bold uppercase tracking-wider rounded-sm transition-all text-center whitespace-nowrap shadow-md active:scale-[0.98]"
+              className="flex-1 px-3 py-3.5 bg-slate-900/80 hover:bg-slate-800 active:bg-slate-700 text-slate-100 border border-slate-700 hover:border-slate-500 font-mono text-[11px] font-bold uppercase tracking-wider rounded-sm transition-all text-center whitespace-nowrap shadow-md active:scale-[0.97] touch-manipulation"
             >
               Capabilities
             </Link>
@@ -137,7 +138,8 @@ export default function Home() {
           <div className="absolute top-8 left-8 z-40 pointer-events-auto">
             <button
               onClick={() => setIsInteractive(!isInteractive)}
-              className={`inline-flex items-center font-mono text-xs font-bold uppercase tracking-widest transition-all cursor-pointer ${
+              aria-label={isInteractive ? "Lock camera rotation" : "Inspect 3D model controls"}
+              className={`inline-flex items-center font-mono text-xs font-bold uppercase tracking-widest transition-all active:scale-95 cursor-pointer ${
                 isInteractive 
                   ? "text-[#ea1f27] hover:text-white" 
                   : "text-slate-400 hover:text-white"
@@ -180,13 +182,13 @@ export default function Home() {
             <div className="flex flex-row items-center gap-4 w-full pt-1">
               <Link 
                 href="/contact" 
-                className="w-auto px-8 py-4 bg-[#0b0f19]/80 hover:bg-white hover:text-[#0b0f19] text-white backdrop-blur-md border border-slate-600 hover:border-white font-mono text-xs font-bold uppercase tracking-widest rounded-xs transition-all text-center whitespace-nowrap shadow-sm active:scale-[0.98]"
+                className="w-auto px-8 py-4 bg-[#0b0f19]/80 hover:bg-white hover:text-[#0b0f19] text-white backdrop-blur-md border border-slate-600 hover:border-white font-mono text-xs font-bold uppercase tracking-widest rounded-xs transition-all text-center whitespace-nowrap shadow-sm active:scale-[0.97]"
               >
                 Initiate Bid
               </Link>
               <Link 
                 href="/what-we-do" 
-                className="w-auto px-8 py-4 bg-[#0b0f19]/80 hover:bg-[#ea1f27]/10 text-slate-200 hover:text-[#ea1f27] backdrop-blur-md border border-slate-700 hover:border-[#ea1f27] font-mono text-xs font-bold uppercase tracking-widest rounded-xs transition-all text-center whitespace-nowrap shadow-sm active:scale-[0.98]"
+                className="w-auto px-8 py-4 bg-[#0b0f19]/80 hover:bg-[#ea1f27]/10 text-slate-200 hover:text-[#ea1f27] backdrop-blur-md border border-slate-700 hover:border-[#ea1f27] font-mono text-xs font-bold uppercase tracking-widest rounded-xs transition-all text-center whitespace-nowrap shadow-sm active:scale-[0.97]"
               >
                 Capabilities
               </Link>
@@ -490,12 +492,18 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row items-center gap-4 w-full justify-center">
             <Link 
               href="/contact" 
-              className="w-full sm:w-auto px-8 sm:px-10 py-3.5 sm:py-4 bg-[#ea1f27] hover:bg-[#d41920] text-white font-mono text-xs font-bold uppercase tracking-[0.15em] rounded-xs shadow-lg transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-3"
+              className="w-full sm:w-auto px-8 sm:px-10 py-3.5 sm:py-4 bg-[#ea1f27] hover:bg-[#d41920] active:bg-[#b5181e] text-white font-mono text-xs font-bold uppercase tracking-[0.15em] rounded-xs shadow-lg transition-all duration-200 active:scale-[0.97] touch-manipulation flex items-center justify-center gap-3"
             >
               Contact Us <ArrowRight className="w-4 h-4" />
             </Link>
             <span className="font-mono text-xs text-slate-400 font-bold uppercase tracking-widest mt-2 sm:mt-0">
-              OR CALL: <a href={phoneHref} className="text-white hover:text-[#0088ff] transition-colors">{phoneDisplay}</a>
+              OR CALL:{" "}
+              <a 
+                href={phoneHref} 
+                className="inline-block py-2 px-1 text-white hover:text-[#0088ff] active:text-[#0088ff] transition-colors active:scale-95 touch-manipulation"
+              >
+                {phoneDisplay}
+              </a>
             </span>
           </div>
         </div>

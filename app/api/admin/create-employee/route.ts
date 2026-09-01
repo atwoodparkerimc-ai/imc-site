@@ -15,8 +15,13 @@ export async function POST(req: Request) {
       );
     }
 
-    // Safely create admin client inside the request handler
-    const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
+    // Safely create admin client inside request scope
+    const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    });
 
     // 1. Verify caller session token
     const authHeader = req.headers.get("authorization");
@@ -24,7 +29,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized access." }, { status: 401 });
     }
 
-    const token = authHeader.replace("Bearer ", "");
+    const token = authHeader.replace(/^Bearer\s+/i, "").trim();
     const { data: { user }, error: authCheckError } = await supabaseAdmin.auth.getUser(token);
 
     if (authCheckError || !user || user.email?.toLowerCase() !== SUPER_ADMIN_EMAIL.toLowerCase()) {
@@ -44,20 +49,26 @@ export async function POST(req: Request) {
       );
     }
 
-    // 3. Create auth account via GoTrue
+    // 3. Create auth account via GoTrue (Pre-confirmed)
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email: email.trim().toLowerCase(),
       password: "Imc123",
       email_confirm: true,
+      user_metadata: {
+        first_name: firstName.trim(),
+        last_name: lastName.trim(),
+        location: location || "Springville Shop",
+        must_change_password: true,
+      },
     });
 
-    if (authError) {
-      return NextResponse.json({ error: authError.message }, { status: 400 });
+    if (authError || !authData.user) {
+      return NextResponse.json({ error: authError?.message || "Failed to create user" }, { status: 400 });
     }
 
     const userId = authData.user.id;
 
-    // 4. Create profile with must_change_password = true
+    // 4. Create profile record with must_change_password = true
     const { error: profileError } = await supabaseAdmin
       .from("profiles")
       .upsert({
@@ -71,6 +82,7 @@ export async function POST(req: Request) {
         must_change_password: true,
       });
 
+    // Rollback auth user if profile creation fails
     if (profileError) {
       await supabaseAdmin.auth.admin.deleteUser(userId);
       return NextResponse.json({ error: profileError.message }, { status: 400 });

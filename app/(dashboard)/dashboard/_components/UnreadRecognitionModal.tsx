@@ -27,23 +27,21 @@ export default function UnreadRecognitionModal({
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 font-mono">
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 font-mono select-none"
+      >
         <motion.div
-          initial={{ opacity: 0, scale: 0.85, y: 20 }}
+          initial={{ opacity: 0, scale: 0.9, y: 15 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.85, y: 20 }}
-          className="w-full max-w-sm border-2 p-6 rounded-sm shadow-2xl relative overflow-hidden text-center tactical-card"
-          style={{
-            backgroundColor: "var(--color-brand-card)",
-            borderColor: "var(--color-brand-green, #00ff9d)",
-            boxShadow: "0 0 30px color-mix(in srgb, var(--color-brand-green, #00ff9d) 25%, transparent)"
-          }}
+          exit={{ opacity: 0, scale: 0.9, y: 15 }}
+          transition={{ type: "spring", stiffness: 300, damping: 25 }}
+          className="w-full max-w-sm border-2 border-[var(--color-brand-green,#00ff9d)] bg-[var(--color-brand-card)] p-6 rounded-sm shadow-[0_0_30px_rgba(0,255,157,0.25)] relative overflow-hidden text-center tactical-card"
         >
           {/* Top Green Accent Line */}
-          <div 
-            className="absolute top-0 left-0 w-full h-1 animate-pulse" 
-            style={{ backgroundColor: "var(--color-brand-green, #00ff9d)" }}
-          />
+          <div className="absolute top-0 left-0 w-full h-1 bg-[var(--color-brand-green,#00ff9d)] animate-pulse" />
 
           {/* Header Badge */}
           <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-black/50 border border-[var(--color-brand-green,#00ff9d)]/40 text-[9px] font-black uppercase tracking-widest text-[var(--color-brand-green,#00ff9d)] mb-4 rounded-xs">
@@ -70,26 +68,14 @@ export default function UnreadRecognitionModal({
 
           {/* Claim / Dismiss Button */}
           <button
+            type="button"
             onClick={onDismiss}
-            className="w-full py-3.5 font-black text-xs uppercase tracking-[0.2em] transition-all cursor-pointer rounded-sm shadow-md border outline-none mt-2"
-            style={{
-              backgroundColor: "var(--color-brand-green, #00ff9d)",
-              borderColor: "var(--color-brand-green, #00ff9d)",
-              color: "#0a0a0a"
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = "#ffffff";
-              e.currentTarget.style.borderColor = "#ffffff";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = "var(--color-brand-green, #00ff9d)";
-              e.currentTarget.style.borderColor = "var(--color-brand-green, #00ff9d)";
-            }}
+            className="w-full min-h-[44px] py-3.5 px-4 bg-[var(--color-brand-green,#00ff9d)] hover:bg-white active:bg-slate-200 border border-[var(--color-brand-green,#00ff9d)] hover:border-white text-[#0a0a0a] font-black text-xs uppercase tracking-[0.2em] transition-all cursor-pointer rounded-sm shadow-md active:scale-[0.98] touch-manipulation focus:outline-none mt-2"
           >
             Acknowledge & Collect ↗
           </button>
         </motion.div>
-      </div>
+      </motion.div>
     </AnimatePresence>
   );
 }

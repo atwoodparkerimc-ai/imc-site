@@ -119,7 +119,7 @@ export default function Navbar() {
           <div className="flex-shrink-0 flex items-center">
             <Link 
               href="/" 
-              className="block focus:outline-none group" 
+              className="block focus:outline-none group touch-manipulation" 
               aria-label="IMC Home"
             >
               <Image 
@@ -133,7 +133,7 @@ export default function Navbar() {
             </Link>
           </div>
 
-          {/* Desktop Links (Untouched) */}
+          {/* Desktop Links */}
           <div className="hidden md:flex items-center space-x-10">
             {NAV_LINKS.map((link) => {
               const isActive = pathname === link.href;
@@ -156,7 +156,7 @@ export default function Navbar() {
             {/* Employee Login CTA */}
             <Link
               href="/login"
-              className={`px-6 py-2.5 rounded-xs border text-sm font-mono font-bold uppercase tracking-wider transition-all duration-200 shadow-md active:translate-y-0.5 ${
+              className={`px-6 py-2.5 rounded-xs border text-sm font-mono font-bold uppercase tracking-wider transition-all duration-200 shadow-md active:translate-y-0.5 active:scale-[0.98] ${
                 pathname === "/login"
                   ? "bg-[#ea1f27] border-[#ea1f27] text-white shadow-[0_0_15px_rgba(234,31,39,0.4)]"
                   : "bg-slate-800 hover:bg-slate-700 border-slate-600 hover:border-[#ea1f27] text-white hover:shadow-[0_0_15px_rgba(234,31,39,0.3)] active:bg-slate-900"
@@ -166,15 +166,15 @@ export default function Navbar() {
             </Link>
           </div>
 
-          {/* Mobile Toggle Button */}
+          {/* Mobile Toggle Button (Expanded 48x48px Touch Area & Feedback) */}
           <div className="md:hidden flex items-center">
             <button
               onClick={() => setIsOpen(true)}
               type="button"
-              className="inline-flex items-center justify-center p-2 rounded-xs text-slate-200 hover:text-white hover:bg-slate-800 active:scale-95 transition-all focus:outline-none cursor-pointer"
+              className="inline-flex items-center justify-center p-3 min-w-[48px] min-h-[48px] rounded-xs text-slate-200 hover:text-white hover:bg-slate-800 active:bg-slate-700 active:scale-95 transition-all focus:outline-none cursor-pointer touch-manipulation select-none"
               aria-expanded={isOpen}
+              aria-label="Open main menu"
             >
-              <span className="sr-only">Open main menu</span>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="3" y1="12" x2="21" y2="12"></line>
                 <line x1="3" y1="6" x2="21" y2="6"></line>
@@ -210,8 +210,8 @@ export default function Navbar() {
             >
               {/* Header Bar */}
               <div>
-                <div className="h-16 flex items-center px-6 justify-between border-b border-slate-800/80">
-                  <Link href="/" onClick={() => setIsOpen(false)} className="flex items-center">
+                <div className="h-16 flex items-center px-4 justify-between border-b border-slate-800/80">
+                  <Link href="/" onClick={() => setIsOpen(false)} className="flex items-center touch-manipulation">
                     <Image 
                       src="/imclogo.svg" 
                       alt="IMC Logo" 
@@ -221,9 +221,11 @@ export default function Navbar() {
                       priority
                     />
                   </Link>
+                  {/* Expanded Close Hit Target (48x48px standard) */}
                   <button 
                     onClick={() => setIsOpen(false)}
-                    className="text-slate-400 hover:text-white transition-colors focus:outline-none cursor-pointer p-1"
+                    aria-label="Close menu"
+                    className="text-slate-400 hover:text-white active:text-white p-3 min-w-[48px] min-h-[48px] flex items-center justify-center transition-all active:scale-90 focus:outline-none cursor-pointer touch-manipulation select-none"
                   >
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                       <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -232,7 +234,7 @@ export default function Navbar() {
                   </button>
                 </div>
 
-                {/* Staggered Navigation Link Items */}
+                {/* Staggered Navigation Link Items (48px Hit Targets) */}
                 <div className="flex flex-col py-6 gap-2 px-3 overflow-y-auto">
                   {NAV_LINKS.map((item) => {
                     const isActive = pathname === item.href;
@@ -242,10 +244,10 @@ export default function Navbar() {
                         href={item.href}
                         variants={drawerItemVariants}
                         onClick={() => setIsOpen(false)}
-                        className={`flex items-center gap-3.5 p-3 rounded-sm min-h-[44px] text-xs font-mono font-bold uppercase tracking-wider transition-colors ${
+                        className={`flex items-center gap-3.5 px-3 min-h-[48px] rounded-sm text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-[0.98] touch-manipulation ${
                           isActive 
                             ? "text-[#ea1f27] bg-[#ea1f27]/10 border border-[#ea1f27]/30 shadow-[inset_0_0_12px_rgba(234,31,39,0.15)]" 
-                            : "text-slate-300 hover:text-white hover:bg-white/5 border border-transparent"
+                            : "text-slate-300 hover:text-white active:text-white hover:bg-white/5 border border-transparent"
                         }`}
                       >
                         <div className="w-5 flex justify-center items-center flex-shrink-0">
@@ -264,10 +266,10 @@ export default function Navbar() {
                   href="/login"
                   variants={drawerItemVariants}
                   onClick={() => setIsOpen(false)}
-                  className={`w-full flex items-center gap-3 px-3 p-3 rounded-sm min-h-[44px] text-xs font-mono font-bold uppercase tracking-wider transition-colors ${
+                  className={`w-full flex items-center gap-3 px-3 min-h-[48px] rounded-sm text-xs font-mono font-bold uppercase tracking-wider transition-all active:scale-[0.98] touch-manipulation ${
                     pathname === "/login" 
                       ? "bg-[#ea1f27]/15 border border-[#ea1f27] text-white shadow-[0_0_15px_rgba(234,31,39,0.25)]" 
-                      : "bg-slate-900/60 hover:bg-slate-800 border border-slate-700/80 hover:border-[#ea1f27] text-white"
+                      : "bg-slate-900/60 hover:bg-slate-800 active:bg-slate-700 border border-slate-700/80 hover:border-[#ea1f27] text-white"
                   }`}
                 >
                   <div className="w-5 flex justify-center items-center flex-shrink-0 text-slate-300 group-hover:text-white">

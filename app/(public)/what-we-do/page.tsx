@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { 
   ArrowRight, 
   Mail, 
@@ -104,10 +103,10 @@ export default function CapabilitiesLandingPage() {
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,#030914_100%)] pointer-events-none" />
 
       {/* Main Console Interface */}
-      <main className="flex-1 relative z-10 max-w-[1600px] mx-auto px-6 sm:px-10 lg:px-16 pt-24 pb-20 w-full">
+      <main className="flex-1 relative z-10 max-w-[1600px] mx-auto px-6 sm:px-10 lg:px-16 pt-16 sm:pt-20 lg:pt-24 pb-14 sm:pb-20 w-full">
         
         {/* Command Header */}
-        <div className="max-w-4xl mb-16 space-y-4">
+        <div className="max-w-4xl mb-12 sm:mb-16 space-y-4">
           <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black uppercase tracking-tight text-white leading-none">
             WHAT WE{" "}
             <span className="text-[#ea1f27]">BU</span>
@@ -122,8 +121,8 @@ export default function CapabilitiesLandingPage() {
           </p>
         </div>
 
-        {/* Temporary Spec Index Notice Card */}
-        <div className="mb-14 p-8 sm:p-10 bg-[#070a10] border border-slate-800 rounded-sm relative shadow-2xl overflow-hidden">
+        {/* Spec Index Notice Card */}
+        <div className="mb-12 sm:mb-14 p-6 sm:p-10 bg-[#070a10] border border-slate-800 rounded-sm relative shadow-2xl overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-[#ea1f27] via-[#64748b] to-[#0088ff]" />
           
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
@@ -139,21 +138,22 @@ export default function CapabilitiesLandingPage() {
 
             <a 
               href="mailto:estimating@interwestmechanical.com" 
-              className="inline-flex items-center justify-center gap-2 px-6 py-4 bg-[#ea1f27] hover:bg-[#d41920] text-white font-mono font-bold text-xs sm:text-sm uppercase tracking-[0.15em] transition-all rounded-xs shrink-0 shadow-lg active:scale-[0.98]"
+              className="inline-flex items-center justify-center gap-2 px-6 py-4 bg-[#ea1f27] hover:bg-[#d41920] active:bg-[#b5181e] text-white font-mono font-bold text-xs sm:text-sm uppercase tracking-[0.15em] transition-all rounded-xs shrink-0 shadow-lg active:scale-[0.97] touch-manipulation select-none cursor-pointer"
             >
-              Contact Us Today <ArrowRight className="w-4 h-4" />
+              <span>Contact Us Today</span>
+              <ArrowRight className="w-4 h-4" />
             </a>
           </div>
         </div>
 
         {/* 6-Column Systems Matrix */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 mb-12 sm:mb-16">
           {capabilitySectors.map((sector, idx) => {
             const IconComponent = sector.icon;
             return (
               <div 
                 key={idx} 
-                className={`bg-[#070a10] border border-slate-800 p-8 sm:p-10 flex flex-col justify-between rounded-sm relative shadow-xl ${sector.accentBorder} border-t-2`}
+                className={`bg-[#070a10] border border-slate-800 p-6 sm:p-10 flex flex-col justify-between rounded-sm relative shadow-xl ${sector.accentBorder} border-t-2`}
               >
                 <div>
                   <div className="flex items-center justify-between mb-6">
@@ -171,13 +171,13 @@ export default function CapabilitiesLandingPage() {
                     {sector.description}
                   </p>
 
-                  <div className="space-y-4">
+                  <div className="space-y-3.5 sm:space-y-4">
                     {sector.specs.map((item, itemIdx) => (
                       <div key={itemIdx} className="bg-[#030914] border border-slate-800/80 p-4 rounded-xs space-y-1.5">
-                        <span className="font-mono text-sm font-bold text-white uppercase tracking-wider block">
+                        <span className="font-mono text-xs sm:text-sm font-bold text-white uppercase tracking-wider block">
                           {item.name}
                         </span>
-                        <p className="text-slate-300 text-sm leading-relaxed">
+                        <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
                           {item.detail}
                         </p>
                       </div>
@@ -190,34 +190,40 @@ export default function CapabilitiesLandingPage() {
         </div>
 
         {/* Tactical Communications Strip */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-8 sm:p-10 bg-[#070a10] border border-slate-800 rounded-sm">
-          <div className="flex items-start gap-5">
-            <div className="p-3.5 bg-[#ea1f27]/10 border border-[#ea1f27]/30 text-[#ea1f27] rounded-xs shrink-0">
-              <Phone className="w-6 h-6" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 p-6 sm:p-10 bg-[#070a10] border border-slate-800 rounded-sm">
+          <div className="flex items-start gap-4 sm:gap-5">
+            <div className="p-3 sm:p-3.5 bg-[#ea1f27]/10 border border-[#ea1f27]/30 text-[#ea1f27] rounded-xs shrink-0">
+              <Phone className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
             <div>
               <span className="text-xs sm:text-sm font-mono text-[#ea1f27] uppercase font-bold tracking-[0.2em] block mb-1">
                 Phone
               </span>
-              <a href="tel:8013605735" className="font-mono text-xl sm:text-2xl font-black text-white hover:text-[#ea1f27] transition-colors">
+              <a 
+                href="tel:8013605735" 
+                className="font-mono text-lg sm:text-2xl font-black text-white hover:text-[#ea1f27] active:text-[#ea1f27] py-1 inline-block transition-all active:scale-[0.98] touch-manipulation"
+              >
                 (801) 360-5735
               </a>
-              <p className="text-slate-300 text-sm mt-1">Connect directly with project managers and field operations leads.</p>
+              <p className="text-slate-300 text-xs sm:text-sm mt-1">Connect directly with project managers and field operations leads.</p>
             </div>
           </div>
 
-          <div className="flex items-start gap-5">
-            <div className="p-3.5 bg-[#0088ff]/10 border border-[#0088ff]/30 text-[#0088ff] rounded-xs shrink-0">
-              <Mail className="w-6 h-6" />
+          <div className="flex items-start gap-4 sm:gap-5">
+            <div className="p-3 sm:p-3.5 bg-[#0088ff]/10 border border-[#0088ff]/30 text-[#0088ff] rounded-xs shrink-0">
+              <Mail className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
             <div>
               <span className="text-xs sm:text-sm font-mono text-[#0088ff] uppercase font-bold tracking-[0.2em] block mb-1">
                 E-Mail
               </span>
-              <a href="mailto:estimating@interwestmechanical.com" className="font-mono text-base sm:text-lg font-bold text-white hover:text-[#0088ff] transition-colors break-all">
+              <a 
+                href="mailto:estimating@interwestmechanical.com" 
+                className="font-mono text-sm sm:text-lg font-bold text-white hover:text-[#0088ff] active:text-[#0088ff] py-1 inline-block transition-all break-all active:scale-[0.98] touch-manipulation"
+              >
                 estimating@interwestmechanical.com
               </a>
-              <p className="text-slate-300 text-sm mt-1">Reach out to get your project started</p>
+              <p className="text-slate-300 text-xs sm:text-sm mt-1">Reach out to get your project started</p>
             </div>
           </div>
         </div>

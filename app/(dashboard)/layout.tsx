@@ -8,6 +8,8 @@ import { createClient } from "@/utils/supabase/client";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import UnreadRecognitionModal from "./dashboard/_components/UnreadRecognitionModal";
 
+const SUPER_ADMIN_EMAIL = "atwoodparkerimc@gmail.com";
+
 interface NavItem {
   name: string;
   path: string;
@@ -115,12 +117,11 @@ const drawerItemVariants: Variants = {
 
 const MotionLink = motion(Link);
 
-const supabase = createClient();
-
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const currentYear = new Date().getFullYear();
+  const [supabase] = useState(() => createClient());
   
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(true);
   const [isMobileOpen, setIsMobileOpen] = useState<boolean>(false);
@@ -152,43 +153,61 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     let isMounted = true;
 
     const initializeDashboard = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      try {
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) return;
 
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-          
-      if (profile?.role === 'manager' && isMounted) setIsManager(true);
+        // 1. Direct fallback for Super Admin email
+        const isSuperAdmin = user.email?.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase();
 
-      const { data: alertFeed } = await supabase
-        .from('notifications')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('is_read', false)
-        .order('created_at', { ascending: false })
-        .limit(1);
+        // 2. Fetch profile role safely
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .maybeSingle();
 
-      if (alertFeed && alertFeed.length > 0 && isMounted) {
-        setNotification(alertFeed[0] as NotificationRecord);
-      }
+        if (profileError) {
+          console.warn("Profile fetch notice:", profileError.message);
+        }
 
-      if (!channelRef.current) {
-        channelRef.current = supabase
-          .channel(`alerts-${user.id}`)
-          .on(
-            'postgres_changes',
-            { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
-            (payload) => {
-              const typedPayload = payload as unknown as RealtimePayload;
-              if (typedPayload.new && !typedPayload.new.is_read) {
-                setNotification(typedPayload.new);
+        const role = profile?.role?.toLowerCase();
+        const hasManagerPrivileges = isSuperAdmin || role === 'manager' || role === 'admin' || role === 'superadmin';
+
+        if (hasManagerPrivileges && isMounted) {
+          setIsManager(true);
+        }
+
+        // 3. Unread Notifications Feed
+        const { data: alertFeed } = await supabase
+          .from('notifications')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('is_read', false)
+          .order('created_at', { ascending: false })
+          .limit(1);
+
+        if (alertFeed && alertFeed.length > 0 && isMounted) {
+          setNotification(alertFeed[0] as NotificationRecord);
+        }
+
+        if (!channelRef.current) {
+          channelRef.current = supabase
+            .channel(`alerts-${user.id}`)
+            .on(
+              'postgres_changes',
+              { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
+              (payload) => {
+                const typedPayload = payload as unknown as RealtimePayload;
+                if (typedPayload.new && !typedPayload.new.is_read) {
+                  setNotification(typedPayload.new);
+                }
               }
-            }
-          )
-          .subscribe();
+            )
+            .subscribe();
+        }
+      } catch (err) {
+        console.error("Dashboard layout initialization error:", err);
       }
     };
 
@@ -201,7 +220,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         channelRef.current = null;
       }
     };
-  }, []); 
+  }, [supabase]); 
 
   const dismissNotification = async () => {
     if (!notification) return;
@@ -224,7 +243,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }, [pathname]);
 
   return (
-    <div className="flex h-screen bg-brand-bg font-mono overflow-hidden text-slate-100">
+    <div className="flex h-screen bg-brand-bg font-mono overflow-hidden text-slate-100 selection:bg-[var(--color-brand-blue)] selection:text-white">
       
       {/* 1. MOBILE SIDEBAR & BACKDROP WITH STAGGERED ITEM SLIDE-IN */}
       <AnimatePresence>
@@ -248,7 +267,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               exit="exit"
               className="sidebar-nav-container md:hidden fixed inset-y-0 left-0 z-50 w-64 h-full flex flex-col flex-shrink-0 bg-brand-card border-r border-[var(--color-brand-border)] shadow-2xl"
             >
-              <div className="sidebar-header-bar h-16 flex items-center px-6 justify-between border-b border-[var(--color-brand-border)]">
+              <div className="sidebar-header-bar h-16 flex items-center px-4 sm:px-6 justify-between border-b border-[var(--color-brand-border)]">
                 <Image 
                   src="/imclogo.svg" 
                   alt="IMC Logo" 
@@ -259,7 +278,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 />
                 <button 
                   onClick={() => setIsMobileOpen(false)}
-                  className="text-slate-400 hover:text-white transition-colors focus:outline-none cursor-pointer p-1"
+                  className="text-slate-400 hover:text-white active:text-white transition-colors focus:outline-none cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center -mr-2 active:scale-90 touch-manipulation select-none"
+                  aria-label="Close Navigation Drawer"
                 >
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -278,10 +298,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       href={item.path}
                       variants={drawerItemVariants}
                       onClick={() => setIsMobileOpen(false)}
-                      className={`nav-item-link flex items-center gap-3.5 p-3 rounded-sm group relative min-h-[44px] transition-colors ${
+                      className={`nav-item-link flex items-center gap-3.5 p-3 rounded-sm group relative min-h-[44px] transition-all active:scale-[0.98] touch-manipulation select-none ${
                         isActive 
                           ? "active text-[var(--color-brand-blue)] bg-[var(--color-brand-blue)]/10 border border-[var(--color-brand-blue)]/30" 
-                          : "text-slate-300 hover:text-white hover:bg-white/5"
+                          : "text-slate-300 hover:text-white hover:bg-white/5 active:bg-white/10"
                       }`}
                     >
                       <div className="w-5 flex justify-center items-center flex-shrink-0">
@@ -299,7 +319,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     href="/manager"
                     variants={drawerItemVariants}
                     onClick={() => setIsMobileOpen(false)}
-                    className={`nav-manager-btn flex items-center gap-3.5 p-3 mt-4 rounded-sm group min-h-[44px] transition-colors ${
+                    className={`nav-manager-btn flex items-center gap-3.5 p-3 mt-4 rounded-sm group min-h-[44px] transition-all active:scale-[0.98] touch-manipulation select-none ${
                       pathname === "/manager" ? "active" : ""
                     }`}
                   >
@@ -323,7 +343,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   href="/profile"
                   variants={drawerItemVariants}
                   onClick={() => setIsMobileOpen(false)}
-                  className={`nav-footer-btn w-full flex items-center gap-3 px-3 p-3 rounded-sm group min-h-[44px] transition-colors ${
+                  className={`nav-footer-btn w-full flex items-center gap-3 px-3 p-3 rounded-sm group min-h-[44px] transition-all active:scale-[0.98] touch-manipulation select-none ${
                     pathname === "/profile" ? "active" : ""
                   }`}
                 >
@@ -341,7 +361,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <motion.button 
                   variants={drawerItemVariants}
                   onClick={handleLogout}
-                  className="nav-logout-btn w-full flex items-center gap-3 px-3 p-3 rounded-sm group cursor-pointer text-left min-h-[44px] transition-colors"
+                  className="nav-logout-btn w-full flex items-center gap-3 px-3 p-3 rounded-sm group cursor-pointer text-left min-h-[44px] transition-all active:scale-[0.98] touch-manipulation select-none"
                 >
                   <div className="w-5 flex justify-center items-center flex-shrink-0">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -360,19 +380,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         )}
       </AnimatePresence>
 
-      {/* 2. DESKTOP PERMANENT SIDEBAR (100% UNTOUCHED) */}
+      {/* 2. DESKTOP PERMANENT SIDEBAR */}
       <motion.nav 
         animate={{ width: isSidebarOpen ? 240 : 80 }}
         className="sidebar-nav-container hidden md:flex relative inset-y-0 left-0 z-50 h-full flex-col flex-shrink-0"
       >
-        <div className="sidebar-header-bar h-16 flex items-center px-6 justify-between">
+        <div className="sidebar-header-bar h-16 flex items-center px-4 justify-between">
           <AnimatePresence>
             {isSidebarOpen && (
               <motion.div 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 pl-2"
               >
                 <Image 
                   src="/imclogo.svg" 
@@ -388,7 +408,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           
           <button 
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            className="text-slate-400 hover:text-white transition-colors focus:outline-none ml-auto cursor-pointer"
+            className="text-slate-400 hover:text-white active:text-white transition-colors focus:outline-none ml-auto cursor-pointer min-w-[40px] min-h-[40px] flex items-center justify-center rounded-sm hover:bg-white/5 active:scale-90 touch-manipulation select-none"
+            aria-label={isSidebarOpen ? "Collapse Sidebar" : "Expand Sidebar"}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="3" y1="12" x2="21" y2="12"></line>
@@ -406,7 +427,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <Link 
                 key={item.name} 
                 href={item.path}
-                className={`nav-item-link flex items-center gap-3.5 p-3 group relative ${
+                className={`nav-item-link flex items-center gap-3.5 p-3 group relative rounded-sm transition-all active:scale-[0.98] ${
                   isActive ? "active" : ""
                 }`}
               >
@@ -432,7 +453,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {isManager && (
             <Link 
               href="/manager"
-              className={`nav-manager-btn flex items-center gap-3.5 p-3 mt-4 rounded-sm group ${
+              className={`nav-manager-btn flex items-center gap-3.5 p-3 mt-4 rounded-sm group transition-all active:scale-[0.98] ${
                 pathname === "/manager" ? "active" : ""
               }`}
             >
@@ -463,7 +484,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="nav-footer-bar p-3 flex flex-col gap-2">
           <Link 
             href="/profile"
-            className={`nav-footer-btn w-full flex items-center p-2.5 rounded-sm group ${
+            className={`nav-footer-btn w-full flex items-center p-2.5 rounded-sm group transition-all active:scale-[0.98] ${
               pathname === "/profile" ? "active" : ""
             }`}
           >
@@ -479,7 +500,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -10 }}
-                  className="uppercase text-[10px] font-semibold tracking-wider whitespace-nowrap ml-3"
+                  className="uppercase text-xs font-semibold tracking-wider whitespace-nowrap ml-3"
                 >
                   Profile
                 </motion.span>
@@ -489,7 +510,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
           <button 
             onClick={handleLogout}
-            className={`nav-logout-btn w-full flex items-center p-2.5 rounded-sm group cursor-pointer ${
+            className={`nav-logout-btn w-full flex items-center p-2.5 rounded-sm group cursor-pointer transition-all active:scale-[0.98] ${
               isSidebarOpen ? "px-3" : "justify-center"
             }`}
           >
@@ -506,7 +527,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -10 }}
-                  className="uppercase text-[10px] font-semibold tracking-wider whitespace-nowrap ml-3"
+                  className="uppercase text-xs font-semibold tracking-wider whitespace-nowrap ml-3"
                 >
                   Logout
                 </motion.span>
@@ -524,7 +545,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         
         {/* Mobile Top Header: Smart Auto-Reveal on Scroll Up */}
         <div 
-          className={`sidebar-header-bar md:hidden fixed top-0 left-0 right-0 z-30 h-16 bg-brand-card/95 backdrop-blur-md border-b border-[var(--color-brand-border)] flex items-center justify-between px-6 transition-transform duration-300 ${
+          className={`sidebar-header-bar md:hidden fixed top-0 left-0 right-0 z-30 h-16 bg-brand-card/95 backdrop-blur-md border-b border-[var(--color-brand-border)] flex items-center justify-between px-4 sm:px-6 transition-transform duration-300 ${
             showMobileHeader ? "translate-y-0 shadow-lg" : "-translate-y-full pointer-events-none"
           }`}
         >
@@ -543,7 +564,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               setIsMobileOpen(true);
               setIsSidebarOpen(true);
             }}
-            className="text-slate-400 hover:text-white transition-colors focus:outline-none cursor-pointer p-2 -mr-2"
+            className="text-slate-400 hover:text-white active:text-white transition-colors focus:outline-none cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center -mr-2 active:scale-90 touch-manipulation select-none"
+            aria-label="Open Navigation Menu"
           >
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="3" y1="12" x2="21" y2="12"></line>
@@ -595,26 +617,35 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
 
             {/* Right: Legal Links, Employee Terms, & ID. Attribution */}
-            <div className="w-full lg:w-auto lg:flex-1 flex flex-wrap items-center justify-center lg:justify-end gap-x-3 sm:gap-x-4 gap-y-2 text-xs sm:text-sm font-bold tracking-wider">
-              <Link href="/privacy-policy" className="hover:text-white text-slate-300 transition-colors whitespace-nowrap">
+            <div className="w-full lg:w-auto lg:flex-1 flex flex-wrap items-center justify-center lg:justify-end gap-x-2 sm:gap-x-3 gap-y-1 text-xs sm:text-sm font-bold tracking-wider">
+              <Link 
+                href="/privacy-policy" 
+                className="py-2 px-1 text-slate-300 hover:text-white active:text-white transition-colors whitespace-nowrap touch-manipulation"
+              >
                 PRIVACY POLICY
               </Link>
               <span className="text-slate-700">|</span>
-              <Link href="/terms-of-service" className="hover:text-white text-slate-300 transition-colors whitespace-nowrap">
+              <Link 
+                href="/terms" 
+                className="py-2 px-1 text-slate-300 hover:text-white active:text-white transition-colors whitespace-nowrap touch-manipulation"
+              >
                 TERMS OF SERVICE
               </Link>
               <span className="text-slate-700">|</span>
-              <Link href="/employee-terms" className="hover:text-white text-slate-300 transition-colors whitespace-nowrap">
+              <Link 
+                href="/employee-terms" 
+                className="py-2 px-1 text-slate-300 hover:text-white active:text-white transition-colors whitespace-nowrap touch-manipulation"
+              >
                 EMPLOYEE TERMS OF USE
               </Link>
               <span className="text-slate-700">|</span>
-              <span className="inline-flex items-center gap-1.5 text-slate-300 whitespace-nowrap">
+              <span className="inline-flex items-center gap-1.5 text-slate-300 whitespace-nowrap py-2 px-1">
                 Design by{" "}
                 <a 
                   href="https://identityflowcreative.com/index.php" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="inline-flex items-baseline tracking-tight hover:opacity-80 transition-opacity ml-0.5"
+                  className="inline-flex items-baseline tracking-tight hover:opacity-80 transition-opacity ml-0.5 touch-manipulation"
                 >
                   <span 
                     className="font-black text-white text-[16px] leading-none" 

@@ -21,7 +21,6 @@ export default function AddEmployeeModal({ isOpen, onClose, onSuccess }: AddEmpl
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-  // Initialize existing Supabase browser client
   const [supabase] = useState(() => createClient());
 
   if (!isOpen) return null;
@@ -39,13 +38,21 @@ export default function AddEmployeeModal({ isOpen, onClose, onSuccess }: AddEmpl
         throw new Error("Active session lost. Please log in again.");
       }
 
-      const res = await fetch("/api/admin/create-employee", {
+      // Pointed to the canonical hardened account provisioning route
+      const res = await fetch("/api/admin/create-user", {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
           "Authorization": `Bearer ${session.access_token}`
         },
-        body: JSON.stringify({ firstName, lastName, nickname, email, location, role }),
+        body: JSON.stringify({ 
+          firstName: firstName.trim(), 
+          lastName: lastName.trim(), 
+          nickname: nickname.trim(), 
+          email: email.trim().toLowerCase(), 
+          location, 
+          role 
+        }),
       });
 
       const data = await res.json();
@@ -62,89 +69,52 @@ export default function AddEmployeeModal({ isOpen, onClose, onSuccess }: AddEmpl
       
       if (onSuccess) onSuccess();
     } catch (err: any) {
-      setErrorMsg(err.message);
+      setErrorMsg(err.message || "Failed to create employee.");
     } finally {
       setLoading(false);
     }
   };
 
-  const inputStyle = {
-    backgroundColor: "var(--color-brand-bg)",
-    borderColor: "var(--color-brand-border)",
-  };
-
-  const handleInputFocus = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) => {
-    e.currentTarget.style.borderColor = "var(--color-brand-blue)";
-    e.currentTarget.style.boxShadow = "0 0 8px color-mix(in srgb, var(--color-brand-blue) 30%, transparent)";
-  };
-
-  const handleInputBlur = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) => {
-    e.currentTarget.style.borderColor = "var(--color-brand-border)";
-    e.currentTarget.style.boxShadow = "none";
-  };
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 font-mono">
-      <div 
-        className="w-full max-w-md border p-6 shadow-2xl relative rounded-sm"
-        style={{
-          backgroundColor: "var(--color-brand-card)",
-          borderColor: "var(--color-brand-border)",
-        }}
-      >
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 font-mono select-none">
+      <div className="w-full max-w-md bg-[var(--color-brand-card)] border border-[var(--color-brand-border)] p-5 sm:p-6 shadow-2xl relative rounded-sm">
+        
         {/* Top Accent Line */}
-        <div 
-          className="absolute top-0 left-0 w-full h-[2px]" 
-          style={{ backgroundColor: "var(--color-brand-blue)" }}
-        />
+        <div className="absolute top-0 left-0 w-full h-[2px] bg-[var(--color-brand-blue)]" />
 
-        <div 
-          className="flex justify-between items-center border-b pb-3 mb-4"
-          style={{ borderColor: "var(--color-brand-border)" }}
-        >
-          <h2 className="text-base font-black text-slate-100 uppercase tracking-wider flex items-center gap-2">
-            <span 
-              className="w-2 h-2 animate-pulse rounded-none" 
-              style={{ backgroundColor: "var(--color-brand-blue)" }}
-            />
+        {/* Modal Header */}
+        <div className="flex justify-between items-center border-b border-[var(--color-brand-border)] pb-3 mb-4">
+          <h2 className="text-sm sm:text-base font-black text-slate-100 uppercase tracking-wider flex items-center gap-2">
+            <span className="w-2 h-2 bg-[var(--color-brand-blue)] animate-pulse rounded-none" />
             Provision New Employee
           </h2>
           <button 
+            type="button"
             onClick={onClose} 
-            className="text-slate-400 hover:text-slate-100 font-bold text-sm cursor-pointer outline-none focus:outline-none focus:ring-0"
+            className="text-slate-400 hover:text-white active:text-white min-w-[44px] min-h-[44px] flex items-center justify-center -mr-2 font-bold text-sm cursor-pointer transition-all active:scale-90 touch-manipulation focus:outline-none"
+            aria-label="Close modal"
           >
             ✕
           </button>
         </div>
 
+        {/* Error Alert Box */}
         {errorMsg && (
-          <div 
-            className="mb-4 p-3 border text-xs font-bold uppercase rounded-sm"
-            style={{
-              backgroundColor: "color-mix(in srgb, var(--color-brand-red, #f87171) 10%, transparent)",
-              borderColor: "color-mix(in srgb, var(--color-brand-red, #f87171) 40%, transparent)",
-              color: "var(--color-brand-red, #f87171)"
-            }}
-          >
+          <div className="mb-4 p-3 border border-[var(--color-brand-red,#ff3b5c)]/40 bg-[var(--color-brand-red,#ff3b5c)]/10 text-[var(--color-brand-red,#ff3b5c)] text-xs font-bold uppercase rounded-sm">
             [ERROR] {errorMsg}
           </div>
         )}
 
+        {/* Success Alert Box */}
         {successMsg && (
-          <div 
-            className="mb-4 p-3 border text-xs font-bold uppercase rounded-sm"
-            style={{
-              backgroundColor: "color-mix(in srgb, var(--color-brand-green) 10%, transparent)",
-              borderColor: "color-mix(in srgb, var(--color-brand-green) 40%, transparent)",
-              color: "var(--color-brand-green)"
-            }}
-          >
+          <div className="mb-4 p-3 border border-[var(--color-brand-green,#00ff9d)]/40 bg-[var(--color-brand-green,#00ff9d)]/10 text-[var(--color-brand-green,#00ff9d)] text-xs font-bold uppercase rounded-sm">
             [SUCCESS] {successMsg}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-3">
-          <div className="grid grid-cols-2 gap-3">
+        {/* Employee Provisioning Form */}
+        <form onSubmit={handleSubmit} className="space-y-3.5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="text-[10px] uppercase font-black text-slate-400 block mb-1">First Name</label>
               <input
@@ -153,10 +123,7 @@ export default function AddEmployeeModal({ isOpen, onClose, onSuccess }: AddEmpl
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
                 placeholder="Parker"
-                className="w-full border p-2 text-xs text-slate-100 outline-none focus:outline-none focus:ring-0 rounded-sm transition-colors"
-                style={inputStyle}
-                onFocus={handleInputFocus}
-                onBlur={handleInputBlur}
+                className="w-full bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] focus:ring-1 focus:ring-[var(--color-brand-blue)] p-3 text-xs text-slate-100 outline-none rounded-sm transition-all"
               />
             </div>
             <div>
@@ -167,10 +134,7 @@ export default function AddEmployeeModal({ isOpen, onClose, onSuccess }: AddEmpl
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
                 placeholder="Test"
-                className="w-full border p-2 text-xs text-slate-100 outline-none focus:outline-none focus:ring-0 rounded-sm transition-colors"
-                style={inputStyle}
-                onFocus={handleInputFocus}
-                onBlur={handleInputBlur}
+                className="w-full bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] focus:ring-1 focus:ring-[var(--color-brand-blue)] p-3 text-xs text-slate-100 outline-none rounded-sm transition-all"
               />
             </div>
           </div>
@@ -182,10 +146,7 @@ export default function AddEmployeeModal({ isOpen, onClose, onSuccess }: AddEmpl
               value={nickname}
               onChange={(e) => setNickname(e.target.value)}
               placeholder="Parker Test"
-              className="w-full border p-2 text-xs text-slate-100 outline-none focus:outline-none focus:ring-0 rounded-sm transition-colors"
-              style={inputStyle}
-              onFocus={handleInputFocus}
-              onBlur={handleInputBlur}
+              className="w-full bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] focus:ring-1 focus:ring-[var(--color-brand-blue)] p-3 text-xs text-slate-100 outline-none rounded-sm transition-all"
             />
           </div>
 
@@ -197,27 +158,21 @@ export default function AddEmployeeModal({ isOpen, onClose, onSuccess }: AddEmpl
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="employee@domain.com"
-              className="w-full border p-2 text-xs text-slate-100 outline-none focus:outline-none focus:ring-0 rounded-sm transition-colors"
-              style={inputStyle}
-              onFocus={handleInputFocus}
-              onBlur={handleInputBlur}
+              className="w-full bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] focus:ring-1 focus:ring-[var(--color-brand-blue)] p-3 text-xs text-slate-100 outline-none rounded-sm transition-all"
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="text-[10px] uppercase font-black text-slate-400 block mb-1">Location</label>
               <select
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                className="w-full border p-2 text-xs text-slate-100 outline-none focus:outline-none focus:ring-0 cursor-pointer rounded-sm transition-colors"
-                style={inputStyle}
-                onFocus={handleInputFocus}
-                onBlur={handleInputBlur}
+                className="w-full bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] focus:ring-1 focus:ring-[var(--color-brand-blue)] p-3 text-xs text-slate-100 outline-none cursor-pointer rounded-sm transition-all"
               >
-                <option value="Springville Shop" style={{ backgroundColor: "var(--color-brand-card)" }}>Springville Shop</option>
-                <option value="Nestle Springville" style={{ backgroundColor: "var(--color-brand-card)" }}>Nestle Springville</option>
-                <option value="Nestle Jonesboro" style={{ backgroundColor: "var(--color-brand-card)" }}>Nestle Jonesboro</option>
+                <option value="Springville Shop" className="bg-[var(--color-brand-card)] text-white">Springville Shop</option>
+                <option value="Nestle Springville" className="bg-[var(--color-brand-card)] text-white">Nestle Springville</option>
+                <option value="Nestle Jonesboro" className="bg-[var(--color-brand-card)] text-white">Nestle Jonesboro</option>
               </select>
             </div>
 
@@ -226,38 +181,19 @@ export default function AddEmployeeModal({ isOpen, onClose, onSuccess }: AddEmpl
               <select
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
-                className="w-full border p-2 text-xs text-slate-100 outline-none focus:outline-none focus:ring-0 cursor-pointer rounded-sm transition-colors"
-                style={inputStyle}
-                onFocus={handleInputFocus}
-                onBlur={handleInputBlur}
+                className="w-full bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] focus:ring-1 focus:ring-[var(--color-brand-blue)] p-3 text-xs text-slate-100 outline-none cursor-pointer rounded-sm transition-all"
               >
-                <option value="employee" style={{ backgroundColor: "var(--color-brand-card)" }}>Employee</option>
-                <option value="manager" style={{ backgroundColor: "var(--color-brand-card)" }}>Manager</option>
+                <option value="employee" className="bg-[var(--color-brand-card)] text-white">Employee</option>
+                <option value="manager" className="bg-[var(--color-brand-card)] text-white">Manager</option>
               </select>
             </div>
           </div>
 
-          <div className="pt-2 flex gap-2">
+          <div className="pt-2 flex flex-col sm:flex-row gap-2">
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 py-3 font-black text-xs uppercase tracking-widest transition-all duration-200 disabled:opacity-50 cursor-pointer rounded-sm shadow-md outline-none focus:outline-none focus:ring-0"
-              style={{
-                backgroundColor: "var(--color-brand-blue)",
-                color: "#ffffff"
-              }}
-              onMouseEnter={(e) => {
-                if (!loading) {
-                  e.currentTarget.style.backgroundColor = "#ffffff";
-                  e.currentTarget.style.color = "#0a0a0a";
-                  e.currentTarget.style.boxShadow = "0 0 12px color-mix(in srgb, #ffffff 40%, transparent)";
-                }
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "var(--color-brand-blue)";
-                e.currentTarget.style.color = "#ffffff";
-                e.currentTarget.style.boxShadow = "none";
-              }}
+              className="flex-1 min-h-[44px] py-3 px-4 bg-[var(--color-brand-blue)] hover:bg-white hover:text-black active:bg-slate-200 text-white font-black text-xs uppercase tracking-widest transition-all duration-200 disabled:opacity-50 cursor-pointer rounded-sm shadow-md active:scale-[0.98] touch-manipulation focus:outline-none"
             >
               {loading ? "Creating..." : "Create Account"}
             </button>
@@ -265,20 +201,7 @@ export default function AddEmployeeModal({ isOpen, onClose, onSuccess }: AddEmpl
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-3 border font-black text-xs uppercase transition-colors cursor-pointer rounded-sm outline-none focus:outline-none focus:ring-0"
-              style={{
-                backgroundColor: "var(--color-brand-bg)",
-                borderColor: "var(--color-brand-border)",
-                color: "rgb(148, 163, 184)"
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = "var(--color-brand-blue)";
-                e.currentTarget.style.color = "#ffffff";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = "var(--color-brand-border)";
-                e.currentTarget.style.color = "rgb(148, 163, 184)";
-              }}
+              className="min-h-[44px] px-4 py-3 bg-[var(--color-brand-bg)] hover:bg-slate-800 active:bg-slate-900 border border-[var(--color-brand-border)] hover:border-slate-500 text-slate-300 hover:text-white font-black text-xs uppercase transition-all cursor-pointer rounded-sm active:scale-[0.98] touch-manipulation focus:outline-none"
             >
               Close
             </button>

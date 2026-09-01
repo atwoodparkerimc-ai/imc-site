@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
-import { motion } from "framer-motion";
 
 // --- CENTRAL DATA SERVICE IMPORT ---
 import { 
@@ -18,12 +17,12 @@ interface HazardControlPanelProps {
 }
 
 const HAZARD_LEVELS = [
-  { level: 0, tag: "SAFE", label: "Level 0 — Safe", color: "var(--color-metric-meetings, #10b981)" },
-  { level: 1, tag: "LOW RISK", label: "Level 1 — Low Risk", color: "var(--color-metric-meetings, #10b981)" },
-  { level: 2, tag: "CAUTION", label: "Level 2 — Caution", color: "var(--color-metric-safe-acts, #38bdf8)" },
-  { level: 3, tag: "ELEVATED", label: "Level 3 — Elevated", color: "var(--color-metric-observation, #fbbf24)" },
-  { level: 4, tag: "HIGH HAZARD", label: "Level 4 — High Hazard", color: "var(--color-brand-red, #f87171)" },
-  { level: 5, tag: "CRITICAL", label: "Level 5 — Critical", color: "var(--color-brand-red, #f87171)" },
+  { level: 0, tag: "SAFE", label: "Level 0 — Safe", color: "var(--color-brand-green, #00ff9d)" },
+  { level: 1, tag: "LOW RISK", label: "Level 1 — Low Risk", color: "var(--color-brand-green, #00ff9d)" },
+  { level: 2, tag: "CAUTION", label: "Level 2 — Caution", color: "var(--color-brand-blue, #0088ff)" },
+  { level: 3, tag: "ELEVATED", label: "Level 3 — Elevated", color: "#eab308" },
+  { level: 4, tag: "HIGH HAZARD", label: "Level 4 — High Hazard", color: "var(--color-brand-red, #ff3b5c)" },
+  { level: 5, tag: "CRITICAL", label: "Level 5 — Critical", color: "var(--color-brand-red, #ff3b5c)" },
 ];
 
 export default function HazardControlPanel({ 
@@ -92,7 +91,7 @@ export default function HazardControlPanel({
   const currentLevelConfig = HAZARD_LEVELS.find(h => h.level === hazardCount) || HAZARD_LEVELS[0];
 
   return (
-    <div className="border p-4 sm:p-5 shadow-2xl relative overflow-hidden group font-mono rounded-sm bg-[var(--color-brand-card)] border-[var(--color-brand-border)]">
+    <div className="border p-4 sm:p-5 shadow-2xl relative overflow-hidden group font-mono rounded-sm bg-[var(--color-brand-card)] border-[var(--color-brand-border)] select-none">
       {/* Top Accent Line */}
       <div 
         className="absolute top-0 left-0 w-full h-[2px] transition-colors duration-500" 
@@ -115,15 +114,15 @@ export default function HazardControlPanel({
 
         <div className="flex flex-wrap items-center gap-3">
           {/* Location Selector */}
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Site:</span>
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-widest">Site:</span>
             <select
               value={targetSite}
               onChange={(e) => setTargetSite(e.target.value)}
-              className="text-xs text-slate-200 font-bold uppercase py-1.5 px-3 outline-none transition-colors cursor-pointer rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)]"
+              className="w-full sm:w-auto min-h-[44px] text-xs text-slate-200 font-bold uppercase py-2 px-3 outline-none transition-all cursor-pointer rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] touch-manipulation"
             >
               {(activeLocationsList || []).map((loc) => (
-                <option key={loc} value={loc} className="bg-[var(--color-brand-card)]">
+                <option key={loc} value={loc} className="bg-[var(--color-brand-card)] text-white">
                   {loc}
                 </option>
               ))}
@@ -131,8 +130,8 @@ export default function HazardControlPanel({
           </div>
 
           {/* Current Broadcast Indicator Pill */}
-          <div className="flex items-center gap-2.5 px-3 py-1.5 border rounded-sm bg-[var(--color-brand-bg)] border-[var(--color-brand-border)]">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Broadcast:</span>
+          <div className="flex items-center gap-2.5 px-3 min-h-[44px] border rounded-sm bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] w-full sm:w-auto justify-between sm:justify-start">
+            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-slate-400">Broadcast:</span>
             <span 
               className="text-xs font-black uppercase tracking-wider tabular-nums"
               style={{ color: currentLevelConfig.color }}
@@ -146,11 +145,11 @@ export default function HazardControlPanel({
       {/* SLIM SEGMENTED LEVEL SELECTOR */}
       <div>
         <div className="flex items-center justify-between mb-2">
-          <label className="text-[10px] uppercase font-bold tracking-widest text-slate-400">
+          <label className="text-[10px] sm:text-[11px] uppercase font-bold tracking-widest text-slate-400">
             Set Safety Level for <span className="text-slate-200">[{targetSite}]</span>
           </label>
           {statusMessage && (
-            <span className={`text-[10px] font-bold uppercase tracking-wider ${statusMessage.isError ? 'text-[var(--color-brand-red,#f87171)]' : 'text-[var(--color-brand-green,#00ff9d)]'}`}>
+            <span className={`text-[10px] sm:text-[11px] font-bold uppercase tracking-wider ${statusMessage.isError ? 'text-[var(--color-brand-red,#ff3b5c)]' : 'text-[var(--color-brand-green,#00ff9d)]'}`}>
               [{statusMessage.isError ? 'ERROR' : 'SYNCED'}] {statusMessage.msg}
             </span>
           )}
@@ -163,11 +162,12 @@ export default function HazardControlPanel({
             return (
               <button
                 key={item.level}
+                type="button"
                 onClick={() => handleSave(item.level)}
                 disabled={isSaving || isLoading}
-                className={`py-2.5 px-2 border rounded-sm flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer disabled:opacity-50 ${
+                className={`min-h-[48px] py-2 px-1.5 border rounded-sm flex flex-col items-center justify-center gap-0.5 transition-all cursor-pointer disabled:opacity-50 active:scale-[0.96] touch-manipulation focus:outline-none ${
                   isSelected 
-                    ? "bg-[var(--color-brand-bg)] shadow-[0_0_12px_rgba(0,0,0,0.5)] scale-[1.01]" 
+                    ? "bg-[var(--color-brand-bg)] shadow-[0_0_15px_rgba(0,0,0,0.6)]" 
                     : "bg-[var(--color-brand-bg)]/50 border-[var(--color-brand-border)] hover:border-slate-500 hover:bg-[var(--color-brand-bg)]"
                 }`}
                 style={{
@@ -183,7 +183,7 @@ export default function HazardControlPanel({
                   {item.level}
                 </span>
                 <span 
-                  className="text-[8px] sm:text-[9px] font-bold uppercase tracking-wider truncate w-full text-center"
+                  className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider truncate w-full text-center"
                   style={{ color: isSelected ? item.color : "rgb(148, 163, 184)" }}
                 >
                   {item.tag}

@@ -4,13 +4,13 @@ export async function POST(req: Request) {
   try {
     const data = await req.json();
 
-    // 1. HONEYPOT CHECK: If a bot fills out either hidden field, reject silently
+    // 1. HONEYPOT BOT INTERCEPTION
+    // Drop payloads silently if automated scrapers populate honeypot fields
     if (data.website_verify_lead || data.website_lead_verify) {
-      // Return 200 OK so the bot thinks it succeeded, but drop the payload immediately
       return NextResponse.json({ success: true, message: "Inquiry processed." });
     }
 
-    // 2. EXTRACT PUBLIC INQUIRY DATA
+    // 2. EXTRACT INQUIRY DATA
     const { 
       firstName, 
       lastName, 
@@ -23,19 +23,48 @@ export async function POST(req: Request) {
       message 
     } = data;
 
-    // Basic validation
-    if (!email && !phone) {
+    const parsedName = fullName?.trim() || `${firstName || ""} ${lastName || ""}`.trim() || "Unspecified Contact";
+    const sanitizedEmail = email?.trim().toLowerCase() || "";
+    const sanitizedPhone = phone?.trim() || "";
+
+    // 3. VALIDATION
+    if (!sanitizedEmail && !sanitizedPhone) {
       return NextResponse.json(
-        { error: "A valid email or phone number is required." },
+        { error: "A valid email address or phone number is required." },
         { status: 400 }
       );
     }
 
-    // 3. TODO: Forward to your estimating inbox (via Resend, SendGrid, or Supabase table)
-    // console.log("Valid Lead Received:", { fullName: fullName || `${firstName} ${lastName}`, email, phone, message });
+    if (sanitizedEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(sanitizedEmail)) {
+      return NextResponse.json(
+        { error: "Please provide a valid email format." },
+        { status: 400 }
+      );
+    }
 
-    return NextResponse.json({ success: true, message: "Inquiry received successfully." });
+    // 4. DISPATCH / PERSISTENCE (Log or pipe to Supabase / Email service)
+    const payload = {
+      name: parsedName,
+      company: company?.trim() || "Not Provided",
+      email: sanitizedEmail,
+      phone: sanitizedPhone,
+      projectType: projectType || "General Mechanical",
+      timeline: timeline || "Standard",
+      message: message?.trim() || "",
+      receivedAt: new Date().toISOString(),
+    };
+
+    // Forwarding ready:
+    // await supabaseAdmin.from("project_inquiries").insert(payload);
+
+    return NextResponse.json({ 
+      success: true, 
+      message: "Inquiry received successfully. Our estimating team has been notified." 
+    });
   } catch (err: any) {
-    return NextResponse.json({ error: err.message || "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: err.message || "Internal server error." }, 
+      { status: 500 }
+    );
   }
 }

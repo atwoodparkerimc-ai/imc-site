@@ -18,7 +18,8 @@ const ParticleCloud = () => {
     ctx.scale(2, 2);
 
     const particles: { x: number, y: number, r: number, a: number, speed: number, dist: number, baseAlpha: number, type: 'white' | 'red' | 'blue' }[] = [];
-    const particleCount = 600;
+    // Optimized particle count: 280 keeps high visual density while drastically saving mobile CPU/battery
+    const particleCount = 280;
     const center = size / 2;
 
     for (let i = 0; i < particleCount; i++) {
@@ -144,10 +145,10 @@ export default function AtAGlance() {
                   </span>
                 </div>
 
-                {/* Metric Label */}
-                <div className="relative z-10 mt-1 sm:mt-2 max-w-[115px] sm:max-w-[190px]">
+                {/* Metric Label (Standardized Legible Scale: text-[10px] min on mobile) */}
+                <div className="relative z-10 mt-1 sm:mt-2 max-w-[125px] sm:max-w-[190px]">
                   <span 
-                    className="text-[8px] sm:text-xs lg:text-[13px] font-black uppercase tracking-[0.08em] sm:tracking-[0.14em] leading-tight block group-hover:text-white transition-colors duration-300"
+                    className="font-mono text-[10px] sm:text-xs lg:text-[13px] font-bold uppercase tracking-wider sm:tracking-[0.14em] leading-tight block group-hover:text-white transition-colors duration-300"
                     style={{
                       color: metric.borderColor === '#ea1f27' ? '#ea1f27' : metric.borderColor === '#0088ff' ? '#38bdf8' : '#94a3b8',
                       textShadow: '0 2px 8px rgba(0, 0, 0, 0.95), 0 0 14px rgba(0, 136, 255, 0.7)'

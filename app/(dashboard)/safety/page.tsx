@@ -94,7 +94,7 @@ export default function SafetyMeetingPage() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        setTerminalError("Authentication Validation Fault. Re-login required.");
+        setTerminalFeedback({ message: "Authentication Validation Fault. Re-login required.", isError: true });
         setIsSigning(false);
         return;
       }
@@ -126,14 +126,10 @@ export default function SafetyMeetingPage() {
     }
   };
 
-  const setTerminalError = (msg: string) => {
-    setTerminalFeedback({ message: msg, isError: true });
-  };
-
   const allChecksComplete = acknowledged.length === checks.length;
 
   return (
-    <div className="w-full relative min-h-[100dvh] flex flex-col justify-start sm:justify-center py-4 sm:py-12 pb-28 sm:pb-12 font-mono text-slate-100">
+    <div className="w-full relative min-h-[100dvh] flex flex-col justify-start sm:justify-center py-4 sm:py-12 pb-28 sm:pb-12 font-mono text-slate-100 select-none">
       
       {/* 60-SECOND MANDATORY BRIEFING MODAL */}
       <DailyBriefingModal
@@ -154,15 +150,17 @@ export default function SafetyMeetingPage() {
           className="mb-4 sm:mb-6 border border-[var(--color-brand-border)] p-4 sm:p-6 rounded-sm relative overflow-hidden shadow-lg bg-[var(--color-brand-card)]"
         >
           <div 
-            className="absolute top-0 left-0 w-full h-[2px] transition-colors duration-300"
-            style={{ backgroundColor: hasCompletedToday ? "var(--color-metric-meetings, #10b981)" : "var(--color-brand-blue)" }}
+            className={`absolute top-0 left-0 w-full h-[2px] transition-colors duration-300 ${
+              hasCompletedToday ? "bg-[var(--color-brand-green,#00ff9d)]" : "bg-[var(--color-brand-blue,#0088ff)]"
+            }`} 
           />
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <h1 className="text-xl sm:text-3xl font-black text-slate-100 uppercase tracking-tighter flex items-center gap-2">
                 <span 
-                  className="w-2 h-2 animate-pulse rounded-none flex-shrink-0" 
-                  style={{ backgroundColor: hasCompletedToday ? "var(--color-metric-meetings, #10b981)" : "var(--color-brand-blue)" }}
+                  className={`w-2 h-2 animate-pulse rounded-none flex-shrink-0 ${
+                    hasCompletedToday ? "bg-[var(--color-brand-green,#00ff9d)]" : "bg-[var(--color-brand-blue,#0088ff)]"
+                  }`} 
                 />
                 Daily Safety Checklist
               </h1>
@@ -177,11 +175,11 @@ export default function SafetyMeetingPage() {
                 Checking...
               </div>
             ) : hasCompletedToday ? (
-              <div className="inline-block self-start sm:self-auto px-2.5 py-1 bg-emerald-950/40 border border-[var(--color-metric-meetings,#10b981)] text-[10px] sm:text-xs font-black text-[var(--color-metric-meetings,#10b981)] uppercase tracking-wider rounded-sm shadow-[0_0_10px_rgba(16,185,129,0.2)]">
+              <div className="inline-block self-start sm:self-auto px-2.5 py-1 bg-[var(--color-brand-green,#00ff9d)]/10 border border-[var(--color-brand-green,#00ff9d)]/50 text-[10px] sm:text-xs font-black text-[var(--color-brand-green,#00ff9d)] uppercase tracking-wider rounded-sm shadow-[0_0_10px_rgba(0,255,157,0.2)]">
                 [COMPLETED TODAY]
               </div>
             ) : (
-              <div className="inline-block self-start sm:self-auto px-2.5 py-1 bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] text-[10px] sm:text-xs font-bold text-[var(--color-brand-blue)] uppercase tracking-wider rounded-sm">
+              <div className="inline-block self-start sm:self-auto px-2.5 py-1 bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] text-[10px] sm:text-xs font-bold text-[var(--color-brand-blue,#0088ff)] uppercase tracking-wider rounded-sm">
                 Status: [{hasCompletedBriefing ? "Briefing Verified" : "Briefing Pending"}]
               </div>
             )}
@@ -197,28 +195,28 @@ export default function SafetyMeetingPage() {
             animate={{ opacity: 1, y: 0 }}
             className="order-1 lg:order-2 border p-4 sm:p-6 rounded-sm shadow-xl relative overflow-hidden flex flex-col justify-between bg-[var(--color-brand-card)] border-[var(--color-brand-border)]"
           >
-            <div className="absolute top-0 left-0 w-full h-1 bg-[var(--color-brand-border)]" />
+            <div className="absolute top-0 left-0 w-full h-[2px] bg-[var(--color-brand-border)]" />
             
             <div className="space-y-4 sm:space-y-6">
-              <h2 className="text-slate-200 font-bold uppercase tracking-widest text-[11px] sm:text-xs border-b pb-3 sm:pb-4 border-[var(--color-brand-border)]">
+              <h2 className="text-slate-200 font-bold uppercase tracking-widest text-xs border-b pb-3 sm:pb-4 border-[var(--color-brand-border)]">
                 Today's Safety Briefing
               </h2>
 
               {/* ACTIVE TOPIC CARD */}
               <div className="p-3.5 sm:p-4 border rounded-sm bg-[var(--color-brand-bg)] border-[var(--color-brand-border)]">
-                <span className="text-[9px] font-bold text-[var(--color-brand-blue)] uppercase tracking-wider block">
+                <span className="text-[10px] sm:text-[11px] font-bold text-[var(--color-brand-blue,#0088ff)] uppercase tracking-wider block">
                   {dailyBriefing.category}
                 </span>
                 <p className="text-xs sm:text-sm font-black text-white uppercase mt-1">
                   {dailyBriefing.title}
                 </p>
-                <p className="text-[10px] sm:text-[11px] text-slate-400 font-sans mt-2 line-clamp-3 leading-relaxed">
+                <p className="text-[10px] sm:text-xs text-slate-400 font-sans mt-2 line-clamp-3 leading-relaxed">
                   {dailyBriefing.intro}
                 </p>
                 <button
                   type="button"
                   onClick={() => setShowBriefingModal(true)}
-                  className="mt-3 text-[10px] font-bold text-[var(--color-brand-blue)] sm:text-slate-300 uppercase hover:text-white underline block cursor-pointer"
+                  className="min-h-[44px] mt-2 text-xs font-bold text-[var(--color-brand-blue,#0088ff)] hover:text-white uppercase underline flex items-center cursor-pointer touch-manipulation focus:outline-none"
                 >
                   View Full Briefing Document ↗
                 </button>
@@ -226,16 +224,16 @@ export default function SafetyMeetingPage() {
 
               {/* REWARD BREAKDOWN */}
               <div className="p-3.5 sm:p-4 border rounded-sm bg-[var(--color-brand-bg)] border-[var(--color-brand-border)]">
-                <p className="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase tracking-wider">COMPLETION AWARD</p>
-                <p className="text-2xl sm:text-3xl font-black text-[var(--color-metric-meetings,#10b981)] tabular-nums mt-0.5 sm:mt-1">+10 PTS</p>
-                <p className="text-[10px] sm:text-[11px] text-slate-300 mt-1.5 sm:mt-2 leading-relaxed font-sans">
+                <p className="text-[10px] sm:text-[11px] text-slate-400 font-bold uppercase tracking-wider">COMPLETION AWARD</p>
+                <p className="text-2xl sm:text-3xl font-black text-[var(--color-brand-green,#00ff9d)] tabular-nums mt-0.5 sm:mt-1">+10 PTS</p>
+                <p className="text-[10px] sm:text-xs text-slate-300 mt-1.5 sm:mt-2 leading-relaxed font-sans">
                   Submitting your daily check-in logs your compliance status directly to the job site safety log.
                 </p>
               </div>
             </div>
 
             <div className="pt-4 sm:pt-6 mt-4 border-t border-[var(--color-brand-border)]">
-              <p className="text-[8px] sm:text-[9px] text-slate-500 uppercase tracking-widest font-mono text-center">
+              <p className="text-[9px] sm:text-[10px] text-slate-500 uppercase tracking-widest font-mono text-center font-bold">
                 INDUSTRIAL SAFETY SYSTEM
               </p>
             </div>
@@ -248,27 +246,28 @@ export default function SafetyMeetingPage() {
             className="order-2 lg:order-1 lg:col-span-2 border p-4 sm:p-8 rounded-sm shadow-xl relative overflow-hidden flex flex-col justify-between bg-[var(--color-brand-card)] border-[var(--color-brand-border)]"
           >
             <div 
-              className="absolute top-0 left-0 w-full h-1" 
-              style={{ backgroundColor: hasCompletedToday ? "var(--color-metric-meetings, #10b981)" : "var(--color-brand-blue)" }}
+              className={`absolute top-0 left-0 w-full h-[2px] transition-colors duration-300 ${
+                hasCompletedToday ? "bg-[var(--color-brand-green,#00ff9d)]" : "bg-[var(--color-brand-blue,#0088ff)]"
+              }`} 
             />
             
             <div>
               <div className="mb-4 sm:mb-6 border-b pb-3 sm:pb-4 border-[var(--color-brand-border)] flex flex-row justify-between items-center gap-2">
-                <h2 className="text-slate-200 font-bold uppercase tracking-widest text-[11px] sm:text-xs">
+                <h2 className="text-slate-200 font-bold uppercase tracking-widest text-xs">
                   Protocol Verification
                 </h2>
                 <div className="flex items-center gap-3">
-                  <span className="text-[10px] text-slate-400 tabular-nums font-bold">
+                  <span className="text-[10px] sm:text-xs text-slate-400 tabular-nums font-bold">
                     {acknowledged.length} / {checks.length} COMPLETE
                   </span>
                 </div>
               </div>
 
               {terminalFeedback && (
-                <div className={`mb-4 sm:mb-6 p-3 font-mono text-[10px] font-bold uppercase tracking-wider border rounded-sm ${
+                <div className={`mb-4 sm:mb-6 p-3 font-mono text-xs font-bold uppercase tracking-wider border rounded-sm ${
                   terminalFeedback.isError 
-                    ? "bg-[var(--color-brand-red)]/10 border-[var(--color-brand-red)]/40 text-[var(--color-brand-red)]"
-                    : "bg-emerald-950/30 border-emerald-500/50 text-[var(--color-metric-meetings)]"
+                    ? "bg-[var(--color-brand-red,#ff3b5c)]/10 border-[var(--color-brand-red,#ff3b5c)]/40 text-[var(--color-brand-red,#ff3b5c)]"
+                    : "bg-[var(--color-brand-green,#00ff9d)]/10 border-[var(--color-brand-green,#00ff9d)]/50 text-[var(--color-brand-green,#00ff9d)]"
                 }`}>
                   [{terminalFeedback.isError ? "VERIFICATION FAULT" : "VERIFIED"}] {terminalFeedback.message}
                 </div>
@@ -280,6 +279,7 @@ export default function SafetyMeetingPage() {
                   return (
                     <button
                       key={check.id}
+                      type="button"
                       disabled={hasCompletedToday || (!hasCompletedBriefing && check.id !== 3)}
                       onClick={() => {
                         if (hasCompletedToday) return;
@@ -289,30 +289,25 @@ export default function SafetyMeetingPage() {
                         }
                         setAcknowledged(prev => isChecked ? prev.filter(i => i !== check.id) : [...prev, check.id]);
                       }}
-                      className="w-full p-3.5 sm:p-4.5 border transition-all duration-150 active:scale-[0.99] flex items-center gap-3.5 sm:gap-4 text-left rounded-sm outline-none disabled:cursor-default cursor-pointer min-h-[48px]"
-                      style={{
-                        backgroundColor: isChecked 
-                          ? "color-mix(in srgb, var(--color-metric-meetings, #10b981) 12%, transparent)" 
-                          : "var(--color-brand-bg)",
-                        borderColor: isChecked 
-                          ? "var(--color-metric-meetings, #10b981)" 
-                          : "var(--color-brand-border)"
-                      }}
+                      className={`w-full min-h-[48px] p-3.5 sm:p-4.5 border transition-all flex items-center gap-3.5 sm:gap-4 text-left rounded-sm outline-none disabled:cursor-default cursor-pointer active:scale-[0.98] touch-manipulation focus:outline-none ${
+                        isChecked 
+                          ? "bg-[var(--color-brand-green,#00ff9d)]/10 border-[var(--color-brand-green,#00ff9d)]" 
+                          : "bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] hover:border-[var(--color-brand-blue,#0088ff)]/50"
+                      }`}
                     >
                       <div 
-                        className="w-5 h-5 sm:w-5.5 sm:h-5.5 flex-shrink-0 border-2 flex items-center justify-center transition-colors rounded-xs"
-                        style={{
-                          borderColor: isChecked ? "var(--color-metric-meetings, #10b981)" : "var(--color-brand-blue)",
-                          backgroundColor: isChecked ? "var(--color-metric-meetings, #10b981)" : "transparent"
-                        }}
+                        className={`w-5 h-5 sm:w-5.5 sm:h-5.5 flex-shrink-0 border-2 flex items-center justify-center transition-all rounded-xs ${
+                          isChecked 
+                            ? "bg-[var(--color-brand-green,#00ff9d)] border-[var(--color-brand-green,#00ff9d)]" 
+                            : "border-[var(--color-brand-blue,#0088ff)] bg-transparent"
+                        }`}
                       >
                         {isChecked && <span className="text-black font-black text-xs">✓</span>}
                       </div>
                       <span 
-                        className="text-xs sm:text-sm font-black uppercase tracking-wide transition-colors font-sans"
-                        style={{
-                          color: isChecked ? "var(--color-metric-meetings, #10b981)" : "#ffffff"
-                        }}
+                        className={`text-xs sm:text-sm font-black uppercase tracking-wide transition-colors font-sans ${
+                          isChecked ? "text-[var(--color-brand-green,#00ff9d)]" : "text-white"
+                        }`}
                       >
                         {check.text}
                       </span>
@@ -323,30 +318,31 @@ export default function SafetyMeetingPage() {
             </div>
 
             {hasCompletedToday ? (
-              <div className="w-full mt-6 sm:mt-8 py-3.5 sm:py-4 font-bold uppercase tracking-[0.15em] sm:tracking-[0.2em] text-xs flex justify-center items-center rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] text-slate-400">
+              <div className="w-full min-h-[48px] mt-6 sm:mt-8 py-3.5 sm:py-4 font-bold uppercase tracking-[0.15em] sm:tracking-[0.2em] text-xs flex justify-center items-center rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] text-slate-400">
                 ✓ SIGNATURE RECORDED FOR TODAY
               </div>
             ) : !hasCompletedBriefing ? (
               <button 
                 type="button"
                 onClick={() => setShowBriefingModal(true)}
-                className="w-full mt-6 sm:mt-8 py-3.5 sm:py-4 font-bold uppercase tracking-[0.15em] sm:tracking-[0.2em] text-xs transition-all duration-300 flex justify-center items-center cursor-pointer rounded-sm border bg-amber-500/10 border-amber-500/50 text-amber-300 hover:bg-amber-500 hover:text-black shadow-[0_0_15px_rgba(245,158,11,0.2)] active:scale-[0.99]"
+                className="w-full min-h-[48px] mt-6 sm:mt-8 py-3.5 sm:py-4 font-bold uppercase tracking-[0.15em] sm:tracking-[0.2em] text-xs transition-all flex justify-center items-center cursor-pointer rounded-sm border bg-[#eab308]/10 border-[#eab308]/50 text-[#eab308] hover:bg-[#eab308] hover:text-black shadow-[0_0_15px_rgba(234,179,8,0.2)] active:scale-[0.98] touch-manipulation focus:outline-none"
               >
                 ⚠ Complete 60s Briefing Policy Check ↗
               </button>
             ) : (
               <button 
+                type="button"
                 onClick={handleSign}
                 disabled={!allChecksComplete || isSigning}
-                className={`w-full mt-6 sm:mt-8 py-3.5 sm:py-4 font-bold uppercase tracking-[0.15em] sm:tracking-[0.2em] text-xs transition-all duration-300 flex justify-center items-center cursor-pointer rounded-sm border outline-none active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed ${
+                className={`w-full min-h-[48px] mt-6 sm:mt-8 py-3.5 sm:py-4 font-bold uppercase tracking-[0.15em] sm:tracking-[0.2em] text-xs transition-all flex justify-center items-center cursor-pointer rounded-sm border outline-none active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed touch-manipulation focus:outline-none ${
                   allChecksComplete 
-                    ? "bg-[var(--color-brand-blue)] border-[var(--color-brand-blue)] text-white shadow-[0_0_20px_rgba(0,136,255,0.4)] hover:bg-white hover:text-black" 
+                    ? "bg-[var(--color-brand-blue,#0088ff)] border-[var(--color-brand-blue,#0088ff)] text-white shadow-[0_0_20px_rgba(0,136,255,0.4)] hover:bg-white hover:text-black" 
                     : "bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] text-slate-500"
                 }`}
               >
                 {isSigning ? (
                   <span className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+                    <span className="w-2 h-2 bg-white rounded-full animate-pulse" />
                     Verifying Credentials...
                   </span>
                 ) : "Sign & Earn 10 Points ↗"}
@@ -370,25 +366,27 @@ export default function SafetyMeetingPage() {
               initial={{ scale: 0.8, y: 20 }} 
               animate={{ scale: 1, y: 0 }} 
               transition={{ type: "spring", stiffness: 200, damping: 20 }}
-              className="text-center flex flex-col items-center p-6 sm:p-8 border rounded-sm shadow-2xl max-w-sm w-full bg-[var(--color-brand-card)] border-[var(--color-metric-meetings,#10b981)]"
+              className="text-center flex flex-col items-center p-6 sm:p-8 border rounded-sm shadow-2xl max-w-sm w-full bg-[var(--color-brand-card)] border-[var(--color-brand-green,#00ff9d)]"
             >
               <div 
-                className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 flex items-center justify-center mb-5 sm:mb-6 shadow-2xl bg-[var(--color-metric-meetings,#10b981)]/15 border-[var(--color-metric-meetings,#10b981)]"
+                className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 flex items-center justify-center mb-5 sm:mb-6 shadow-2xl bg-[var(--color-brand-green,#00ff9d)]/15 border-[var(--color-brand-green,#00ff9d)]"
               >
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--color-metric-meetings, #10b981)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--color-brand-green, #00ff9d)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
               </div>
-              <h2 className="text-5xl sm:text-6xl font-black tracking-tighter drop-shadow-md font-mono text-[var(--color-metric-meetings,#10b981)]">
+              <h2 className="text-5xl sm:text-6xl font-black tracking-tighter drop-shadow-md font-mono text-[var(--color-brand-green,#00ff9d)]">
                 +10 PTS
               </h2>
-              <p className="text-slate-300 mt-4 sm:mt-6 text-[11px] sm:text-xs font-semibold tracking-[0.2em] sm:tracking-[0.25em] uppercase">Verified. Returning to Dashboard...</p>
+              <p className="text-slate-300 mt-4 sm:mt-6 text-xs font-bold tracking-[0.2em] uppercase">
+                Verified. Returning to Dashboard...
+              </p>
               <div className="mt-6 sm:mt-8 w-44 sm:w-48 h-1 rounded-full overflow-hidden bg-[var(--color-brand-border)]">
                 <motion.div 
                   initial={{ width: 0 }}
                   animate={{ width: "100%" }}
                   transition={{ duration: 2, ease: "linear" }}
-                  className="h-full bg-[var(--color-metric-meetings,#10b981)]"
+                  className="h-full bg-[var(--color-brand-green,#00ff9d)]"
                 />
               </div>
             </motion.div>

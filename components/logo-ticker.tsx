@@ -32,12 +32,12 @@ const PARTNERS = [
 
 export default function PartnerTicker() {
   return (
-    <div className="w-full relative flex flex-col items-center justify-center py-6 bg-[#02060d] select-none border-y border-white/[0.04]">
-      {/* Reduced edge gradient masks */}
+    <div className="w-full relative flex flex-col items-center justify-center py-6 bg-[#02060d] select-none border-y border-white/[0.04] overflow-hidden">
+      {/* Edge gradient masks */}
       <div className="absolute left-0 top-0 bottom-0 w-16 sm:w-32 bg-gradient-to-r from-[#02060d] via-[#02060d]/90 to-transparent z-10 pointer-events-none" />
       <div className="absolute right-0 top-0 bottom-0 w-16 sm:w-32 bg-gradient-to-l from-[#02060d] via-[#02060d]/90 to-transparent z-10 pointer-events-none" />
 
-      {/* Synchronized Tracks - Rendered 3 times to guarantee coverage on ultrawide monitors */}
+      {/* Synchronized Tracks - Rendered 3 times to guarantee continuous loop coverage */}
       <div className="flex w-max items-center">
         {[1, 2, 3].map((trackIndex) => (
           <motion.div
@@ -58,7 +58,6 @@ export default function PartnerTicker() {
                 <img 
                   src={partner.logo} 
                   alt={`${partner.name} logo`} 
-                  // Removed loading="lazy" to ensure immediate width calculation for the animation
                   className={`max-h-7 sm:max-h-9 w-auto max-w-[120px] sm:max-w-[150px] object-contain opacity-75 group-hover:opacity-100 transition-all duration-300 ${partner.filter} ${partner.scale || "scale-100"}`}
                 />
               </div>

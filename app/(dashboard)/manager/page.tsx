@@ -83,7 +83,7 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
   if (active && payload && payload.length) {
     return (
       <div className="p-3 shadow-2xl backdrop-blur-md z-50 relative font-mono rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)]">
-        <p className="text-slate-300 text-[10px] font-bold uppercase tracking-widest mb-1">{label}</p>
+        <p className="text-slate-300 text-[11px] font-bold uppercase tracking-widest mb-1">{label}</p>
         {payload.map((entry: any, index: number) => (
           <p 
             key={`tooltip-line-${index}`} 
@@ -551,7 +551,7 @@ export default function ManagerDashboard() {
   }
 
   return (
-    <div className="max-w-[1600px] mx-auto p-3.5 sm:p-8 pt-4 sm:pt-8 pb-28 sm:pb-24 min-h-[100dvh] w-full relative font-mono text-slate-100">
+    <div className="max-w-[1600px] mx-auto p-3.5 sm:p-8 pt-4 sm:pt-8 pb-28 sm:pb-24 min-h-[100dvh] w-full relative font-mono text-slate-100 select-none">
       {/* TACTICAL BLUEPRINT GRID OVERLAY */}
       <div className="absolute inset-0 pointer-events-none opacity-[0.035] bg-[linear-gradient(to_right,#334155_1px,transparent_1px),linear-gradient(to_bottom,#334155_1px,transparent_1px)] bg-[size:32px_32px] z-0" />
 
@@ -568,8 +568,9 @@ export default function ManagerDashboard() {
               
               {currentUserEmail?.toLowerCase() === "atwoodparkerimc@gmail.com" && (
                 <button
+                  type="button"
                   onClick={() => setIsAddEmployeeOpen(true)}
-                  className="w-full sm:w-auto px-3.5 sm:px-4 py-2 text-white font-bold text-xs uppercase tracking-wider hover:bg-white hover:text-black transition-all cursor-pointer rounded-sm text-center bg-[var(--color-brand-blue)] shadow-[0_0_15px_rgba(0,136,255,0.25)] active:scale-[0.99]"
+                  className="w-full sm:w-auto min-h-[44px] px-4 py-2.5 text-white font-bold text-xs uppercase tracking-wider hover:bg-white hover:text-black active:bg-slate-200 transition-all cursor-pointer rounded-sm text-center bg-[var(--color-brand-blue)] shadow-[0_0_15px_rgba(0,136,255,0.25)] active:scale-[0.98] touch-manipulation focus:outline-none"
                 >
                   + Provision Employee
                 </button>
@@ -582,7 +583,7 @@ export default function ManagerDashboard() {
               <select 
                 value={selectedLocation}
                 onChange={(e) => setSelectedLocation(e.target.value)}
-                className="text-xs font-bold uppercase text-slate-200 p-2 outline-none cursor-pointer w-full sm:w-auto rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] transition-colors min-h-[40px] sm:min-h-0"
+                className="text-xs font-bold uppercase text-slate-200 p-2.5 outline-none cursor-pointer w-full sm:w-auto rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] transition-colors min-h-[44px]"
               >
                 <option value="ALL" className="bg-[var(--color-brand-card)]">-- ALL LOCATIONS (COMPANY-WIDE) --</option>
                 {locations.map(loc => (
@@ -609,11 +610,13 @@ export default function ManagerDashboard() {
               { id: 'audit', label: 'Daily Roll Call' }
             ].map(tab => (
               <button 
-                key={tab.id} onClick={() => setActiveTab(tab.id)}
-                className={`pb-2.5 sm:pb-3 px-2.5 sm:px-4 text-[11px] sm:text-xs font-bold uppercase tracking-wider sm:tracking-widest transition-colors whitespace-nowrap border-b-2 cursor-pointer ${
+                key={tab.id} 
+                type="button"
+                onClick={() => setActiveTab(tab.id)}
+                className={`min-h-[44px] pb-2.5 sm:pb-3 px-3 sm:px-4 text-xs font-bold uppercase tracking-wider sm:tracking-widest transition-all whitespace-nowrap border-b-2 cursor-pointer touch-manipulation active:scale-[0.98] focus:outline-none ${
                   activeTab === tab.id 
                     ? 'border-[var(--color-brand-blue)] text-[var(--color-brand-blue)]' 
-                    : 'border-transparent text-slate-400 hover:text-slate-200'
+                    : 'border-transparent text-slate-400 hover:text-slate-200 active:text-white'
                 }`}
               >
                 {tab.label}
@@ -669,7 +672,7 @@ export default function ManagerDashboard() {
             ].map((stat, i) => (
               <div key={`stat-card-${i}`} className="border p-3 sm:p-5 shadow-xl relative overflow-hidden group rounded-sm bg-[var(--color-brand-card)] border-[var(--color-brand-border)]">
                 <div className="absolute top-0 left-0 w-full h-[2px] bg-[var(--color-brand-border)] group-hover:bg-[var(--color-brand-blue)] transition-colors duration-300" />
-                <p className="text-slate-400 text-[8px] sm:text-[10px] font-bold uppercase tracking-wider sm:tracking-widest mb-1 sm:mb-2">{stat.label}</p>
+                <p className="text-slate-400 text-[10px] sm:text-xs font-bold uppercase tracking-wider sm:tracking-widest mb-1 sm:mb-2">{stat.label}</p>
                 <p className={`text-xl sm:text-3xl font-black tabular-nums tracking-tighter ${stat.color}`}>{stat.value}</p>
               </div>
             ))}

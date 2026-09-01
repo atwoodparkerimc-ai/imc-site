@@ -165,45 +165,45 @@ export default function EmployeeLogin() {
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,#0A0C10_100%)] pointer-events-none" />
 
       {/* PORTAL FORM WRAPPER */}
-      <div className="flex-1 flex flex-col justify-center items-center px-4 py-16 relative z-10 w-full">
+      <div className="flex-1 flex flex-col justify-center items-center px-4 py-12 sm:py-16 relative z-10 w-full">
         {/* MAIN CONTAINER CARD (RESIZED & ELEVATED) */}
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className="w-full max-w-lg bg-[#131720] border border-slate-800/80 border-t-slate-700/50 p-8 sm:p-10 shadow-2xl relative z-10 rounded-sm"
+          className="w-full max-w-lg bg-[#131720] border border-slate-800/80 border-t-slate-700/50 p-6 sm:p-10 shadow-2xl relative z-10 rounded-sm"
         >
           {/* BRIGHT NAVY ACCENT LINE ON CARD TOP */}
           <div className="absolute top-0 left-0 w-full h-[2px] bg-[#117AE0]" />
 
           <div className="relative z-10">
             {/* HEADER */}
-            <div className="mb-8 space-y-1.5">
+            <div className="mb-6 sm:mb-8 space-y-1.5">
               <h1 className="text-2xl sm:text-3xl font-black text-slate-100 tracking-tight uppercase flex items-center gap-2.5">
-                <span className="w-2 h-2 bg-[#117AE0] animate-pulse rounded-none" />
+                <span className="w-2 h-2 bg-[#117AE0] animate-pulse rounded-none shrink-0" />
                 {mode === "login" && "Employee Portal"}
                 {mode === "gate" && "Site Authorization"}
                 {mode === "signup" && "New Registration"}
                 {mode === "forgot" && "Reset Access"}
               </h1>
-              <p className="text-slate-400 text-[10px] uppercase tracking-[0.2em] font-bold">
+              <p className="text-slate-400 text-[10px] sm:text-[11px] uppercase tracking-[0.2em] font-bold">
                 IMC Personnel Systems
               </p>
             </div>
 
             {/* DUAL MODE NAV TAB TOGGLE */}
             {(mode === "login" || mode === "gate" || mode === "signup") && (
-              <div className="grid grid-cols-2 gap-1 bg-[#0F1115] p-1 border border-slate-800/80 mb-8 rounded-sm">
+              <div className="grid grid-cols-2 gap-1 bg-[#0F1115] p-1 border border-slate-800/80 mb-6 sm:mb-8 rounded-sm">
                 <button
                   type="button"
                   onClick={() => {
                     setMode("login");
                     setFeedback(null);
                   }}
-                  className={`py-2.5 text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer rounded-sm ${
+                  className={`py-2.5 min-h-[42px] text-[10px] sm:text-[11px] font-bold uppercase tracking-wider transition-all active:scale-[0.98] touch-manipulation select-none cursor-pointer rounded-sm ${
                     mode === "login"
                       ? "bg-[#117AE0] text-white shadow-sm"
-                      : "text-slate-400 hover:text-slate-200"
+                      : "text-slate-400 hover:text-slate-200 active:bg-slate-800/50"
                   }`}
                 >
                   Sign In
@@ -214,10 +214,10 @@ export default function EmployeeLogin() {
                     setMode("gate");
                     setFeedback(null);
                   }}
-                  className={`py-2.5 text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer rounded-sm ${
+                  className={`py-2.5 min-h-[42px] text-[10px] sm:text-[11px] font-bold uppercase tracking-wider transition-all active:scale-[0.98] touch-manipulation select-none cursor-pointer rounded-sm ${
                     mode === "gate" || mode === "signup"
                       ? "bg-[#117AE0] text-white shadow-sm"
-                      : "text-slate-400 hover:text-slate-200"
+                      : "text-slate-400 hover:text-slate-200 active:bg-slate-800/50"
                   }`}
                 >
                   Create Account
@@ -230,7 +230,7 @@ export default function EmployeeLogin() {
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className={`mb-6 p-3 text-[10px] font-mono uppercase tracking-wider border text-center ${
+                className={`mb-6 p-3 text-[10px] sm:text-[11px] font-mono uppercase tracking-wider border text-center ${
                   feedback.isError
                     ? "bg-red-950/30 border-red-500/50 text-red-400"
                     : "bg-emerald-950/30 border-emerald-500/50 text-emerald-400"
@@ -251,8 +251,8 @@ export default function EmployeeLogin() {
                   onSubmit={handleLogin}
                   className="space-y-5"
                 >
-                  <div className="space-y-2">
-                    <label className="block text-slate-300 text-[10px] font-bold uppercase tracking-widest">
+                  <div className="space-y-1.5">
+                    <label className="block text-slate-300 text-[10px] sm:text-[11px] font-bold uppercase tracking-widest">
                       Email
                     </label>
                     <input
@@ -266,9 +266,9 @@ export default function EmployeeLogin() {
                     />
                   </div>
 
-                  <div className="space-y-2">
+                  <div className="space-y-1.5">
                     <div className="flex justify-between items-center">
-                      <label className="block text-slate-300 text-[10px] font-bold uppercase tracking-widest">
+                      <label className="block text-slate-300 text-[10px] sm:text-[11px] font-bold uppercase tracking-widest">
                         Password
                       </label>
                       <button
@@ -277,17 +277,17 @@ export default function EmployeeLogin() {
                           setMode("forgot");
                           setFeedback(null);
                         }}
-                        className="text-[#117AE0] text-[9px] uppercase font-bold hover:text-white transition-colors cursor-pointer"
+                        className="text-[#117AE0] text-[10px] uppercase font-bold hover:text-white active:text-white py-1 transition-colors cursor-pointer touch-manipulation select-none"
                       >
                         Forgot Password?
                       </button>
                     </div>
-                    <div className="relative">
+                    <div className="relative flex items-center">
                       <input
                         type={showLoginPassword ? "text" : "password"}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="w-full bg-[#0F1115] border border-slate-800 text-slate-100 px-4 py-3 pr-12 focus:outline-none focus:border-[#117AE0] transition-colors rounded-sm tracking-widest text-xs font-mono"
+                        className="w-full bg-[#0F1115] border border-slate-800 text-slate-100 px-4 py-3 pr-14 focus:outline-none focus:border-[#117AE0] transition-colors rounded-sm tracking-widest text-xs font-mono"
                         placeholder="••••••••"
                         required
                         disabled={isLoading}
@@ -295,7 +295,8 @@ export default function EmployeeLogin() {
                       <button
                         type="button"
                         onClick={() => setShowLoginPassword(!showLoginPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 hover:text-slate-200 uppercase font-bold px-1 transition-colors"
+                        className="absolute right-1.5 top-1/2 -translate-y-1/2 min-w-[44px] min-h-[44px] flex items-center justify-center text-[10px] text-slate-400 hover:text-slate-200 active:text-white uppercase font-bold transition-all touch-manipulation select-none cursor-pointer"
+                        aria-label={showLoginPassword ? "Hide password" : "Show password"}
                       >
                         {showLoginPassword ? "HIDE" : "SHOW"}
                       </button>
@@ -305,7 +306,7 @@ export default function EmployeeLogin() {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full bg-[#117AE0] text-white font-bold uppercase tracking-[0.2em] py-3.5 mt-2 hover:bg-white hover:text-black transition-all duration-200 shadow-[0_0_15px_rgba(17,122,224,0.25)] hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-xs"
+                    className="w-full bg-[#117AE0] hover:bg-[#0e6bc4] active:bg-[#0c59a3] text-white font-bold uppercase tracking-[0.2em] py-3.5 mt-2 transition-all duration-200 shadow-[0_0_15px_rgba(17,122,224,0.25)] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-xs touch-manipulation select-none"
                   >
                     {isLoading ? "Authenticating..." : "Sign In ↗"}
                   </button>
@@ -323,21 +324,21 @@ export default function EmployeeLogin() {
                   className="space-y-5"
                 >
                   <div className="bg-[#0F1115] border border-slate-800/80 p-4 rounded-sm">
-                    <p className="text-[10px] text-slate-300 uppercase tracking-wider leading-relaxed">
+                    <p className="text-[10px] sm:text-[11px] text-slate-300 uppercase tracking-wider leading-relaxed">
                       <strong className="text-[#117AE0]">RESTRICTED REGISTRATION:</strong> Enter the site authorization password provided by employer to unlock account registration.
                     </p>
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="block text-slate-300 text-[10px] font-bold uppercase tracking-widest">
+                  <div className="space-y-1.5">
+                    <label className="block text-slate-300 text-[10px] sm:text-[11px] font-bold uppercase tracking-widest">
                       Authorization Key
                     </label>
-                    <div className="relative">
+                    <div className="relative flex items-center">
                       <input
                         type={showGatePasscode ? "text" : "password"}
                         value={gatePasscode}
                         onChange={(e) => setGatePasscode(e.target.value)}
-                        className={`w-full bg-[#0F1115] border px-4 py-3 pr-12 focus:outline-none text-slate-100 transition-colors rounded-sm tracking-widest text-xs font-mono ${
+                        className={`w-full bg-[#0F1115] border px-4 py-3 pr-14 focus:outline-none text-slate-100 transition-colors rounded-sm tracking-widest text-xs font-mono ${
                           gateError ? "border-red-500" : "border-slate-800 focus:border-[#117AE0]"
                         }`}
                         placeholder="Enter Authorization Passcode"
@@ -346,7 +347,8 @@ export default function EmployeeLogin() {
                       <button
                         type="button"
                         onClick={() => setShowGatePasscode(!showGatePasscode)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 hover:text-slate-200 uppercase font-bold px-1 transition-colors"
+                        className="absolute right-1.5 top-1/2 -translate-y-1/2 min-w-[44px] min-h-[44px] flex items-center justify-center text-[10px] text-slate-400 hover:text-slate-200 active:text-white uppercase font-bold transition-all touch-manipulation select-none cursor-pointer"
+                        aria-label={showGatePasscode ? "Hide authorization key" : "Show authorization key"}
                       >
                         {showGatePasscode ? "HIDE" : "SHOW"}
                       </button>
@@ -355,7 +357,7 @@ export default function EmployeeLogin() {
 
                   <button
                     type="submit"
-                    className="w-full bg-[#117AE0] text-white font-bold uppercase tracking-[0.2em] py-3.5 mt-2 hover:bg-white hover:text-black transition-all duration-200 shadow-[0_0_15px_rgba(17,122,224,0.25)] hover:-translate-y-0.5 cursor-pointer text-xs"
+                    className="w-full bg-[#117AE0] hover:bg-[#0e6bc4] active:bg-[#0c59a3] text-white font-bold uppercase tracking-[0.2em] py-3.5 mt-2 transition-all duration-200 shadow-[0_0_15px_rgba(17,122,224,0.25)] active:scale-[0.98] cursor-pointer text-xs touch-manipulation select-none"
                   >
                     Verify Key & Unlock 🔓
                   </button>
@@ -372,9 +374,9 @@ export default function EmployeeLogin() {
                   onSubmit={handleSignUp}
                   className="space-y-4"
                 >
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                     <div className="space-y-1.5">
-                      <label className="block text-slate-300 text-[9px] font-bold uppercase tracking-widest">
+                      <label className="block text-slate-300 text-[10px] sm:text-[11px] font-bold uppercase tracking-widest">
                         First Name
                       </label>
                       <input
@@ -382,12 +384,12 @@ export default function EmployeeLogin() {
                         required
                         value={firstName}
                         onChange={(e) => setFirstName(e.target.value)}
-                        placeholder="Name"
-                        className="w-full bg-[#0F1115] border border-slate-800 text-slate-100 p-2.5 text-xs outline-none focus:border-[#117AE0] transition-colors rounded-sm font-mono"
+                        placeholder="First Name"
+                        className="w-full bg-[#0F1115] border border-slate-800 text-slate-100 p-3 text-xs outline-none focus:border-[#117AE0] transition-colors rounded-sm font-mono"
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="block text-slate-300 text-[9px] font-bold uppercase tracking-widest">
+                      <label className="block text-slate-300 text-[10px] sm:text-[11px] font-bold uppercase tracking-widest">
                         Last Name
                       </label>
                       <input
@@ -396,19 +398,19 @@ export default function EmployeeLogin() {
                         value={lastName}
                         onChange={(e) => setLastName(e.target.value)}
                         placeholder="Last Name"
-                        className="w-full bg-[#0F1115] border border-slate-800 text-slate-100 p-2.5 text-xs outline-none focus:border-[#117AE0] transition-colors rounded-sm font-mono"
+                        className="w-full bg-[#0F1115] border border-slate-800 text-slate-100 p-3 text-xs outline-none focus:border-[#117AE0] transition-colors rounded-sm font-mono"
                       />
                     </div>
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="block text-slate-300 text-[9px] font-bold uppercase tracking-widest">
+                    <label className="block text-slate-300 text-[10px] sm:text-[11px] font-bold uppercase tracking-widest">
                       Assigned Worksite
                     </label>
                     <select
                       value={location}
                       onChange={(e) => setLocation(e.target.value)}
-                      className="w-full bg-[#0F1115] border border-slate-800 text-slate-100 p-2.5 text-xs outline-none focus:border-[#117AE0] transition-colors rounded-sm cursor-pointer font-mono"
+                      className="w-full bg-[#0F1115] border border-slate-800 text-slate-100 p-3 text-xs outline-none focus:border-[#117AE0] transition-colors rounded-sm cursor-pointer font-mono"
                     >
                       <option value="Nestle Springville">Nestle Springville</option>
                       <option value="Nestle Jonesboro">Nestle Jonesboro</option>
@@ -417,7 +419,7 @@ export default function EmployeeLogin() {
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="block text-slate-300 text-[9px] font-bold uppercase tracking-widest">
+                    <label className="block text-slate-300 text-[10px] sm:text-[11px] font-bold uppercase tracking-widest">
                       Work Email
                     </label>
                     <input
@@ -426,15 +428,15 @@ export default function EmployeeLogin() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="Enter Your Email"
-                      className="w-full bg-[#0F1115] border border-slate-800 text-slate-100 p-2.5 text-xs outline-none focus:border-[#117AE0] transition-colors rounded-sm font-mono"
+                      className="w-full bg-[#0F1115] border border-slate-800 text-slate-100 p-3 text-xs outline-none focus:border-[#117AE0] transition-colors rounded-sm font-mono"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="block text-slate-300 text-[9px] font-bold uppercase tracking-widest">
+                    <label className="block text-slate-300 text-[10px] sm:text-[11px] font-bold uppercase tracking-widest">
                       Create Password
                     </label>
-                    <div className="relative">
+                    <div className="relative flex items-center">
                       <input
                         type={showSignupPassword ? "text" : "password"}
                         required
@@ -442,12 +444,13 @@ export default function EmployeeLogin() {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="••••••••"
-                        className="w-full bg-[#0F1115] border border-slate-800 text-slate-100 p-2.5 pr-12 text-xs outline-none focus:border-[#117AE0] transition-colors rounded-sm tracking-widest font-mono"
+                        className="w-full bg-[#0F1115] border border-slate-800 text-slate-100 p-3 pr-14 text-xs outline-none focus:border-[#117AE0] transition-colors rounded-sm tracking-widest font-mono"
                       />
                       <button
                         type="button"
                         onClick={() => setShowSignupPassword(!showSignupPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] text-slate-400 hover:text-slate-200 uppercase font-bold px-1 transition-colors"
+                        className="absolute right-1.5 top-1/2 -translate-y-1/2 min-w-[44px] min-h-[44px] flex items-center justify-center text-[10px] text-slate-400 hover:text-slate-200 active:text-white uppercase font-bold transition-all touch-manipulation select-none cursor-pointer"
+                        aria-label={showSignupPassword ? "Hide password" : "Show password"}
                       >
                         {showSignupPassword ? "HIDE" : "SHOW"}
                       </button>
@@ -455,10 +458,10 @@ export default function EmployeeLogin() {
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="block text-slate-300 text-[9px] font-bold uppercase tracking-widest">
+                    <label className="block text-slate-300 text-[10px] sm:text-[11px] font-bold uppercase tracking-widest">
                       Confirm Password
                     </label>
-                    <div className="relative">
+                    <div className="relative flex items-center">
                       <input
                         type={showConfirmPassword ? "text" : "password"}
                         required
@@ -466,7 +469,7 @@ export default function EmployeeLogin() {
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         placeholder="••••••••"
-                        className={`w-full bg-[#0F1115] border text-slate-100 p-2.5 pr-12 text-xs outline-none transition-colors rounded-sm tracking-widest font-mono ${
+                        className={`w-full bg-[#0F1115] border text-slate-100 p-3 pr-14 text-xs outline-none transition-colors rounded-sm tracking-widest font-mono ${
                           confirmPassword && password !== confirmPassword
                             ? "border-red-500 focus:border-red-500"
                             : "border-slate-800 focus:border-[#117AE0]"
@@ -475,7 +478,8 @@ export default function EmployeeLogin() {
                       <button
                         type="button"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] text-slate-400 hover:text-slate-200 uppercase font-bold px-1 transition-colors"
+                        className="absolute right-1.5 top-1/2 -translate-y-1/2 min-w-[44px] min-h-[44px] flex items-center justify-center text-[10px] text-slate-400 hover:text-slate-200 active:text-white uppercase font-bold transition-all touch-manipulation select-none cursor-pointer"
+                        aria-label={showConfirmPassword ? "Hide password" : "Show password"}
                       >
                         {showConfirmPassword ? "HIDE" : "SHOW"}
                       </button>
@@ -485,7 +489,7 @@ export default function EmployeeLogin() {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full bg-[#117AE0] text-white font-bold uppercase tracking-[0.2em] py-3.5 mt-2 hover:bg-white hover:text-black transition-all duration-200 shadow-[0_0_15px_rgba(17,122,224,0.25)] hover:-translate-y-0.5 disabled:opacity-50 cursor-pointer text-xs"
+                    className="w-full bg-[#117AE0] hover:bg-[#0e6bc4] active:bg-[#0c59a3] text-white font-bold uppercase tracking-[0.2em] py-3.5 mt-2 transition-all duration-200 shadow-[0_0_15px_rgba(17,122,224,0.25)] active:scale-[0.98] disabled:opacity-50 cursor-pointer text-xs touch-manipulation select-none"
                   >
                     {isLoading ? "Creating Profile..." : "Complete Registration ↗"}
                   </button>
@@ -503,13 +507,13 @@ export default function EmployeeLogin() {
                   className="space-y-5"
                 >
                   <div className="bg-[#0F1115] border border-slate-800/80 p-4 rounded-sm">
-                    <p className="text-[10px] text-slate-300 uppercase tracking-wider leading-relaxed">
+                    <p className="text-[10px] sm:text-[11px] text-slate-300 uppercase tracking-wider leading-relaxed">
                       Enter your registered work email address below. We will dispatch a secure link to reset your account password.
                     </p>
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="block text-slate-300 text-[10px] font-bold uppercase tracking-widest">
+                  <div className="space-y-1.5">
+                    <label className="block text-slate-300 text-[10px] sm:text-[11px] font-bold uppercase tracking-widest">
                       Registered Work Email
                     </label>
                     <input
@@ -525,7 +529,7 @@ export default function EmployeeLogin() {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full bg-[#117AE0] text-white font-bold uppercase tracking-[0.2em] py-3.5 mt-2 hover:bg-white hover:text-black transition-all duration-200 shadow-[0_0_15px_rgba(17,122,224,0.25)] hover:-translate-y-0.5 disabled:opacity-50 cursor-pointer text-xs"
+                    className="w-full bg-[#117AE0] hover:bg-[#0e6bc4] active:bg-[#0c59a3] text-white font-bold uppercase tracking-[0.2em] py-3.5 mt-2 transition-all duration-200 shadow-[0_0_15px_rgba(17,122,224,0.25)] active:scale-[0.98] disabled:opacity-50 cursor-pointer text-xs touch-manipulation select-none"
                   >
                     {isLoading ? "Sending Instructions..." : "Send Reset Link ✉"}
                   </button>
@@ -536,7 +540,7 @@ export default function EmployeeLogin() {
                       setMode("login");
                       setFeedback(null);
                     }}
-                    className="w-full text-center text-slate-400 hover:text-[#117AE0] transition-colors text-[10px] uppercase font-bold tracking-widest pt-2 cursor-pointer block"
+                    className="w-full text-center text-slate-400 hover:text-[#117AE0] active:text-[#117AE0] transition-colors text-[10px] sm:text-[11px] uppercase font-bold tracking-widest py-2.5 cursor-pointer block touch-manipulation select-none"
                   >
                     ← Return to Personnel Login
                   </button>
@@ -548,7 +552,7 @@ export default function EmployeeLogin() {
         
         {/* FLOATING FOOTER AUDIT WARNING */}
         <div className="mt-8 text-center px-4 relative z-10">
-          <p className="text-[9px] text-slate-500 uppercase tracking-widest font-bold">
+          <p className="text-[10px] sm:text-[11px] text-slate-500 uppercase tracking-widest font-bold">
             System IP logged. Unauthorized access is strictly prohibited.
           </p>
         </div>

@@ -154,7 +154,7 @@ export default function PrizeInventory({ inventory = [], fetchInventory, itemVar
   };
 
   return (
-    <div className="flex flex-col lg:grid lg:grid-cols-3 gap-6 font-mono text-slate-100">
+    <div className="flex flex-col lg:grid lg:grid-cols-3 gap-6 font-mono text-slate-100 select-none">
       
       {/* 1. CURRENT STOCK (ORDER-1 ON MOBILE, LG:ORDER-2 ON DESKTOP) */}
       <motion.div 
@@ -192,7 +192,7 @@ export default function PrizeInventory({ inventory = [], fetchInventory, itemVar
                     key={`mob-${item.id}`}
                     className={`p-3 border rounded-sm transition-all duration-150 flex gap-3 items-start bg-[var(--color-brand-bg)] ${
                       isCurrentlyEditing
-                        ? "border-amber-400 bg-amber-400/5 shadow-[0_0_10px_rgba(251,191,36,0.15)]"
+                        ? "border-[#eab308] bg-[#eab308]/5 shadow-[0_0_10px_rgba(234,179,8,0.15)]"
                         : "border-[var(--color-brand-border)]"
                     }`}
                   >
@@ -205,10 +205,10 @@ export default function PrizeInventory({ inventory = [], fetchInventory, itemVar
                           className="w-full h-full object-cover" 
                         />
                       ) : (
-                        <span className="text-[8px] text-slate-500 font-bold uppercase text-center p-1">No Image</span>
+                        <span className="text-[9px] text-slate-500 font-bold uppercase text-center p-1">No Image</span>
                       )}
                       {item.is_featured && (
-                        <div className="absolute top-0 right-0 bg-amber-500 text-black font-black text-[6px] px-1 py-0.2">
+                        <div className="absolute top-0 right-0 bg-[#eab308] text-black font-black text-[8px] px-1 py-0.5">
                           ★
                         </div>
                       )}
@@ -220,37 +220,37 @@ export default function PrizeInventory({ inventory = [], fetchInventory, itemVar
                         <h4 className="text-xs font-black uppercase text-slate-100 truncate">
                           {item.item_name}
                         </h4>
-                        <span className="text-[9px] uppercase font-bold text-slate-400 px-1.5 py-0.5 border border-[var(--color-brand-border)] bg-[var(--color-brand-card)] shrink-0">
+                        <span className="text-[9px] sm:text-[10px] uppercase font-bold text-slate-400 px-1.5 py-0.5 border border-[var(--color-brand-border)] bg-[var(--color-brand-card)] shrink-0">
                           {item.category || "General"}
                         </span>
                       </div>
 
-                      <div className="flex items-center gap-3 mt-1.5 text-[11px] font-bold tabular-nums">
-                        <span className="text-[var(--color-metric-safe-acts)]">
+                      <div className="flex items-center gap-3 mt-1.5 text-xs font-bold tabular-nums">
+                        <span className="text-[var(--color-brand-green,#00ff9d)]">
                           {item.cost_in_points} PTS
                         </span>
                         <span className="text-slate-600">•</span>
-                        <span className={item.quantity_in_stock > 0 ? 'text-slate-300' : 'text-[var(--color-metric-assistance)]'}>
+                        <span className={item.quantity_in_stock > 0 ? 'text-slate-300' : 'text-[var(--color-brand-red,#ff3b5c)]'}>
                           {item.quantity_in_stock > 0 ? `${item.quantity_in_stock} in stock` : 'Out of Stock'}
                         </span>
                       </div>
 
                       <div className="flex justify-between items-center mt-2.5 pt-2 border-t border-[var(--color-brand-border)]/60 text-[10px] font-bold uppercase">
-                        <span className="text-[9px] text-[var(--color-brand-blue)]">
+                        <span className="text-[9px] sm:text-[10px] text-[var(--color-brand-blue)] font-bold">
                           📷 {photosCount} {photosCount === 1 ? 'Asset' : 'Assets'}
                         </span>
-                        <div className="space-x-3">
+                        <div className="flex items-center gap-2">
                           <button
                             type="button"
                             onClick={() => startEditing(item)}
-                            className="text-[var(--color-brand-blue)] hover:underline active:scale-95 cursor-pointer font-bold"
+                            className="min-h-[34px] px-2.5 py-1 text-xs border border-[var(--color-brand-blue)]/50 text-[var(--color-brand-blue)] hover:bg-[var(--color-brand-blue)] hover:text-white rounded-sm active:scale-95 cursor-pointer font-bold transition-all touch-manipulation focus:outline-none"
                           >
                             Edit ↗
                           </button>
                           <button
                             type="button"
                             onClick={() => handleDeleteItem(item.id)}
-                            className="text-[var(--color-brand-red)] hover:underline active:scale-95 cursor-pointer font-bold"
+                            className="min-h-[34px] px-2.5 py-1 text-xs border border-[var(--color-brand-red,#ff3b5c)]/50 text-[var(--color-brand-red,#ff3b5c)] hover:bg-[var(--color-brand-red,#ff3b5c)] hover:text-white rounded-sm active:scale-95 cursor-pointer font-bold transition-all touch-manipulation focus:outline-none"
                           >
                             Delete
                           </button>
@@ -271,7 +271,7 @@ export default function PrizeInventory({ inventory = [], fetchInventory, itemVar
           <div className="hidden lg:block overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="text-slate-400 text-[10px] font-bold uppercase tracking-wider border-b bg-[var(--color-brand-bg)] border-[var(--color-brand-border)]">
+                <tr className="text-slate-400 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider border-b bg-[var(--color-brand-bg)] border-[var(--color-brand-border)]">
                   <th className="py-3 px-3">Item Details</th>
                   <th className="py-3 px-3">Category</th>
                   <th className="py-3 px-3">Point Cost</th>
@@ -291,7 +291,7 @@ export default function PrizeInventory({ inventory = [], fetchInventory, itemVar
                         key={item.id} 
                         className={`transition-colors ${
                           isCurrentlyEditing 
-                            ? "bg-amber-400/10 border-l-2 border-amber-400" 
+                            ? "bg-[#eab308]/10 border-l-2 border-[#eab308]" 
                             : "hover:bg-[var(--color-brand-bg)]/50"
                         }`}
                       >
@@ -312,43 +312,43 @@ export default function PrizeInventory({ inventory = [], fetchInventory, itemVar
                               <p className="flex items-center gap-1.5">
                                 <span>{item.item_name}</span>
                                 {item.is_featured && (
-                                  <span className="text-[8px] bg-amber-500/20 text-amber-400 border border-amber-500/40 px-1 py-0.2 rounded-xs">
+                                  <span className="text-[9px] bg-[#eab308]/20 text-[#eab308] border border-[#eab308]/40 px-1 py-0.2 rounded-xs font-bold">
                                     ★ FEATURED
                                   </span>
                                 )}
                               </p>
-                              <p className="text-[9px] text-slate-400 font-normal lowercase tracking-normal mt-0.5 max-w-xs line-clamp-1">
+                              <p className="text-[10px] text-slate-400 font-normal lowercase tracking-normal mt-0.5 max-w-xs line-clamp-1">
                                 {item.description || "No description provided."}
                               </p>
                               {photosCount > 0 && (
-                                <p className="text-[8px] text-[var(--color-brand-blue)] font-bold mt-0.5">
+                                <p className="text-[9px] text-[var(--color-brand-blue)] font-bold mt-0.5">
                                   📷 {photosCount} {photosCount === 1 ? 'Asset' : 'Assets'}
                                 </p>
                               )}
                             </div>
                           </div>
                         </td>
-                        <td className="py-3.5 px-3 text-slate-400 font-bold uppercase text-[10px] whitespace-nowrap">
+                        <td className="py-3.5 px-3 text-slate-400 font-bold uppercase text-[10px] sm:text-[11px] whitespace-nowrap">
                           {item.category || "General"}
                         </td>
-                        <td className="py-3.5 px-3 font-bold tabular-nums text-xs whitespace-nowrap text-[var(--color-metric-safe-acts)]">
+                        <td className="py-3.5 px-3 font-bold tabular-nums text-xs whitespace-nowrap text-[var(--color-brand-green,#00ff9d)]">
                           {item.cost_in_points} PTS
                         </td>
-                        <td className={`py-3.5 px-3 font-bold tabular-nums text-xs whitespace-nowrap ${item.quantity_in_stock > 0 ? 'text-[var(--color-metric-safe-acts)]' : 'text-[var(--color-metric-assistance)]'}`}>
+                        <td className={`py-3.5 px-3 font-bold tabular-nums text-xs whitespace-nowrap ${item.quantity_in_stock > 0 ? 'text-[var(--color-brand-green,#00ff9d)]' : 'text-[var(--color-brand-red,#ff3b5c)]'}`}>
                           {item.quantity_in_stock > 0 ? `${item.quantity_in_stock} UNITS` : 'OUT OF STOCK'}
                         </td>
                         <td className="py-3.5 px-3 text-right whitespace-nowrap space-x-2">
                           <button 
                             type="button"
                             onClick={() => startEditing(item)} 
-                            className="text-xs font-bold uppercase hover:underline cursor-pointer text-[var(--color-brand-blue)] hover:text-white"
+                            className="text-xs font-bold uppercase hover:underline cursor-pointer text-[var(--color-brand-blue)] hover:text-white touch-manipulation focus:outline-none"
                           >
                             [ Edit ]
                           </button>
                           <button 
                             type="button"
                             onClick={() => handleDeleteItem(item.id)} 
-                            className="text-xs font-bold uppercase hover:underline cursor-pointer text-[var(--color-brand-red)] hover:text-red-400"
+                            className="text-xs font-bold uppercase hover:underline cursor-pointer text-[var(--color-brand-red,#ff3b5c)] hover:text-white touch-manipulation focus:outline-none"
                           >
                             [ Delete ]
                           </button>
@@ -368,7 +368,7 @@ export default function PrizeInventory({ inventory = [], fetchInventory, itemVar
           </div>
         </div>
 
-        <div className="pt-4 mt-6 border-t border-[var(--color-brand-border)] flex justify-between text-[10px] text-slate-500 uppercase">
+        <div className="pt-4 mt-6 border-t border-[var(--color-brand-border)] flex justify-between text-[10px] sm:text-[11px] text-slate-500 uppercase font-bold">
           <span>SUPABASE INVENTORY CLUSTER</span>
           <span>ONLINE CATALOG SYSTEM</span>
         </div>
@@ -382,14 +382,14 @@ export default function PrizeInventory({ inventory = [], fetchInventory, itemVar
       >
         <div 
           className={`absolute top-0 left-0 w-full h-[2px] transition-colors duration-300 ${
-            editingId ? "bg-amber-400" : "bg-[var(--color-brand-blue)]"
+            editingId ? "bg-[#eab308]" : "bg-[var(--color-brand-blue)]"
           }`} 
         />
         
         <div className="mb-4 sm:mb-6 border-b pb-3 sm:pb-4 border-[var(--color-brand-border)] flex justify-between items-start">
           <div>
             <h2 className="text-slate-100 font-black uppercase tracking-widest text-xs sm:text-base flex items-center gap-2">
-              <span className={`w-2 h-2 rounded-none animate-pulse ${editingId ? "bg-amber-400" : "bg-[var(--color-brand-blue)]"}`} />
+              <span className={`w-2 h-2 rounded-none animate-pulse ${editingId ? "bg-[#eab308]" : "bg-[var(--color-brand-blue)]"}`} />
               {editingId ? "Edit Catalog Item" : "Provision Store Item"}
             </h2>
             <p className="text-[10px] sm:text-xs text-slate-400 font-bold uppercase tracking-wider mt-0.5">
@@ -400,7 +400,7 @@ export default function PrizeInventory({ inventory = [], fetchInventory, itemVar
             <button 
               type="button"
               onClick={cancelEditing}
-              className="text-[10px] font-bold uppercase text-slate-400 hover:text-white px-2 py-1 border border-slate-700 bg-slate-900 rounded-sm cursor-pointer"
+              className="text-[10px] sm:text-xs font-bold uppercase text-slate-400 hover:text-white px-2.5 py-1 border border-slate-700 bg-slate-900 rounded-sm cursor-pointer touch-manipulation focus:outline-none"
             >
               Cancel
             </button>
@@ -408,59 +408,59 @@ export default function PrizeInventory({ inventory = [], fetchInventory, itemVar
         </div>
         
         {formError && (
-          <div className="mb-4 p-3 border text-xs font-bold uppercase tracking-wider rounded-sm bg-amber-500/10 border-amber-500/50 text-[var(--color-metric-observation)]">
+          <div className="mb-4 p-3 border text-xs font-bold uppercase tracking-wider rounded-sm bg-[#eab308]/10 border-[#eab308]/50 text-[#eab308]">
             {formError}
           </div>
         )}
 
         <form onSubmit={handleFormSubmit} className="space-y-3.5 sm:space-y-4">
           <div>
-            <label className="text-[10px] font-bold uppercase text-slate-300 tracking-widest block mb-1">Item Title</label>
+            <label className="text-[10px] sm:text-[11px] font-bold uppercase text-slate-300 tracking-widest block mb-1">Item Title</label>
             <input 
               type="text" 
               value={itemName} 
               onChange={(e) => setItemName(e.target.value)} 
               required 
               placeholder="e.g. Carhartt Heavyweight Hoodie" 
-              className="w-full p-2.5 sm:p-3 text-slate-100 text-xs font-bold uppercase outline-none transition-colors rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)]" 
+              className="w-full min-h-[44px] p-2.5 sm:p-3 text-slate-100 text-xs font-bold uppercase outline-none transition-all rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] touch-manipulation" 
             />
           </div>
 
           <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
             <div>
-              <label className="text-[10px] font-bold uppercase text-slate-300 tracking-widest block mb-1">Point Valuation</label>
+              <label className="text-[10px] sm:text-[11px] font-bold uppercase text-slate-300 tracking-widest block mb-1">Point Valuation</label>
               <input 
                 type="number" 
                 value={itemCost} 
                 onChange={(e) => setItemCost(e.target.value)} 
                 required 
                 placeholder="Points" 
-                className="w-full p-2.5 sm:p-3 text-slate-100 text-xs font-bold uppercase outline-none transition-colors rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)]" 
+                className="w-full min-h-[44px] p-2.5 sm:p-3 text-slate-100 text-xs font-bold uppercase outline-none transition-all rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] touch-manipulation" 
               />
             </div>
 
             <div>
-              <label className="text-[10px] font-bold uppercase text-slate-300 tracking-widest block mb-1">Stock Quantity</label>
+              <label className="text-[10px] sm:text-[11px] font-bold uppercase text-slate-300 tracking-widest block mb-1">Stock Quantity</label>
               <input 
                 type="number" 
                 value={itemStock} 
                 onChange={(e) => setItemStock(e.target.value)} 
                 required 
                 placeholder="In Stock QTY" 
-                className="w-full p-2.5 sm:p-3 text-slate-100 text-xs font-bold uppercase outline-none transition-colors rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)]" 
+                className="w-full min-h-[44px] p-2.5 sm:p-3 text-slate-100 text-xs font-bold uppercase outline-none transition-all rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] touch-manipulation" 
               />
             </div>
           </div>
 
           <div>
-            <label className="text-[10px] font-bold uppercase text-slate-300 tracking-widest block mb-1">Category Classification</label>
+            <label className="text-[10px] sm:text-[11px] font-bold uppercase text-slate-300 tracking-widest block mb-1">Category Classification</label>
             <select
               value={itemCategory}
               onChange={(e) => setItemCategory(e.target.value)}
-              className="w-full p-2.5 sm:p-3 text-slate-100 text-xs font-bold uppercase outline-none cursor-pointer rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)]"
+              className="w-full min-h-[44px] p-2.5 sm:p-3 text-slate-100 text-xs font-bold uppercase outline-none cursor-pointer rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] touch-manipulation"
             >
               {CATEGORIES.map(cat => (
-                <option key={cat} value={cat} style={{ backgroundColor: "var(--color-brand-card)" }}>
+                <option key={cat} value={cat} className="bg-[var(--color-brand-card)] text-white">
                   {cat}
                 </option>
               ))}
@@ -468,27 +468,27 @@ export default function PrizeInventory({ inventory = [], fetchInventory, itemVar
           </div>
 
           <div>
-            <label className="text-[10px] font-bold uppercase text-slate-300 tracking-widest block mb-1">
+            <label className="text-[10px] sm:text-[11px] font-bold uppercase text-slate-300 tracking-widest block mb-1">
               Product Description & Specs
             </label>
             <textarea 
               value={itemDescription}
               onChange={(e) => setItemDescription(e.target.value)}
               placeholder="Detail sizing, material quality, warranty, or pickup instructions..."
-              className="w-full p-2.5 sm:p-3 text-slate-100 text-xs font-sans h-20 sm:h-24 outline-none resize-none transition-colors rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)]"
+              className="w-full p-2.5 sm:p-3 text-slate-100 text-xs font-sans h-20 sm:h-24 outline-none resize-none transition-all rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] touch-manipulation"
             />
           </div>
 
           {/* Photo Gallery Link Array */}
           <div>
             <div className="flex justify-between items-center mb-1">
-              <label className="text-[10px] font-bold uppercase text-slate-300 tracking-widest block">
+              <label className="text-[10px] sm:text-[11px] font-bold uppercase text-slate-300 tracking-widest block">
                 Photo Gallery URLs
               </label>
               <button
                 type="button"
                 onClick={addImageField}
-                className="text-[9px] font-bold uppercase text-[var(--color-brand-blue)] hover:underline cursor-pointer"
+                className="text-[10px] sm:text-xs font-bold uppercase text-[var(--color-brand-blue)] hover:underline cursor-pointer touch-manipulation"
               >
                 + Add Photo URL
               </button>
@@ -502,13 +502,13 @@ export default function PrizeInventory({ inventory = [], fetchInventory, itemVar
                     value={imgUrl} 
                     onChange={(e) => handleImageChange(index, e.target.value)} 
                     placeholder={index === 0 ? "Primary Image URL (HTTPS)" : `Gallery Photo #${index + 1} URL`} 
-                    className="flex-1 p-2 sm:p-2.5 text-slate-100 text-xs font-mono outline-none transition-colors rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)]" 
+                    className="flex-1 min-h-[44px] p-2.5 text-slate-100 text-xs font-mono outline-none transition-all rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] touch-manipulation" 
                   />
                   {itemImages.length > 1 && (
                     <button 
                       type="button"
                       onClick={() => removeImageField(index)}
-                      className="px-2.5 py-2 text-xs font-bold text-[var(--color-brand-red)] border border-[var(--color-brand-border)] hover:bg-red-950/40 rounded-sm cursor-pointer"
+                      className="min-w-[44px] min-h-[44px] flex items-center justify-center text-xs font-bold text-[var(--color-brand-red,#ff3b5c)] border border-[var(--color-brand-border)] hover:bg-red-950/40 rounded-sm cursor-pointer touch-manipulation focus:outline-none"
                     >
                       ✕
                     </button>
@@ -519,15 +519,15 @@ export default function PrizeInventory({ inventory = [], fetchInventory, itemVar
           </div>
 
           {/* Featured Spotlight Toggle */}
-          <div className="flex items-center gap-3 pt-1 sm:pt-2">
+          <div className="flex items-center gap-3 pt-1 sm:pt-2 min-h-[44px]">
             <input 
               type="checkbox"
               id="isFeatured"
               checked={isFeatured}
               onChange={(e) => setIsFeatured(e.target.checked)}
-              className="w-4 h-4 cursor-pointer accent-[var(--color-brand-blue)]"
+              className="w-4 h-4 cursor-pointer accent-[var(--color-brand-blue)] touch-manipulation"
             />
-            <label htmlFor="isFeatured" className="text-xs font-bold uppercase tracking-wider text-slate-200 cursor-pointer">
+            <label htmlFor="isFeatured" className="text-xs font-bold uppercase tracking-wider text-slate-200 cursor-pointer touch-manipulation">
               Feature Item in Store Banner
             </label>
           </div>
@@ -537,7 +537,7 @@ export default function PrizeInventory({ inventory = [], fetchInventory, itemVar
               <button
                 type="button"
                 onClick={cancelEditing}
-                className="flex-1 py-3 sm:py-3.5 border border-slate-700 text-slate-300 font-bold uppercase tracking-wider text-xs hover:bg-slate-800 transition-colors rounded-sm cursor-pointer"
+                className="flex-1 min-h-[44px] py-2.5 px-4 border border-slate-700 text-slate-300 font-bold uppercase tracking-wider text-xs hover:bg-slate-800 transition-all rounded-sm cursor-pointer active:scale-[0.98] touch-manipulation focus:outline-none"
               >
                 Cancel
               </button>
@@ -545,9 +545,9 @@ export default function PrizeInventory({ inventory = [], fetchInventory, itemVar
             <button 
               type="submit" 
               disabled={isSubmitting}
-              className={`flex-1 py-3 sm:py-3.5 font-bold uppercase tracking-wider text-xs transition-all duration-200 cursor-pointer rounded-sm ${
+              className={`flex-1 min-h-[44px] py-2.5 px-4 font-bold uppercase tracking-wider text-xs transition-all duration-200 cursor-pointer rounded-sm active:scale-[0.98] touch-manipulation focus:outline-none ${
                 editingId 
-                  ? "bg-amber-400 hover:bg-white text-black shadow-[0_0_15px_rgba(251,191,36,0.25)]" 
+                  ? "bg-[#eab308] hover:bg-white text-black shadow-[0_0_15px_rgba(234,179,8,0.25)]" 
                   : "bg-[var(--color-brand-blue)] hover:bg-white hover:text-black text-white shadow-[0_0_15px_rgba(0,136,255,0.25)]"
               }`}
             >

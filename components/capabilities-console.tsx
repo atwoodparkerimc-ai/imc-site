@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Edges, Float } from "@react-three/drei";
 import * as THREE from "three";
@@ -736,8 +736,18 @@ function ActiveBlueprintStage({ activeId, accent }: { activeId: string, accent: 
 // ============================================================================
 export default function CapabilitiesConsole() {
   const [activeId, setActiveId] = useState("piping");
+  const [isMobile, setIsMobile] = useState(false);
   const workstationRef = useRef<HTMLDivElement>(null);
   const active = capabilitiesData.find(c => c.id === activeId) || capabilitiesData[0];
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const handleSelect = (id: string) => {
     setActiveId(id);
@@ -769,7 +779,7 @@ export default function CapabilitiesConsole() {
                 key={item.id}
                 type="button"
                 onClick={() => handleSelect(item.id)}
-                className={`w-full text-left p-5 rounded-lg border transition-all duration-300 relative flex items-center justify-between group cursor-pointer ${
+                className={`w-full text-left p-5 rounded-lg border transition-all duration-200 relative flex items-center justify-between group cursor-pointer active:scale-[0.98] active:bg-[#07172e] touch-manipulation select-none ${
                   isSelected
                     ? "bg-[#061224] border-slate-700 shadow-lg"
                     : "bg-[#050e1d] border-slate-800/80 hover:bg-[#08152b] hover:border-slate-700"
@@ -806,14 +816,14 @@ export default function CapabilitiesConsole() {
         {/* TECHNICAL WORKSTATION (TARGET FOR MOBILE SCROLL) */}
         <div 
           ref={workstationRef}
-          className="lg:col-span-8 scroll-mt-24 h-full rounded-lg border border-slate-800 bg-[#040c1a] p-8 sm:p-10 flex flex-col justify-between relative overflow-hidden shadow-2xl"
+          className="lg:col-span-8 scroll-mt-24 h-full rounded-lg border border-slate-800 bg-[#040c1a] p-6 sm:p-10 flex flex-col justify-between relative overflow-hidden shadow-2xl"
         >
           <div 
             className="absolute -top-32 -right-32 w-[600px] h-[600px] rounded-full blur-[120px] pointer-events-none transition-all duration-1000 opacity-20"
             style={{ backgroundColor: active.accent }}
           />
 
-          <div className="relative z-10 mb-10">
+          <div className="relative z-10 mb-8 sm:mb-10">
             <h2 className="text-2xl sm:text-3xl font-black text-white uppercase tracking-tight mb-3">
               {active.headerTitle}
             </h2>
@@ -830,7 +840,7 @@ export default function CapabilitiesConsole() {
                   Technical Specifications
                 </span>
               </div>
-              <div className="space-y-5">
+              <div className="space-y-4 sm:space-y-5">
                 {active.specs.map((spec, i) => (
                   <div key={i} className="flex flex-col">
                     <span className="text-[11px] font-mono font-bold text-white uppercase tracking-widest mb-1">
@@ -844,11 +854,11 @@ export default function CapabilitiesConsole() {
               </div>
             </div>
 
-            {/* 3D WORKSTATION VIEWPORT */}
+            {/* 3D WORKSTATION VIEWPORT (Single Dynamic Canvas Context) */}
             <div className="md:col-span-7 h-64 sm:h-72 rounded-lg border border-slate-800 bg-[#02060d] p-3 flex flex-col relative shadow-inner overflow-hidden select-none pointer-events-none">
               
               <div className="w-full flex justify-between items-center px-1.5 mb-1.5 z-10 pointer-events-none">
-                <span className="font-mono text-[9px] text-slate-300 uppercase tracking-widest font-bold">
+                <span className="font-mono text-[10px] text-slate-300 uppercase tracking-widest font-bold">
                   Live 3D Shop Model
                 </span>
                 <div className="flex gap-1.5">
@@ -858,50 +868,29 @@ export default function CapabilitiesConsole() {
               </div>
               
               <div className="absolute inset-0 z-0">
-                {/* Mobile camera: dialed-in framing */}
-                <div className="block sm:hidden w-full h-full">
-                  <Canvas
-                    camera={{ position: [0, 2, 13.5], fov: 21 }}
-                    gl={{ antialias: true, alpha: true }}
-                  >
-                    <directionalLight position={[10, 20, 15]} intensity={KEY_LIGHT_INTENSITY} color="#ffffff" />
-                    <ambientLight intensity={AMBIENT_LIGHT_INTENSITY} />
-                    <pointLight position={[0, -2, 2]} intensity={RED_UNDERGLOW_INTENSITY} color={active.accent} distance={10} />
-                    
-                    <ActiveBlueprintStage activeId={active.id} accent={active.accent} />
-                    
-                    <OrbitControls 
-                      target={[0, -0.8, 0]}
-                      enableZoom={false}   
-                      enableRotate={false} 
-                      enablePan={false}    
-                    />
-                  </Canvas>
-                </div>
-
-                {/* Tablet / Desktop camera: default position */}
-                <div className="hidden sm:block w-full h-full">
-                  <Canvas
-                    camera={{ position: [0, 2, 12], fov: 20 }}
-                    gl={{ antialias: true, alpha: true }}
-                  >
-                    <directionalLight position={[10, 20, 15]} intensity={KEY_LIGHT_INTENSITY} color="#ffffff" />
-                    <ambientLight intensity={AMBIENT_LIGHT_INTENSITY} />
-                    <pointLight position={[0, -2, 2]} intensity={RED_UNDERGLOW_INTENSITY} color={active.accent} distance={10} />
-                    
-                    <ActiveBlueprintStage activeId={active.id} accent={active.accent} />
-                    
-                    <OrbitControls 
-                      target={[0, -0.8, 0]}
-                      enableZoom={false}   
-                      enableRotate={false} 
-                      enablePan={false}    
-                    />
-                  </Canvas>
-                </div>
+                <Canvas
+                  camera={{ 
+                    position: isMobile ? [0, 2, 13.5] : [0, 2, 12], 
+                    fov: isMobile ? 21 : 20 
+                  }}
+                  gl={{ antialias: true, alpha: true }}
+                >
+                  <directionalLight position={[10, 20, 15]} intensity={KEY_LIGHT_INTENSITY} color="#ffffff" />
+                  <ambientLight intensity={AMBIENT_LIGHT_INTENSITY} />
+                  <pointLight position={[0, -2, 2]} intensity={RED_UNDERGLOW_INTENSITY} color={active.accent} distance={10} />
+                  
+                  <ActiveBlueprintStage activeId={active.id} accent={active.accent} />
+                  
+                  <OrbitControls 
+                    target={[0, -0.8, 0]}
+                    enableZoom={false}   
+                    enableRotate={false} 
+                    enablePan={false}    
+                  />
+                </Canvas>
               </div>
 
-              <div className="w-full flex justify-between items-center px-1.5 pt-1 text-[8px] font-mono text-slate-400 uppercase tracking-wider border-t border-slate-800/60 z-10 mt-auto pointer-events-none">
+              <div className="w-full flex justify-between items-center px-1.5 pt-1 text-[10px] font-mono text-slate-400 uppercase tracking-wider border-t border-slate-800/60 z-10 mt-auto pointer-events-none">
                 <span>WebGL Matrix Engine</span>
                 <span>Interwest Springville Shop</span>
               </div>

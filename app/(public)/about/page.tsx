@@ -44,10 +44,10 @@ export default function AboutPage() {
               Established in 1995, Interwest Mechanical Contractors (IMC) was built on a simple premise: helping clients accomplish all goals, willing to do what others won't. We don't just build systems; we build the foundation of heavy industry.
             </p>
 
-            {/* Direct Viewport Jump Action */}
+            {/* Direct Viewport Jump Action (Standard 44px+ Hit Target) */}
             <Link 
               href="#capabilities" 
-              className="inline-flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-[0.15em] text-slate-400 hover:text-white transition-colors duration-200"
+              className="inline-flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-[0.15em] text-slate-400 hover:text-white active:text-white py-2.5 px-4 min-h-[44px] transition-all duration-200 active:scale-95 touch-manipulation select-none"
             >
               <span>Explore Capabilities</span>
               <ChevronDown className="w-4 h-4 text-[#ea1f27] animate-bounce" />
@@ -83,7 +83,7 @@ export default function AboutPage() {
                   Operational Reach
                 </h4>
                 <p className="text-xs sm:text-sm lg:text-base text-slate-300 leading-relaxed font-normal">
-                  Headquartered in <strong className="text-white font-semibold">Springville, UT</strong>. We actively service facilities across Utah and maintain embedded in long-term operations throughout several other states.
+                  Headquartered in <strong className="text-white font-semibold">Springville, UT</strong>. We actively service facilities across Utah and maintain embedded operations throughout several other states.
                 </p>
               </div>
             </div>
@@ -288,7 +288,7 @@ export default function AboutPage() {
           <div className="flex-shrink-0 w-full sm:w-auto">
             <Link 
               href="/contact" 
-              className="inline-flex items-center justify-center w-full sm:w-auto px-8 py-4 bg-[#ea1f27] hover:bg-[#d41920] text-white text-xs font-mono font-bold uppercase tracking-[0.15em] rounded-xs shadow-lg transition-all duration-200 active:scale-[0.98] text-center"
+              className="inline-flex items-center justify-center w-full sm:w-auto px-8 py-4 bg-[#ea1f27] hover:bg-[#d41920] active:bg-[#b5181e] text-white text-xs font-mono font-bold uppercase tracking-[0.15em] rounded-xs shadow-lg transition-all duration-200 active:scale-[0.97] touch-manipulation select-none cursor-pointer text-center"
             >
               Request a Bid
             </Link>
@@ -298,7 +298,7 @@ export default function AboutPage() {
       </section>
 
       {/* ========================================= */}
-      {/* 7. SITE FOOTER                            */}
+      {/* 7. SITE FOOTER */}
       {/* ========================================= */}
       <Footer />
 

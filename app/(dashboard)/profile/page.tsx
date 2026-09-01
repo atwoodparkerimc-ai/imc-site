@@ -77,7 +77,7 @@ export default function ProfilePage() {
             id: entry.id,
             label: String(entry.description).toUpperCase(),
             amountDisplay: isRedemption ? `-${entry.amount} PTS` : `+${entry.amount} PTS`,
-            color: isRedemption ? "text-slate-400" : "text-[var(--color-brand-blue)]",
+            color: isRedemption ? "text-slate-400" : "text-[var(--color-brand-blue,#0088ff)]",
             timestamp: logTimestamp
           };
         });
@@ -138,10 +138,7 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div 
-        className="p-10 min-h-[100dvh] flex items-center justify-center font-mono text-xs uppercase tracking-widest"
-        style={{ color: "var(--color-brand-blue)" }}
-      >
+      <div className="p-10 min-h-[100dvh] flex items-center justify-center font-mono text-xs uppercase tracking-widest text-[var(--color-brand-blue,#0088ff)] animate-pulse">
         INITIALIZING PERSONNEL FILE SYSTEM...
       </div>
     );
@@ -149,54 +146,23 @@ export default function ProfilePage() {
 
   const assignedLocationDisplay = (profile?.location || "Main Yard").toUpperCase();
 
-  const inputStyle = {
-    backgroundColor: "var(--color-brand-bg)",
-    borderColor: "var(--color-brand-border)",
-  };
-
-  const handleInputFocus = (e: React.FocusEvent<HTMLInputElement>) => {
-    e.currentTarget.style.borderColor = "var(--color-brand-blue)";
-    e.currentTarget.style.boxShadow = "0 0 8px color-mix(in srgb, var(--color-brand-blue) 30%, transparent)";
-  };
-
-  const handleInputBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    e.currentTarget.style.borderColor = "var(--color-brand-border)";
-    e.currentTarget.style.boxShadow = "none";
-  };
-
   return (
-    <div className="w-full max-w-4xl mx-auto px-3.5 sm:px-8 py-4 sm:py-8 space-y-4 sm:space-y-6 min-h-[100dvh] pb-32 sm:pb-16 font-mono text-slate-100 overflow-x-hidden">
+    <div className="w-full max-w-4xl mx-auto px-3.5 sm:px-8 py-4 sm:py-8 space-y-4 sm:space-y-6 min-h-[100dvh] pb-32 sm:pb-16 font-mono text-slate-100 overflow-x-hidden select-none">
       
       {/* USER PASSPORT HEADER CARD */}
-      <div 
-        className="w-full border p-3.5 sm:p-6 shadow-2xl relative overflow-hidden rounded-sm"
-        style={{
-          backgroundColor: "var(--color-brand-card)",
-          borderColor: "var(--color-brand-border)"
-        }}
-      >
-        <div 
-          className="absolute top-0 left-0 w-full h-[3px]" 
-          style={{ backgroundColor: "var(--color-brand-blue)" }}
-        />
+      <div className="w-full border p-3.5 sm:p-6 shadow-2xl relative overflow-hidden rounded-sm bg-[var(--color-brand-card)] border-[var(--color-brand-border)]">
+        <div className="absolute top-0 left-0 w-full h-[3px] bg-[var(--color-brand-blue,#0088ff)]" />
         
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-            <div 
-              className="w-11 h-11 sm:w-14 sm:h-14 border flex items-center justify-center text-base sm:text-xl font-black uppercase rounded-sm shrink-0"
-              style={{
-                backgroundColor: "var(--color-brand-bg)",
-                borderColor: "var(--color-brand-border)",
-                color: "var(--color-brand-blue)"
-              }}
-            >
+            <div className="w-12 h-12 sm:w-14 sm:h-14 border flex items-center justify-center text-base sm:text-xl font-black uppercase rounded-sm shrink-0 bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] text-[var(--color-brand-blue,#0088ff)]">
               {(profile?.first_name || "E").slice(0, 2)}
             </div>
             <div className="min-w-0 flex-1">
               <h1 className="text-lg sm:text-3xl font-black text-slate-100 uppercase tracking-tighter truncate">
                 {profile?.nickname || profile?.first_name}
               </h1>
-              <p className="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5 truncate">
+              <p className="text-[10px] sm:text-[11px] text-slate-400 font-bold uppercase tracking-wider mt-0.5 truncate">
                 ID: <span className="text-slate-100 font-bold">{profile?.id.slice(0, 8)}</span> • {profile?.role.toUpperCase()}
               </p>
             </div>
@@ -204,64 +170,31 @@ export default function ProfilePage() {
 
           {/* METRIC PILLS */}
           <div className="w-full sm:w-auto grid grid-cols-2 sm:flex sm:items-center gap-2 sm:gap-3">
-            <div 
-              className="border p-2 sm:px-4 sm:py-2 text-center sm:text-right rounded-sm"
-              style={{
-                backgroundColor: "var(--color-brand-bg)",
-                borderColor: "var(--color-brand-border)"
-              }}
-            >
-              <span className="text-[7px] sm:text-[8px] uppercase tracking-wider text-slate-400 font-bold block truncate">REDEEMABLE</span>
-              <span 
-                className="text-xs sm:text-lg font-black tabular-nums block"
-                style={{ color: "var(--color-brand-green)" }}
-              >
+            <div className="border p-2 sm:px-4 sm:py-2 text-center sm:text-right rounded-sm bg-[var(--color-brand-bg)] border-[var(--color-brand-border)]">
+              <span className="text-[10px] sm:text-[11px] uppercase tracking-wider text-slate-400 font-bold block truncate">REDEEMABLE</span>
+              <span className="text-xs sm:text-lg font-black tabular-nums block text-[var(--color-brand-green,#00ff9d)]">
                 {profile?.points_balance || 0} PTS
               </span>
             </div>
 
-            <div 
-              className="border p-2 sm:px-4 sm:py-2 text-center sm:text-right rounded-sm"
-              style={{
-                backgroundColor: "var(--color-brand-bg)",
-                borderColor: "var(--color-brand-border)"
-              }}
-            >
-              <span className="text-[7px] sm:text-[8px] uppercase tracking-wider text-slate-400 font-bold block truncate">CAREER TOTAL</span>
-              <span 
-                className="text-xs sm:text-lg font-black tabular-nums block"
-                style={{ color: "var(--color-brand-blue)" }}
-              >
+            <div className="border p-2 sm:px-4 sm:py-2 text-center sm:text-right rounded-sm bg-[var(--color-brand-bg)] border-[var(--color-brand-border)]">
+              <span className="text-[10px] sm:text-[11px] uppercase tracking-wider text-slate-400 font-bold block truncate">CAREER TOTAL</span>
+              <span className="text-xs sm:text-lg font-black tabular-nums block text-[var(--color-brand-blue,#0088ff)]">
                 {profile?.lifetime_points || 0} PTS
               </span>
             </div>
 
-            <div 
-              className="col-span-2 sm:col-auto border p-2 sm:px-4 sm:py-2 text-center sm:text-right rounded-sm"
-              style={{
-                backgroundColor: "var(--color-brand-bg)",
-                borderColor: "var(--color-brand-border)"
-              }}
-            >
-              <span className="text-[7px] sm:text-[8px] uppercase tracking-wider text-slate-400 font-bold block truncate">ASSIGNED SITE</span>
-              <span 
-                className="text-[10px] sm:text-xs font-black uppercase truncate block"
-                style={{ color: "var(--color-brand-blue)" }}
-              >
+            <div className="col-span-2 sm:col-auto border p-2 sm:px-4 sm:py-2 text-center sm:text-right rounded-sm bg-[var(--color-brand-bg)] border-[var(--color-brand-border)]">
+              <span className="text-[10px] sm:text-[11px] uppercase tracking-wider text-slate-400 font-bold block truncate">ASSIGNED SITE</span>
+              <span className="text-xs font-black uppercase truncate block text-[var(--color-brand-blue,#0088ff)]">
                 {assignedLocationDisplay}
               </span>
             </div>
           </div>
         </div>
 
-        {/* TAB NAVIGATION: Standardized typography to match Admin Portal nav matrix */}
-        <div 
-          className="flex gap-2 sm:gap-4 border-b mt-4 sm:mt-6 pb-px overflow-x-auto no-scrollbar -mx-3.5 px-3.5 sm:mx-0 sm:px-0"
-          style={{ 
-            borderColor: "var(--color-brand-border)",
-            WebkitOverflowScrolling: "touch"
-          }}
-        >
+        {/* TAB NAVIGATION */}
+        <div className="flex gap-2 sm:gap-4 border-b mt-4 sm:mt-6 pb-px overflow-x-auto no-scrollbar -mx-3.5 px-3.5 sm:mx-0 sm:px-0 border-[var(--color-brand-border)]">
           {[
             { id: "overview", label: "Certifications & Tools" },
             { id: "history", label: "Point Ledger Activity" },
@@ -271,12 +204,13 @@ export default function ProfilePage() {
             return (
               <button
                 key={tab.id}
+                type="button"
                 onClick={() => setActiveTab(tab.id as any)}
-                className="pb-2.5 sm:pb-3 px-2.5 sm:px-4 text-[11px] sm:text-xs font-bold uppercase tracking-wider sm:tracking-widest border-b-2 transition-colors cursor-pointer whitespace-nowrap outline-none focus:outline-none focus:ring-0 shrink-0"
-                style={{
-                  borderColor: isActive ? "var(--color-brand-blue)" : "transparent",
-                  color: isActive ? "var(--color-brand-blue)" : "rgb(148, 163, 184)"
-                }}
+                className={`min-h-[44px] pb-2.5 sm:pb-3 px-3 sm:px-4 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors cursor-pointer whitespace-nowrap outline-none focus:outline-none shrink-0 touch-manipulation ${
+                  isActive 
+                    ? "border-[var(--color-brand-blue,#0088ff)] text-[var(--color-brand-blue,#0088ff)]" 
+                    : "border-transparent text-slate-400 hover:text-slate-200"
+                }`}
               >
                 {tab.label}
               </button>
@@ -288,78 +222,51 @@ export default function ProfilePage() {
       {/* TAB 1: CERTIFICATIONS & FIELD TOOLS */}
       {activeTab === "overview" && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="w-full space-y-4 sm:space-y-6">
-          <div 
-            className="w-full border p-3.5 sm:p-6 shadow-xl rounded-sm"
-            style={{
-              backgroundColor: "var(--color-brand-card)",
-              borderColor: "var(--color-brand-border)"
-            }}
-          >
+          <div className="w-full border p-3.5 sm:p-6 shadow-xl rounded-sm bg-[var(--color-brand-card)] border-[var(--color-brand-border)]">
             <div className="flex justify-between items-center mb-3 sm:mb-6">
               <div>
-                <h2 className="text-slate-100 font-black uppercase tracking-widest text-xs sm:text-sm">Safety Certifications & Credentials</h2>
-                <p className="text-[9px] sm:text-[11px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">Managed & Verified By IMC Safety.</p>
+                <h2 className="text-slate-100 font-black uppercase tracking-widest text-xs sm:text-base flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-none bg-[var(--color-brand-blue,#0088ff)] animate-pulse flex-shrink-0" />
+                  Safety Certifications & Credentials
+                </h2>
+                <p className="text-[10px] sm:text-xs text-slate-400 font-bold uppercase tracking-wider mt-0.5">
+                  Managed & Verified By IMC Safety.
+                </p>
               </div>
             </div>
 
-            {/* 2-ROW / 2-COLUMN GRID ON MOBILE (grid-cols-2), 2-COLUMN ON DESKTOP (md:grid-cols-2) */}
+            {/* 2-COLUMN ON MOBILE & DESKTOP */}
             <div className="grid grid-cols-2 md:grid-cols-2 gap-2 sm:gap-4 w-full">
               {certs.map((cert) => {
-                let badgeStyle = {
-                  backgroundColor: "color-mix(in srgb, var(--color-brand-green) 15%, transparent)",
-                  borderColor: "color-mix(in srgb, var(--color-brand-green) 50%, transparent)",
-                  color: "var(--color-brand-green)"
-                };
+                let badgeClasses = "bg-[var(--color-brand-green,#00ff9d)]/10 border-[var(--color-brand-green,#00ff9d)]/40 text-[var(--color-brand-green,#00ff9d)]";
                 let badgeText = "VALID";
 
                 if (cert.status === "EXPIRING_SOON") {
-                  badgeStyle = {
-                    backgroundColor: "color-mix(in srgb, #eab308 15%, transparent)",
-                    borderColor: "color-mix(in srgb, #eab308 50%, transparent)",
-                    color: "#eab308"
-                  };
+                  badgeClasses = "bg-[#eab308]/10 border-[#eab308]/40 text-[#eab308]";
                   badgeText = `EXP (${cert.daysRemaining}d)`;
                 } else if (cert.status === "EXPIRED") {
-                  badgeStyle = {
-                    backgroundColor: "color-mix(in srgb, var(--color-brand-red, #f87171) 15%, transparent)",
-                    borderColor: "color-mix(in srgb, var(--color-brand-red, #f87171) 50%, transparent)",
-                    color: "var(--color-brand-red, #f87171)"
-                  };
+                  badgeClasses = "bg-[var(--color-brand-red,#ff3b5c)]/10 border-[var(--color-brand-red,#ff3b5c)]/40 text-[var(--color-brand-red,#ff3b5c)]";
                   badgeText = "EXPIRED";
                 } else if (cert.status === "NOT_TRAINED") {
-                  badgeStyle = {
-                    backgroundColor: "var(--color-brand-bg)",
-                    borderColor: "var(--color-brand-border)",
-                    color: "rgb(148, 163, 184)"
-                  };
+                  badgeClasses = "bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] text-slate-400";
                   badgeText = "NOT TRAINED";
                 }
 
                 return (
                   <div 
                     key={cert.typeKey} 
-                    className="w-full border p-2 sm:p-4 rounded-sm flex flex-col justify-between gap-1.5 sm:gap-3"
-                    style={{
-                      backgroundColor: "var(--color-brand-bg)",
-                      borderColor: "var(--color-brand-border)"
-                    }}
+                    className="w-full border p-2.5 sm:p-4 rounded-sm flex flex-col justify-between gap-2 sm:gap-3 bg-[var(--color-brand-bg)] border-[var(--color-brand-border)]"
                   >
                     <div className="flex flex-col sm:flex-row justify-between items-start gap-1 sm:gap-2">
-                      <p className="text-[9px] sm:text-xs font-black text-slate-100 uppercase line-clamp-2 sm:truncate flex-1">
+                      <p className="text-[10px] sm:text-xs font-black text-slate-100 uppercase line-clamp-2 sm:truncate flex-1">
                         {cert.title}
                       </p>
-                      <span 
-                        className="px-1 py-0.2 sm:px-2 sm:py-1 border text-[6px] sm:text-[9px] font-black uppercase tracking-wider rounded-none shrink-0"
-                        style={badgeStyle}
-                      >
+                      <span className={`px-1.5 py-0.5 border text-[9px] sm:text-[10px] font-black uppercase tracking-wider rounded-none shrink-0 ${badgeClasses}`}>
                         {badgeText}
                       </span>
                     </div>
 
-                    <div 
-                      className="flex flex-col sm:flex-row justify-between text-[7px] sm:text-[10px] text-slate-400 font-bold border-t pt-1 sm:pt-2 gap-0.5"
-                      style={{ borderColor: "color-mix(in srgb, var(--color-brand-border) 60%, transparent)" }}
-                    >
+                    <div className="flex flex-col sm:flex-row justify-between text-[9px] sm:text-[10px] text-slate-400 font-bold border-t border-[var(--color-brand-border)]/60 pt-1.5 sm:pt-2 gap-0.5">
                       <span className="truncate">ISSUED: {cert.issueDate || "--"}</span>
                       <span className="truncate">EXPIRES: {cert.expirationDate || "--"}</span>
                     </div>
@@ -370,29 +277,14 @@ export default function ProfilePage() {
 
             {/* LOCATION SPECIFIC PAPERWORK ACTION LINK */}
             {paperworkUrl && (
-              <div 
-                className="mt-4 sm:mt-8 pt-4 sm:pt-6 border-t w-full"
-                style={{ borderColor: "var(--color-brand-border)" }}
-              >
-                <div 
-                  className="w-full border p-3 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 rounded-sm"
-                  style={{
-                    backgroundColor: "var(--color-brand-bg)",
-                    borderColor: "var(--color-brand-blue)"
-                  }}
-                >
+              <div className="mt-4 sm:mt-8 pt-4 sm:pt-6 border-t w-full border-[var(--color-brand-border)]">
+                <div className="w-full border p-3 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 rounded-sm bg-[var(--color-brand-bg)] border-[var(--color-brand-blue,#0088ff)]">
                   <div className="min-w-0">
-                    <h3 
-                      className="text-[10px] sm:text-xs font-black uppercase tracking-widest flex items-center gap-1.5"
-                      style={{ color: "var(--color-brand-blue)" }}
-                    >
-                      <span 
-                        className="w-1.5 h-1.5 rounded-full animate-ping shrink-0" 
-                        style={{ backgroundColor: "var(--color-brand-blue)" }}
-                      />
+                    <h3 className="text-xs sm:text-sm font-black uppercase tracking-widest flex items-center gap-1.5 text-[var(--color-brand-blue,#0088ff)]">
+                      <span className="w-1.5 h-1.5 rounded-full animate-ping shrink-0 bg-[var(--color-brand-blue,#0088ff)]" />
                       Required Daily Site Paperwork
                     </h3>
-                    <p className="text-[8px] sm:text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5 truncate">
+                    <p className="text-[10px] sm:text-xs text-slate-400 font-bold uppercase tracking-wider mt-0.5 truncate">
                       Mandatory safety paperwork link for {assignedLocationDisplay}
                     </p>
                   </div>
@@ -400,12 +292,7 @@ export default function ProfilePage() {
                     href={paperworkUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-3 font-black text-[10px] sm:text-xs uppercase tracking-widest transition-all duration-200 text-center rounded-sm shadow-md border outline-none"
-                    style={{
-                      backgroundColor: "var(--color-brand-blue)",
-                      borderColor: "var(--color-brand-blue)",
-                      color: "#ffffff"
-                    }}
+                    className="w-full sm:w-auto min-h-[44px] px-6 py-2.5 font-black text-xs uppercase tracking-widest transition-all text-center rounded-sm shadow-md border outline-none bg-[var(--color-brand-blue,#0088ff)] border-[var(--color-brand-blue,#0088ff)] text-white hover:bg-white hover:text-black flex items-center justify-center active:scale-[0.98] touch-manipulation"
                   >
                     Open Forms ↗
                   </a>
@@ -419,31 +306,21 @@ export default function ProfilePage() {
       {/* TAB 2: POINT LEDGER HISTORY */}
       {activeTab === "history" && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="w-full">
-          <div 
-            className="w-full border p-3.5 sm:p-6 shadow-xl rounded-sm"
-            style={{
-              backgroundColor: "var(--color-brand-card)",
-              borderColor: "var(--color-brand-border)"
-            }}
-          >
-            <h2 className="text-slate-100 font-black uppercase tracking-widest text-xs sm:text-sm mb-3 sm:mb-6">Point Activity Log</h2>
+          <div className="w-full border p-3.5 sm:p-6 shadow-xl rounded-sm bg-[var(--color-brand-card)] border-[var(--color-brand-border)]">
+            <h2 className="text-slate-100 font-black uppercase tracking-widest text-xs sm:text-base mb-3 sm:mb-6 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-none bg-[var(--color-brand-blue,#0088ff)] animate-pulse flex-shrink-0" />
+              Point Activity Log
+            </h2>
             <div className="flex flex-col w-full">
               {log.length === 0 ? (
-                <p 
-                  className="text-[9px] sm:text-[10px] text-slate-400 font-bold tracking-wider py-8 text-center border border-dashed rounded-sm"
-                  style={{
-                    backgroundColor: "color-mix(in srgb, var(--color-brand-bg) 50%, transparent)",
-                    borderColor: "var(--color-brand-border)"
-                  }}
-                >
-                  NO TRANSACTION ENTRIES RECORDED
+                <p className="text-xs text-slate-400 font-bold tracking-wider py-8 text-center border border-dashed rounded-sm bg-[var(--color-brand-bg)]/50 border-[var(--color-brand-border)]">
+                  [ NO TRANSACTION ENTRIES RECORDED ]
                 </p>
               ) : (
                 log.map((entry) => (
                   <div 
                     key={entry.id} 
-                    className="text-[9px] sm:text-[11px] border-b py-2.5 sm:py-3.5 flex justify-between items-center gap-2"
-                    style={{ borderColor: "color-mix(in srgb, var(--color-brand-border) 50%, transparent)" }}
+                    className="text-xs border-b py-3 flex justify-between items-center gap-2 border-[var(--color-brand-border)]/50 last:border-0"
                   >
                     <span className={`${entry.color} font-black uppercase tracking-wide truncate flex-1`}>
                       {entry.label}
@@ -462,35 +339,17 @@ export default function ProfilePage() {
       {/* TAB 3: PROFILE & SECURITY SETTINGS */}
       {activeTab === "security" && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="w-full space-y-4 sm:space-y-6">
-          <div 
-            className="w-full border p-3.5 sm:p-6 shadow-xl rounded-sm"
-            style={{
-              backgroundColor: "var(--color-brand-card)",
-              borderColor: "var(--color-brand-border)"
-            }}
-          >
-            <h2 
-              className="font-black uppercase tracking-widest text-[11px] sm:text-xs mb-3 sm:mb-4"
-              style={{ color: "var(--color-brand-blue)" }}
-            >
+          <div className="w-full border p-3.5 sm:p-6 shadow-xl rounded-sm bg-[var(--color-brand-card)] border-[var(--color-brand-border)]">
+            <h2 className="font-black uppercase tracking-widest text-xs sm:text-sm mb-3 sm:mb-4 text-[var(--color-brand-blue,#0088ff)]">
               Display Preferences
             </h2>
             
             {formFeedback && (
-              <div 
-                className="mb-3 sm:mb-4 p-2 sm:p-3 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider border rounded-sm"
-                style={{
-                  backgroundColor: formFeedback.isError 
-                    ? "color-mix(in srgb, var(--color-brand-red, #f87171) 10%, transparent)" 
-                    : "color-mix(in srgb, var(--color-brand-green) 10%, transparent)",
-                  borderColor: formFeedback.isError 
-                    ? "color-mix(in srgb, var(--color-brand-red, #f87171) 40%, transparent)" 
-                    : "color-mix(in srgb, var(--color-brand-green) 40%, transparent)",
-                  color: formFeedback.isError 
-                    ? "var(--color-brand-red, #f87171)" 
-                    : "var(--color-brand-green)"
-                }}
-              >
+              <div className={`mb-3 sm:mb-4 p-3 text-xs font-bold uppercase tracking-wider border rounded-sm ${
+                formFeedback.isError 
+                  ? 'bg-[var(--color-brand-red,#ff3b5c)]/10 border-[var(--color-brand-red,#ff3b5c)]/40 text-[var(--color-brand-red,#ff3b5c)]' 
+                  : 'bg-[var(--color-brand-green,#00ff9d)]/10 border-[var(--color-brand-green,#00ff9d)]/40 text-[var(--color-brand-green,#00ff9d)]'
+              }`}>
                 [{formFeedback.isError ? "FAULT" : "LOGGED"}] {formFeedback.message}
               </div>
             )}
@@ -500,54 +359,30 @@ export default function ProfilePage() {
                 value={displayName} 
                 onChange={(e) => setDisplayName(e.target.value)} 
                 placeholder="Display Nickname"
-                className="w-full border p-2.5 sm:p-3 text-slate-100 text-xs font-bold outline-none rounded-sm transition-colors min-h-[40px]" 
-                style={inputStyle}
-                onFocus={handleInputFocus}
-                onBlur={handleInputBlur}
+                className="w-full min-h-[44px] border p-2.5 sm:p-3 text-slate-100 text-xs font-bold uppercase outline-none rounded-sm transition-all bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue,#0088ff)] touch-manipulation" 
               />
               <button 
+                type="button"
                 onClick={handleUpdate} 
                 disabled={isUpdating}
-                className="w-full border text-slate-100 px-4 py-2.5 sm:px-6 sm:py-3 font-black uppercase text-[9px] sm:text-[10px] tracking-widest transition-all rounded-sm cursor-pointer disabled:opacity-50 min-h-[40px]"
-                style={{
-                  backgroundColor: "var(--color-brand-bg)",
-                  borderColor: "var(--color-brand-border)"
-                }}
+                className="w-full min-h-[44px] border border-[var(--color-brand-border)] hover:border-[var(--color-brand-blue,#0088ff)] bg-[var(--color-brand-bg)] hover:bg-[var(--color-brand-blue,#0088ff)] text-slate-100 hover:text-white px-6 py-2.5 font-black uppercase text-xs tracking-widest transition-all rounded-sm cursor-pointer disabled:opacity-50 active:scale-[0.98] touch-manipulation focus:outline-none"
               >
                 {isUpdating ? "SAVING..." : "Update Preferences"}
               </button>
             </div>
           </div>
 
-          <div 
-            className="w-full border p-3.5 sm:p-6 shadow-xl rounded-sm"
-            style={{
-              backgroundColor: "var(--color-brand-card)",
-              borderColor: "var(--color-brand-border)"
-            }}
-          >
-            <h2 
-              className="font-black uppercase tracking-widest text-[11px] sm:text-xs mb-3 sm:mb-4"
-              style={{ color: "var(--color-brand-blue)" }}
-            >
+          <div className="w-full border p-3.5 sm:p-6 shadow-xl rounded-sm bg-[var(--color-brand-card)] border-[var(--color-brand-border)]">
+            <h2 className="font-black uppercase tracking-widest text-xs sm:text-sm mb-3 sm:mb-4 text-[var(--color-brand-blue,#0088ff)]">
               Security Credentials
             </h2>
 
             {passwordFeedback && (
-              <div 
-                className="mb-3 sm:mb-4 p-2 sm:p-3 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider border rounded-sm"
-                style={{
-                  backgroundColor: passwordFeedback.isError 
-                    ? "color-mix(in srgb, var(--color-brand-red, #f87171) 10%, transparent)" 
-                    : "color-mix(in srgb, var(--color-brand-green) 10%, transparent)",
-                  borderColor: passwordFeedback.isError 
-                    ? "color-mix(in srgb, var(--color-brand-red, #f87171) 40%, transparent)" 
-                    : "color-mix(in srgb, var(--color-brand-green) 40%, transparent)",
-                  color: passwordFeedback.isError 
-                    ? "var(--color-brand-red, #f87171)" 
-                    : "var(--color-brand-green)"
-                }}
-              >
+              <div className={`mb-3 sm:mb-4 p-3 text-xs font-bold uppercase tracking-wider border rounded-sm ${
+                passwordFeedback.isError 
+                  ? 'bg-[var(--color-brand-red,#ff3b5c)]/10 border-[var(--color-brand-red,#ff3b5c)]/40 text-[var(--color-brand-red,#ff3b5c)]' 
+                  : 'bg-[var(--color-brand-green,#00ff9d)]/10 border-[var(--color-brand-green,#00ff9d)]/40 text-[var(--color-brand-green,#00ff9d)]'
+              }`}>
                 [{passwordFeedback.isError ? "FAULT" : "SUCCESS"}] {passwordFeedback.message}
               </div>
             )}
@@ -555,7 +390,7 @@ export default function ProfilePage() {
             <form onSubmit={handlePasswordChange} className="space-y-3 sm:space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 sm:gap-4">
                 <div>
-                  <label className="text-[8px] sm:text-[9px] uppercase font-bold tracking-widest text-slate-400 block mb-1">
+                  <label className="text-[10px] sm:text-[11px] uppercase font-bold tracking-widest text-slate-400 block mb-1">
                     New Password
                   </label>
                   <input
@@ -564,15 +399,12 @@ export default function ProfilePage() {
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full border p-2.5 sm:p-3 text-xs text-slate-100 outline-none rounded-sm transition-colors min-h-[40px]"
-                    style={inputStyle}
-                    onFocus={handleInputFocus}
-                    onBlur={handleInputBlur}
+                    className="w-full min-h-[44px] border p-2.5 sm:p-3 text-xs text-slate-100 outline-none rounded-sm transition-all bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue,#0088ff)] touch-manipulation"
                   />
                 </div>
 
                 <div>
-                  <label className="text-[8px] sm:text-[9px] uppercase font-bold tracking-widest text-slate-400 block mb-1">
+                  <label className="text-[10px] sm:text-[11px] uppercase font-bold tracking-widest text-slate-400 block mb-1">
                     Confirm New Password
                   </label>
                   <input
@@ -581,10 +413,7 @@ export default function ProfilePage() {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full border p-2.5 sm:p-3 text-xs text-slate-100 outline-none rounded-sm transition-colors min-h-[40px]"
-                    style={inputStyle}
-                    onFocus={handleInputFocus}
-                    onBlur={handleInputBlur}
+                    className="w-full min-h-[44px] border p-2.5 sm:p-3 text-xs text-slate-100 outline-none rounded-sm transition-all bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue,#0088ff)] touch-manipulation"
                   />
                 </div>
               </div>
@@ -592,12 +421,7 @@ export default function ProfilePage() {
               <button
                 type="submit"
                 disabled={isUpdatingPassword}
-                className="w-full sm:w-auto px-5 py-2.5 sm:px-6 sm:py-3 font-black uppercase text-[9px] sm:text-[10px] tracking-widest transition-all rounded-sm cursor-pointer disabled:opacity-50 border outline-none min-h-[40px]"
-                style={{
-                  backgroundColor: "var(--color-brand-blue)",
-                  borderColor: "var(--color-brand-blue)",
-                  color: "#ffffff"
-                }}
+                className="w-full sm:w-auto min-h-[44px] px-6 py-2.5 font-black uppercase text-xs tracking-widest transition-all rounded-sm cursor-pointer disabled:opacity-50 border bg-[var(--color-brand-blue,#0088ff)] border-[var(--color-brand-blue,#0088ff)] text-white hover:bg-white hover:text-black active:scale-[0.98] touch-manipulation focus:outline-none"
               >
                 {isUpdatingPassword ? "SAVING NEW CREDENTIALS..." : "Update Password"}
               </button>

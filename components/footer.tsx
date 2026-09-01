@@ -60,7 +60,7 @@ export default function Footer() {
               {/* Top Row: Logo & Address Side-by-Side on Mobile */}
               <div className="flex flex-row items-center justify-between gap-4 mb-6 lg:mb-0 lg:block">
                 {/* Scaled Official IMC Logo */}
-                <Link href="/" className="inline-block lg:mb-10 shrink-0">
+                <Link href="/" className="inline-block lg:mb-10 shrink-0 active:scale-95 transition-transform touch-manipulation">
                   <Image
                     src="/imclogo.svg"
                     alt="Interwest Mechanical Contractors Logo"
@@ -91,7 +91,7 @@ export default function Footer() {
                   </span>
                   <a 
                     href={phoneHref} 
-                    className="font-mono text-base font-black tracking-wide text-white hover:text-[#0088ff] transition-colors"
+                    className="inline-block py-1 font-mono text-base font-black tracking-wide text-white hover:text-[#0088ff] active:text-[#0088ff] active:scale-95 transition-all touch-manipulation"
                   >
                     {phoneDisplay}
                   </a>
@@ -103,7 +103,7 @@ export default function Footer() {
                   </span>
                   <a 
                     href={`mailto:${emailAddress}`} 
-                    className="font-mono text-sm text-slate-200 hover:text-white underline decoration-slate-600 hover:decoration-white underline-offset-4 transition-colors break-all"
+                    className="inline-block py-1 font-mono text-sm text-slate-200 hover:text-white active:text-[#0088ff] underline decoration-slate-600 hover:decoration-white underline-offset-4 transition-colors break-all touch-manipulation"
                   >
                     {emailAddress}
                   </a>
@@ -141,70 +141,70 @@ export default function Footer() {
                 
                 {/* Row 1 */}
                 <div>
-                  <span className="text-[11px] sm:text-[12px] font-bold uppercase tracking-widest text-slate-500 block mb-2.5 sm:mb-3">
+                  <span className="text-[11px] sm:text-[12px] font-bold uppercase tracking-widest text-slate-500 block mb-2 sm:mb-2.5">
                     Structural
                   </span>
-                  <ul className="space-y-1 text-slate-300">
-                    <li><Link href="/what-we-do" className="inline-block py-1 hover:text-white transition-colors">Custom Skids</Link></li>
-                    <li><Link href="/what-we-do" className="inline-block py-1 hover:text-white transition-colors">Pipe Spool Fab</Link></li>
-                    <li><Link href="/what-we-do" className="inline-block py-1 hover:text-white transition-colors">Heavy Ductwork</Link></li>
+                  <ul className="space-y-0.5 text-slate-300">
+                    <li><Link href="/what-we-do" className="inline-block py-1.5 hover:text-white active:text-[#0088ff] transition-colors touch-manipulation">Custom Skids</Link></li>
+                    <li><Link href="/what-we-do" className="inline-block py-1.5 hover:text-white active:text-[#0088ff] transition-colors touch-manipulation">Pipe Spool Fab</Link></li>
+                    <li><Link href="/what-we-do" className="inline-block py-1.5 hover:text-white active:text-[#0088ff] transition-colors touch-manipulation">Heavy Ductwork</Link></li>
                   </ul>
                 </div>
 
                 <div>
-                  <span className="text-[11px] sm:text-[12px] font-bold uppercase tracking-widest text-slate-500 block mb-2.5 sm:mb-3">
+                  <span className="text-[11px] sm:text-[12px] font-bold uppercase tracking-widest text-slate-500 block mb-2 sm:mb-2.5">
                     Sectors
                   </span>
-                  <ul className="space-y-1 text-slate-300">
-                    <li><Link href="/what-we-do" className="inline-block py-1 hover:text-white transition-colors">Biopharma</Link></li>
-                    <li><Link href="/what-we-do" className="inline-block py-1 hover:text-white transition-colors">Food & Beverage</Link></li>
-                    <li><Link href="/what-we-do" className="inline-block py-1 hover:text-white transition-colors">Industrial Mfg</Link></li>
+                  <ul className="space-y-0.5 text-slate-300">
+                    <li><Link href="/what-we-do" className="inline-block py-1.5 hover:text-white active:text-[#0088ff] transition-colors touch-manipulation">Biopharma</Link></li>
+                    <li><Link href="/what-we-do" className="inline-block py-1.5 hover:text-white active:text-[#0088ff] transition-colors touch-manipulation">Food & Beverage</Link></li>
+                    <li><Link href="/what-we-do" className="inline-block py-1.5 hover:text-white active:text-[#0088ff] transition-colors touch-manipulation">Industrial Mfg</Link></li>
                   </ul>
                 </div>
 
                 {/* Row 2 */}
                 <div>
-                  <span className="text-[11px] sm:text-[12px] font-bold uppercase tracking-widest text-slate-500 block mb-2.5 sm:mb-3">
+                  <span className="text-[11px] sm:text-[12px] font-bold uppercase tracking-widest text-slate-500 block mb-2 sm:mb-2.5">
                     Atmospheric
                   </span>
-                  <ul className="space-y-1 text-slate-300">
-                    <li><Link href="/what-we-do" className="inline-block py-1 hover:text-white transition-colors">Cleanroom HVAC</Link></li>
-                    <li><Link href="/what-we-do" className="inline-block py-1 hover:text-white transition-colors">Central Plants</Link></li>
-                    <li><Link href="/what-we-do" className="inline-block py-1 hover:text-white transition-colors">Industrial Exhaust</Link></li>
+                  <ul className="space-y-0.5 text-slate-300">
+                    <li><Link href="/what-we-do" className="inline-block py-1.5 hover:text-white active:text-[#0088ff] transition-colors touch-manipulation">Cleanroom HVAC</Link></li>
+                    <li><Link href="/what-we-do" className="inline-block py-1.5 hover:text-white active:text-[#0088ff] transition-colors touch-manipulation">Central Plants</Link></li>
+                    <li><Link href="/what-we-do" className="inline-block py-1.5 hover:text-white active:text-[#0088ff] transition-colors touch-manipulation">Industrial Exhaust</Link></li>
                   </ul>
                 </div>
 
                 <div>
-                  <span className="text-[11px] sm:text-[12px] font-bold uppercase tracking-widest text-slate-500 block mb-2.5 sm:mb-3">
+                  <span className="text-[11px] sm:text-[12px] font-bold uppercase tracking-widest text-slate-500 block mb-2 sm:mb-2.5">
                     Organization
                   </span>
-                  <ul className="space-y-1 text-slate-300">
-                    <li><Link href="/about" className="inline-block py-1 hover:text-white transition-colors">About IMC</Link></li>
-                    <li><Link href="/" className="inline-block py-1 hover:text-white transition-colors">Operations Map</Link></li>
-                    <li><Link href="/login" className="inline-block py-1 text-slate-300 hover:text-[#ea1f27] transition-colors">Staff Portal ↗</Link></li>
+                  <ul className="space-y-0.5 text-slate-300">
+                    <li><Link href="/about" className="inline-block py-1.5 hover:text-white active:text-[#0088ff] transition-colors touch-manipulation">About IMC</Link></li>
+                    <li><Link href="/" className="inline-block py-1.5 hover:text-white active:text-[#0088ff] transition-colors touch-manipulation">Operations Map</Link></li>
+                    <li><Link href="/login" className="inline-block py-1.5 text-slate-300 hover:text-[#ea1f27] active:text-[#ea1f27] transition-colors touch-manipulation">Staff Portal ↗</Link></li>
                   </ul>
                 </div>
 
                 {/* Row 3 */}
                 <div>
-                  <span className="text-[11px] sm:text-[12px] font-bold uppercase tracking-widest text-slate-500 block mb-2.5 sm:mb-3">
+                  <span className="text-[11px] sm:text-[12px] font-bold uppercase tracking-widest text-slate-500 block mb-2 sm:mb-2.5">
                     Piping
                   </span>
-                  <ul className="space-y-1 text-slate-300">
-                    <li><Link href="/what-we-do" className="inline-block py-1 hover:text-white transition-colors">Sanitary Stainless</Link></li>
-                    <li><Link href="/what-we-do" className="inline-block py-1 hover:text-white transition-colors">Orbital Welding</Link></li>
-                    <li><Link href="/what-we-do" className="inline-block py-1 hover:text-white transition-colors">Utility Distribution</Link></li>
+                  <ul className="space-y-0.5 text-slate-300">
+                    <li><Link href="/what-we-do" className="inline-block py-1.5 hover:text-white active:text-[#0088ff] transition-colors touch-manipulation">Sanitary Stainless</Link></li>
+                    <li><Link href="/what-we-do" className="inline-block py-1.5 hover:text-white active:text-[#0088ff] transition-colors touch-manipulation">Orbital Welding</Link></li>
+                    <li><Link href="/what-we-do" className="inline-block py-1.5 hover:text-white active:text-[#0088ff] transition-colors touch-manipulation">Utility Distribution</Link></li>
                   </ul>
                 </div>
 
                 <div>
-                  <span className="text-[11px] sm:text-[12px] font-bold uppercase tracking-widest text-slate-500 block mb-2.5 sm:mb-3">
+                  <span className="text-[11px] sm:text-[12px] font-bold uppercase tracking-widest text-slate-500 block mb-2 sm:mb-2.5">
                     Safety
                   </span>
-                  <ul className="space-y-1 text-slate-300">
-                    <li><Link href="/what-we-do" className="inline-block py-1 hover:text-white transition-colors"><span className="text-slate-300">0.78 EMR Rating</span></Link></li>
-                    <li><Link href="/what-we-do" className="inline-block py-1 hover:text-white transition-colors">OSHA 30 Certified</Link></li>
-                    <li><Link href="/what-we-do" className="inline-block py-1 hover:text-white transition-colors">ASME / AWS Compliant</Link></li>
+                  <ul className="space-y-0.5 text-slate-300">
+                    <li><Link href="/what-we-do" className="inline-block py-1.5 hover:text-white active:text-[#0088ff] transition-colors touch-manipulation"><span className="text-slate-300">0.78 EMR Rating</span></Link></li>
+                    <li><Link href="/what-we-do" className="inline-block py-1.5 hover:text-white active:text-[#0088ff] transition-colors touch-manipulation">OSHA 30 Certified</Link></li>
+                    <li><Link href="/what-we-do" className="inline-block py-1.5 hover:text-white active:text-[#0088ff] transition-colors touch-manipulation">ASME / AWS Compliant</Link></li>
                   </ul>
                 </div>
 
@@ -337,7 +337,7 @@ export default function Footer() {
                   <button 
                     type="submit" 
                     disabled={isSubmitting}
-                    className="w-full bg-[#ea1f27] hover:bg-[#d41920] disabled:bg-slate-700 text-white font-mono text-xs font-bold uppercase tracking-[0.15em] py-3 rounded-xs shadow-lg transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-2"
+                    className="w-full bg-[#ea1f27] hover:bg-[#d41920] active:bg-[#b5181e] disabled:bg-slate-700 text-white font-mono text-xs font-bold uppercase tracking-[0.15em] py-3 rounded-xs shadow-lg transition-all duration-200 active:scale-[0.97] touch-manipulation select-none flex items-center justify-center gap-2 cursor-pointer"
                   >
                     {isSubmitting ? (
                       <>
@@ -367,21 +367,21 @@ export default function Footer() {
           </p>
           
           <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-[10px] font-bold tracking-wider text-slate-400">
-            <Link href="/privacy-policy" className="hover:text-white transition-colors">
+            <Link href="/privacy-policy" className="hover:text-white py-1 transition-colors touch-manipulation">
               PRIVACY POLICY
             </Link>
             <span className="text-slate-700">|</span>
-            <Link href="/terms-of-service" className="hover:text-white transition-colors">
+            <Link href="/terms-of-service" className="hover:text-white py-1 transition-colors touch-manipulation">
               TERMS OF SERVICE
             </Link>
             <span className="text-slate-700">|</span>
-            <span className="inline-flex items-center gap-1.5 text-slate-300">
+            <span className="inline-flex items-center gap-1.5 text-slate-300 py-1">
               Design by{" "}
               <a 
                 href="https://identityflowcreative.com/index.php" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="inline-flex items-baseline tracking-tight hover:opacity-80 transition-opacity ml-0.5"
+                className="inline-flex items-baseline tracking-tight hover:opacity-80 transition-opacity ml-0.5 touch-manipulation"
               >
                 <span 
                   className="font-black text-white text-[14px] leading-none" 

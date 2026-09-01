@@ -298,4 +298,5 @@ export default function BlueprintAnimation({ interactive = false }: BlueprintAni
       </Canvas>
     </div>
   );
-}
+} 
+

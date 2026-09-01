@@ -49,7 +49,7 @@ export default function VelocityChart({
   return (
     <motion.div 
       variants={itemVariants} 
-      className="xl:col-span-2 border p-4 sm:p-6 shadow-2xl flex flex-col relative overflow-hidden group font-mono text-slate-100 rounded-sm bg-[var(--color-brand-card)] border-[var(--color-brand-border)]"
+      className="xl:col-span-2 border p-4 sm:p-6 shadow-2xl flex flex-col relative overflow-hidden group font-mono text-slate-100 rounded-sm bg-[var(--color-brand-card)] border-[var(--color-brand-border)] select-none"
     >
       {/* Top Accent Line */}
       <div className="absolute top-0 left-0 w-full h-[2px] bg-[var(--color-brand-blue)]" />
@@ -57,11 +57,11 @@ export default function VelocityChart({
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 border-b border-[var(--color-brand-border)] pb-4">
         <div>
-          <h2 className="text-slate-100 font-black uppercase tracking-widest text-sm sm:text-base flex items-center gap-2">
-            <span className="inline-block w-2 h-2 bg-[var(--color-brand-blue)] animate-pulse rounded-none" />
+          <h2 className="text-slate-100 font-black uppercase tracking-widest text-xs sm:text-base flex items-center gap-2">
+            <span className="inline-block w-2 h-2 bg-[var(--color-brand-blue)] animate-pulse rounded-none flex-shrink-0" />
             Safety Engagement Velocity Breakdown
           </h2>
-          <p className="text-[11px] sm:text-xs text-slate-400 font-bold uppercase tracking-wider mt-0.5">
+          <p className="text-[10px] sm:text-xs text-slate-400 font-bold uppercase tracking-wider mt-0.5">
             Operational Activity Stream (All 6 Primary Categories)
           </p>
         </div>
@@ -70,13 +70,13 @@ export default function VelocityChart({
           {hasData && (
             <div className="flex gap-3 sm:gap-4 border-r border-[var(--color-brand-border)] pr-3 sm:pr-4 text-xs font-bold">
               <div>
-                <span className="text-slate-400 uppercase tracking-wider block text-[10px]">TIMEFRAME TOTAL:</span>
+                <span className="text-slate-400 uppercase tracking-wider block text-[10px] sm:text-[11px]">TIMEFRAME TOTAL:</span>
                 <span className="text-slate-100 font-black text-xs sm:text-sm tabular-nums">{metrics.total}</span>
               </div>
               {tfVelocity === 'week' && (
                 <div>
-                  <span className="text-slate-400 uppercase tracking-wider block text-[10px]">TODAY:</span>
-                  <span className="font-black text-xs sm:text-sm tabular-nums text-[var(--color-metric-meetings)]">
+                  <span className="text-slate-400 uppercase tracking-wider block text-[10px] sm:text-[11px]">TODAY:</span>
+                  <span className="font-black text-xs sm:text-sm tabular-nums text-[var(--color-brand-green,#00ff9d)]">
                     {metrics.today}
                   </span>
                 </div>
@@ -88,13 +88,13 @@ export default function VelocityChart({
             <select 
               value={tfVelocity} 
               onChange={(e) => setTfVelocity(e.target.value)} 
-              className="py-2 px-3 pr-8 text-xs text-slate-200 uppercase font-bold outline-none cursor-pointer appearance-none rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] transition-colors"
+              className="min-h-[44px] py-2 px-3 pr-8 text-xs text-slate-200 uppercase font-bold outline-none cursor-pointer appearance-none rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] transition-all touch-manipulation"
             >
-              <option value="week" className="bg-[var(--color-brand-card)]">1 Week</option>
-              <option value="month" className="bg-[var(--color-brand-card)]">1 Month</option>
-              <option value="year" className="bg-[var(--color-brand-card)]">1 Year</option>
+              <option value="week" className="bg-[var(--color-brand-card)] text-white">1 Week</option>
+              <option value="month" className="bg-[var(--color-brand-card)] text-white">1 Month</option>
+              <option value="year" className="bg-[var(--color-brand-card)] text-white">1 Year</option>
             </select>
-            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-400">
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400">
               <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
                 <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
               </svg>
@@ -109,37 +109,37 @@ export default function VelocityChart({
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart 
               data={velocityData} 
-              margin={{ top: 15, right: 0, left: -25, bottom: 0 }}
+              margin={{ top: 15, right: 10, left: -20, bottom: 0 }}
             >
               <defs>
                 <linearGradient id="glowMeetings" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--color-metric-meetings)" stopOpacity={0.35}/>
-                  <stop offset="100%" stopColor="var(--color-metric-meetings)" stopOpacity={0.00}/>
+                  <stop offset="0%" stopColor="var(--color-brand-green,#00ff9d)" stopOpacity={0.35}/>
+                  <stop offset="100%" stopColor="var(--color-brand-green,#00ff9d)" stopOpacity={0.00}/>
                 </linearGradient>
 
                 <linearGradient id="glowPPE" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--color-metric-ppe)" stopOpacity={0.35}/>
-                  <stop offset="100%" stopColor="var(--color-metric-ppe)" stopOpacity={0.00}/>
+                  <stop offset="0%" stopColor="var(--color-brand-blue,#0088ff)" stopOpacity={0.35}/>
+                  <stop offset="100%" stopColor="var(--color-brand-blue,#0088ff)" stopOpacity={0.00}/>
                 </linearGradient>
 
                 <linearGradient id="glowImprovement" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--color-metric-process)" stopOpacity={0.35}/>
-                  <stop offset="100%" stopColor="var(--color-metric-process)" stopOpacity={0.00}/>
+                  <stop offset="0%" stopColor="#a855f7" stopOpacity={0.35}/>
+                  <stop offset="100%" stopColor="#a855f7" stopOpacity={0.00}/>
                 </linearGradient>
 
                 <linearGradient id="glowSafeActs" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--color-metric-safe-acts)" stopOpacity={0.35}/>
-                  <stop offset="100%" stopColor="var(--color-metric-safe-acts)" stopOpacity={0.00}/>
+                  <stop offset="0%" stopColor="#38bdf8" stopOpacity={0.35}/>
+                  <stop offset="100%" stopColor="#38bdf8" stopOpacity={0.00}/>
                 </linearGradient>
 
                 <linearGradient id="glowObservation" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--color-metric-observation)" stopOpacity={0.35}/>
-                  <stop offset="100%" stopColor="var(--color-metric-observation)" stopOpacity={0.00}/>
+                  <stop offset="0%" stopColor="#eab308" stopOpacity={0.35}/>
+                  <stop offset="100%" stopColor="#eab308" stopOpacity={0.00}/>
                 </linearGradient>
 
                 <linearGradient id="glowAssistance" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--color-metric-assistance)" stopOpacity={0.35}/>
-                  <stop offset="100%" stopColor="var(--color-metric-assistance)" stopOpacity={0.00}/>
+                  <stop offset="0%" stopColor="#f97316" stopOpacity={0.35}/>
+                  <stop offset="100%" stopColor="#f97316" stopOpacity={0.00}/>
                 </linearGradient>
               </defs>
 
@@ -152,8 +152,8 @@ export default function VelocityChart({
               
               <XAxis 
                 dataKey="name" 
-                stroke="rgb(148, 163, 184)" 
-                fontSize={10} 
+                stroke="#94a3b8" 
+                fontSize={11} 
                 fontFamily="ui-monospace, monospace"
                 fontWeight="700"
                 tickLine={false} 
@@ -163,8 +163,8 @@ export default function VelocityChart({
               />
               
               <YAxis 
-                stroke="rgb(148, 163, 184)" 
-                fontSize={10} 
+                stroke="#94a3b8" 
+                fontSize={11} 
                 fontFamily="ui-monospace, monospace"
                 fontWeight="700"
                 tickLine={false} 
@@ -189,10 +189,10 @@ export default function VelocityChart({
                 type="monotone" 
                 name="Meetings & Briefings" 
                 dataKey="briefings" 
-                stroke="var(--color-metric-meetings)" 
+                stroke="var(--color-brand-green,#00ff9d)" 
                 strokeWidth={2.5} 
                 fill="url(#glowMeetings)"
-                activeDot={{ r: 5, fill: "var(--color-metric-meetings)" }}
+                activeDot={{ r: 5, fill: "var(--color-brand-green,#00ff9d)" }}
                 isAnimationActive={false}
               />
 
@@ -201,10 +201,10 @@ export default function VelocityChart({
                 type="monotone" 
                 name="PPE Discipline" 
                 dataKey="ppeDiscipline" 
-                stroke="var(--color-metric-ppe)" 
+                stroke="var(--color-brand-blue,#0088ff)" 
                 strokeWidth={2.5} 
                 fill="url(#glowPPE)"
-                activeDot={{ r: 5, fill: "var(--color-metric-ppe)" }}
+                activeDot={{ r: 5, fill: "var(--color-brand-blue,#0088ff)" }}
                 isAnimationActive={false}
               />
 
@@ -213,10 +213,10 @@ export default function VelocityChart({
                 type="monotone" 
                 name="Process Improvement" 
                 dataKey="processImprovement" 
-                stroke="var(--color-metric-process)" 
+                stroke="#a855f7" 
                 strokeWidth={2.5} 
                 fill="url(#glowImprovement)"
-                activeDot={{ r: 5, fill: "var(--color-metric-process)" }}
+                activeDot={{ r: 5, fill: "#a855f7" }}
                 isAnimationActive={false}
               />
 
@@ -225,10 +225,10 @@ export default function VelocityChart({
                 type="monotone" 
                 name="Safe Acts" 
                 dataKey="safeActs" 
-                stroke="var(--color-metric-safe-acts)" 
+                stroke="#38bdf8" 
                 strokeWidth={2.5} 
                 fill="url(#glowSafeActs)"
-                activeDot={{ r: 5, fill: "var(--color-metric-safe-acts)" }}
+                activeDot={{ r: 5, fill: "#38bdf8" }}
                 isAnimationActive={false}
               />
 
@@ -237,10 +237,10 @@ export default function VelocityChart({
                 type="monotone" 
                 name="Safety Observation" 
                 dataKey="safetyObservation" 
-                stroke="var(--color-metric-observation)" 
+                stroke="#eab308" 
                 strokeWidth={2.5} 
                 fill="url(#glowObservation)"
-                activeDot={{ r: 5, fill: "var(--color-metric-observation)" }}
+                activeDot={{ r: 5, fill: "#eab308" }}
                 isAnimationActive={false}
               />
 
@@ -249,10 +249,10 @@ export default function VelocityChart({
                 type="monotone" 
                 name="Team Assistance" 
                 dataKey="teamAssistance" 
-                stroke="var(--color-metric-assistance)" 
+                stroke="#f97316" 
                 strokeWidth={2.5} 
                 fill="url(#glowAssistance)"
-                activeDot={{ r: 5, fill: "var(--color-metric-assistance)" }}
+                activeDot={{ r: 5, fill: "#f97316" }}
                 isAnimationActive={false}
               />
             </AreaChart>

@@ -154,7 +154,7 @@ export default function SafeActTracker({
   };
 
   return (
-    <motion.div variants={itemVariants} className="space-y-6 font-mono text-slate-100">
+    <motion.div variants={itemVariants} className="space-y-6 font-mono text-slate-100 select-none">
       
       {/* HEADER & CONTROL MATRIX */}
       <div className="border p-4 sm:p-6 shadow-2xl relative overflow-hidden group rounded-sm bg-[var(--color-brand-card)] border-[var(--color-brand-border)]">
@@ -162,34 +162,34 @@ export default function SafeActTracker({
         
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6 border-b border-[var(--color-brand-border)] pb-4">
           <div>
-            <h2 className="text-slate-100 font-black uppercase tracking-widest text-sm sm:text-base flex items-center gap-2">
-              <span className="w-2 h-2 rounded-none bg-[var(--color-brand-blue)] animate-pulse" />
+            <h2 className="text-slate-100 font-black uppercase tracking-widest text-xs sm:text-base flex items-center gap-2">
+              <span className="w-2 h-2 rounded-none bg-[var(--color-brand-blue)] animate-pulse flex-shrink-0" />
               Safe Act Peer Recognition Audit
             </h2>
-            <p className="text-[11px] sm:text-xs text-slate-400 font-bold uppercase tracking-wider mt-0.5">
+            <p className="text-[10px] sm:text-xs text-slate-400 font-bold uppercase tracking-wider mt-0.5">
               Cross-User Peer Award Telemetry & Transaction Records
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
             <div className="flex flex-col flex-1 sm:flex-initial">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">
+              <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">
                 Filter Employee
               </span>
               <div className="relative">
                 <select
                   value={selectedUser}
                   onChange={(e) => setSelectedUser(e.target.value)}
-                  className="py-2 px-3 pr-8 text-xs text-slate-200 uppercase font-bold outline-none cursor-pointer w-full sm:w-auto appearance-none rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] transition-colors truncate"
+                  className="min-h-[44px] py-2 px-3 pr-8 text-xs text-slate-200 uppercase font-bold outline-none cursor-pointer w-full sm:w-auto appearance-none rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] transition-all truncate touch-manipulation"
                 >
                   <option value="ALL" className="bg-[var(--color-brand-card)] text-slate-200">-- ALL TEAM MEMBERS --</option>
                   {(allUsers || []).map((emp) => (
-                    <option key={emp.id} value={emp.id} className="bg-[var(--color-brand-card)] text-slate-200">
+                    <option key={emp.id} value={emp.id} className="bg-[var(--color-brand-card)] text-white">
                       {emp.nickname || emp.first_name} {emp.role === "manager" ? "(Manager)" : ""}
                     </option>
                   ))}
                 </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-400">
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400">
                   <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
                     <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
                   </svg>
@@ -198,21 +198,21 @@ export default function SafeActTracker({
             </div>
 
             <div className="flex flex-col flex-1 sm:flex-initial">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">
+              <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">
                 Timeframe
               </span>
               <div className="relative">
                 <select
                   value={timeframe}
                   onChange={(e) => setTimeframe(e.target.value)}
-                  className="py-2 px-3 pr-8 text-xs text-slate-200 uppercase font-bold outline-none cursor-pointer w-full sm:w-auto appearance-none rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] transition-colors"
+                  className="min-h-[44px] py-2 px-3 pr-8 text-xs text-slate-200 uppercase font-bold outline-none cursor-pointer w-full sm:w-auto appearance-none rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] transition-all touch-manipulation"
                 >
-                  <option value="week" className="bg-[var(--color-brand-card)]">1 Week</option>
-                  <option value="month" className="bg-[var(--color-brand-card)]">1 Month</option>
-                  <option value="year" className="bg-[var(--color-brand-card)]">1 Year</option>
-                  <option value="all" className="bg-[var(--color-brand-card)]">All Time</option>
+                  <option value="week" className="bg-[var(--color-brand-card)] text-white">1 Week</option>
+                  <option value="month" className="bg-[var(--color-brand-card)] text-white">1 Month</option>
+                  <option value="year" className="bg-[var(--color-brand-card)] text-white">1 Year</option>
+                  <option value="all" className="bg-[var(--color-brand-card)] text-white">All Time</option>
                 </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-400">
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400">
                   <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
                     <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
                   </svg>
@@ -225,22 +225,22 @@ export default function SafeActTracker({
         {/* SUMMARY STATS BAR */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6">
           <div className="p-3 rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)]">
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest block mb-1">Total Safe Acts</span>
-            <span className="text-lg sm:text-xl font-black tabular-nums text-[var(--color-metric-safe-acts)]">{stats.totalActs}</span>
+            <span className="text-[10px] sm:text-[11px] text-slate-400 font-bold uppercase tracking-widest block mb-1">Total Safe Acts</span>
+            <span className="text-lg sm:text-xl font-black tabular-nums text-[var(--color-brand-green,#00ff9d)]">{stats.totalActs}</span>
           </div>
           <div className="p-3 rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)]">
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest block mb-1">Points Generated</span>
-            <span className="text-lg sm:text-xl font-black tabular-nums text-[var(--color-metric-safe-acts)]">+{stats.totalPointsAwarded} PTS</span>
+            <span className="text-[10px] sm:text-[11px] text-slate-400 font-bold uppercase tracking-widest block mb-1">Points Generated</span>
+            <span className="text-lg sm:text-xl font-black tabular-nums text-[var(--color-brand-green,#00ff9d)]">+{stats.totalPointsAwarded} PTS</span>
           </div>
           <div className="p-3 rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)]">
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest block mb-1">Active Filter</span>
+            <span className="text-[10px] sm:text-[11px] text-slate-400 font-bold uppercase tracking-widest block mb-1">Active Filter</span>
             <span className="text-xs font-bold text-slate-200 truncate block uppercase">
               {selectedUser === "ALL" ? "All Staff" : getUserName(selectedUser)}
             </span>
           </div>
           <div className="p-3 rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)]">
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest block mb-1">Time Span</span>
-            <span className="text-xs font-bold uppercase block text-[var(--color-metric-safe-acts)]">
+            <span className="text-[10px] sm:text-[11px] text-slate-400 font-bold uppercase tracking-widest block mb-1">Time Span</span>
+            <span className="text-xs font-bold uppercase block text-[var(--color-brand-blue)]">
               {timeframe.toUpperCase()}
             </span>
           </div>
@@ -250,15 +250,15 @@ export default function SafeActTracker({
         <div className="w-full h-[240px] sm:h-[280px] min-h-[240px] relative">
           {chartData.some((d) => d.reported > 0 || d.received > 0) ? (
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={chartData} margin={{ top: 15, right: 5, left: -25, bottom: 0 }}>
+              <AreaChart data={chartData} margin={{ top: 15, right: 10, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="glowReportedActs" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="var(--color-metric-safe-acts)" stopOpacity={0.4} />
-                    <stop offset="100%" stopColor="var(--color-metric-safe-acts)" stopOpacity={0.0} />
+                    <stop offset="0%" stopColor="var(--color-brand-green, #00ff9d)" stopOpacity={0.4} />
+                    <stop offset="100%" stopColor="var(--color-brand-green, #00ff9d)" stopOpacity={0.0} />
                   </linearGradient>
                   <linearGradient id="glowReceivedActs" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="var(--color-metric-observation)" stopOpacity={0.35} />
-                    <stop offset="100%" stopColor="var(--color-metric-observation)" stopOpacity={0.0} />
+                    <stop offset="0%" stopColor="var(--color-brand-blue, #0088ff)" stopOpacity={0.35} />
+                    <stop offset="100%" stopColor="var(--color-brand-blue, #0088ff)" stopOpacity={0.0} />
                   </linearGradient>
                 </defs>
 
@@ -266,7 +266,7 @@ export default function SafeActTracker({
                 <XAxis 
                   dataKey="name" 
                   stroke="#94a3b8" 
-                  fontSize={10} 
+                  fontSize={11} 
                   fontFamily="ui-monospace, monospace" 
                   fontWeight="700"
                   tickLine={false} 
@@ -275,7 +275,7 @@ export default function SafeActTracker({
                 />
                 <YAxis 
                   stroke="#94a3b8" 
-                  fontSize={10} 
+                  fontSize={11} 
                   fontFamily="ui-monospace, monospace" 
                   fontWeight="700"
                   tickLine={false} 
@@ -298,22 +298,22 @@ export default function SafeActTracker({
                   type="monotone"
                   name="Acts Reported (Given)"
                   dataKey="reported"
-                  stroke="var(--color-metric-safe-acts)"
+                  stroke="var(--color-brand-green, #00ff9d)"
                   strokeWidth={2.5}
                   fill="url(#glowReportedActs)"
                   isAnimationActive={false}
-                  activeDot={{ r: 5, fill: "var(--color-metric-safe-acts)" }}
+                  activeDot={{ r: 5, fill: "var(--color-brand-green, #00ff9d)" }}
                 />
                 <Area
                   type="monotone"
                   name="Acts Received"
                   dataKey="received"
-                  stroke="var(--color-metric-observation)"
+                  stroke="var(--color-brand-blue, #0088ff)"
                   strokeWidth={2.5}
                   strokeDasharray="3 3"
                   fill="url(#glowReceivedActs)"
                   isAnimationActive={false}
-                  activeDot={{ r: 5, fill: "var(--color-metric-observation)" }}
+                  activeDot={{ r: 5, fill: "var(--color-brand-blue, #0088ff)" }}
                 />
               </AreaChart>
             </ResponsiveContainer>
@@ -331,11 +331,11 @@ export default function SafeActTracker({
 
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pb-4 border-b border-[var(--color-brand-border)]">
           <div>
-            <h3 className="text-slate-100 font-black uppercase tracking-widest text-sm sm:text-base flex items-center gap-2">
-              <span className="w-2 h-2 rounded-none animate-pulse bg-[var(--color-brand-blue)]" />
+            <h3 className="text-slate-100 font-black uppercase tracking-widest text-xs sm:text-base flex items-center gap-2">
+              <span className="w-2 h-2 rounded-none animate-pulse bg-[var(--color-brand-blue)] flex-shrink-0" />
               Transaction Log & Description History
             </h3>
-            <p className="text-[11px] sm:text-xs text-slate-400 font-bold uppercase tracking-wider mt-0.5">
+            <p className="text-[10px] sm:text-xs text-slate-400 font-bold uppercase tracking-wider mt-0.5">
               Verifiable Peer Recognition Audit Trail
             </p>
           </div>
@@ -349,14 +349,14 @@ export default function SafeActTracker({
               <select
                 value={logTimeframe}
                 onChange={(e) => setLogTimeframe(e.target.value)}
-                className="py-2 px-3 pr-8 text-xs text-slate-200 uppercase font-bold outline-none cursor-pointer appearance-none rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] transition-colors"
+                className="min-h-[44px] py-2 px-3 pr-8 text-xs text-slate-200 uppercase font-bold outline-none cursor-pointer appearance-none rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] transition-all touch-manipulation"
               >
-                <option value="week" className="bg-[var(--color-brand-card)]">1 Week</option>
-                <option value="month" className="bg-[var(--color-brand-card)]">1 Month</option>
-                <option value="year" className="bg-[var(--color-brand-card)]">1 Year</option>
-                <option value="all" className="bg-[var(--color-brand-card)]">All Time</option>
+                <option value="week" className="bg-[var(--color-brand-card)] text-white">1 Week</option>
+                <option value="month" className="bg-[var(--color-brand-card)] text-white">1 Month</option>
+                <option value="year" className="bg-[var(--color-brand-card)] text-white">1 Year</option>
+                <option value="all" className="bg-[var(--color-brand-card)] text-white">All Time</option>
               </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-400">
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400">
                 <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
                   <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
                 </svg>
@@ -368,7 +368,7 @@ export default function SafeActTracker({
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse min-w-[340px]">
             <thead>
-              <tr className="border-b text-[10px] text-slate-400 font-bold uppercase tracking-wider bg-[var(--color-brand-bg)] border-[var(--color-brand-border)]">
+              <tr className="border-b text-[10px] sm:text-[11px] text-slate-400 font-bold uppercase tracking-wider bg-[var(--color-brand-bg)] border-[var(--color-brand-border)]">
                 <th className="p-3 hidden md:table-cell">Timestamp</th>
                 <th className="p-3">Reporter</th>
                 <th className="p-3">Recipient</th>
@@ -383,16 +383,16 @@ export default function SafeActTracker({
                     <td className="p-3 text-slate-400 whitespace-nowrap text-xs font-bold tabular-nums hidden md:table-cell">
                       {act.created_at ? new Date(act.created_at).toLocaleDateString() : "N/A"}
                     </td>
-                    <td className="p-3 font-bold uppercase whitespace-nowrap text-xs text-[var(--color-metric-meetings)]">
+                    <td className="p-3 font-bold uppercase whitespace-nowrap text-xs text-[var(--color-brand-green,#00ff9d)]">
                       {getUserName(act.reporter_id)}
                     </td>
-                    <td className="p-3 font-bold uppercase whitespace-nowrap text-xs text-[var(--color-metric-ppe)]">
+                    <td className="p-3 font-bold uppercase whitespace-nowrap text-xs text-[var(--color-brand-blue,#0088ff)]">
                       {getUserName(act.recipient_id)}
                     </td>
                     <td className="p-3 text-slate-200 max-w-xs md:max-w-md break-words text-xs font-medium">
                       {act.reason || (act as any).description || "[ No Description Provided ]"}
                     </td>
-                    <td className="p-3 text-right font-bold whitespace-nowrap text-xs tabular-nums hidden sm:table-cell text-[var(--color-metric-safe-acts)]">
+                    <td className="p-3 text-right font-bold whitespace-nowrap text-xs tabular-nums hidden sm:table-cell text-[var(--color-brand-green,#00ff9d)]">
                       +10 / +5 PTS
                     </td>
                   </tr>
@@ -411,8 +411,9 @@ export default function SafeActTracker({
         {filteredLog.length > 6 && (
           <div className="mt-4 pt-3 border-t flex justify-center border-[var(--color-brand-border)]">
             <button
+              type="button"
               onClick={() => setShowFullHistory(!showFullHistory)}
-              className="flex items-center gap-2 px-4 py-2.5 text-xs font-bold uppercase transition-all cursor-pointer rounded-sm shadow-md border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] text-[var(--color-brand-blue)] hover:text-white hover:border-[var(--color-brand-blue)]"
+              className="min-h-[44px] flex items-center gap-2 px-4 py-2.5 text-xs font-bold uppercase transition-all cursor-pointer rounded-sm shadow-md border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] text-[var(--color-brand-blue)] hover:text-white hover:border-[var(--color-brand-blue)] active:scale-[0.98] touch-manipulation focus:outline-none"
             >
               <span>
                 {showFullHistory
@@ -430,4 +431,3 @@ export default function SafeActTracker({
     </motion.div>
   );
 }
-

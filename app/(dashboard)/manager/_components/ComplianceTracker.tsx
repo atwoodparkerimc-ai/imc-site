@@ -43,7 +43,7 @@ export default function ComplianceTracker({
   return (
     <motion.div 
       variants={itemVariants} 
-      className="border p-4 sm:p-6 shadow-2xl relative overflow-hidden group font-mono rounded-sm bg-[var(--color-brand-card)] border-[var(--color-brand-border)]"
+      className="border p-4 sm:p-6 shadow-2xl relative overflow-hidden group font-mono rounded-sm bg-[var(--color-brand-card)] border-[var(--color-brand-border)] select-none"
     >
       {/* Top Accent Line */}
       <div className="absolute top-0 left-0 w-full h-[2px] bg-[var(--color-brand-border)] group-hover:bg-[var(--color-brand-blue)] transition-colors duration-300" />
@@ -60,11 +60,11 @@ export default function ComplianceTracker({
         </div>
 
         {/* MOBILE RESPONSIVE DROPDOWN CONTROLS */}
-        <div className="flex w-full sm:w-auto gap-2">
+        <div className="flex flex-col sm:flex-row w-full sm:w-auto gap-2">
           <select 
             value={compUser} 
             onChange={(e) => setCompUser(e.target.value)} 
-            className="flex-1 sm:flex-none p-2 text-xs text-slate-200 uppercase font-bold outline-none cursor-pointer rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] transition-colors"
+            className="w-full sm:w-auto min-h-[44px] px-3 py-2 text-xs text-slate-200 uppercase font-bold outline-none cursor-pointer rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] transition-all touch-manipulation"
           >
             {(allUsers || []).map(emp => (
               <option key={emp.id} value={emp.id} className="bg-[var(--color-brand-card)] text-slate-200">
@@ -76,7 +76,7 @@ export default function ComplianceTracker({
           <select 
             value={tfComp} 
             onChange={(e) => setTfComp(e.target.value)} 
-            className="p-2 text-xs text-slate-200 uppercase font-bold outline-none cursor-pointer rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] transition-colors"
+            className="w-full sm:w-auto min-w-[110px] min-h-[44px] px-3 py-2 text-xs text-slate-200 uppercase font-bold outline-none cursor-pointer rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] transition-all touch-manipulation"
           >
             <option value="week" className="bg-[var(--color-brand-card)]">1 Week</option>
             <option value="month" className="bg-[var(--color-brand-card)]">1 Month</option>
@@ -89,12 +89,12 @@ export default function ComplianceTracker({
       <div className="w-full h-[250px] sm:h-[280px] min-h-[250px] relative">
         {hasData ? (
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={complianceData} margin={{ top: 10, right: 5, left: -25, bottom: 0 }}>
+            <BarChart data={complianceData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--color-brand-border)" strokeOpacity={0.5} vertical={false} />
               <XAxis 
                 dataKey="name" 
                 stroke="#94a3b8" 
-                fontSize={10} 
+                fontSize={11} 
                 fontFamily="ui-monospace, monospace"
                 fontWeight="700"
                 tickLine={false} 
@@ -103,7 +103,7 @@ export default function ComplianceTracker({
               />
               <YAxis 
                 stroke="#94a3b8" 
-                fontSize={10} 
+                fontSize={11} 
                 fontFamily="ui-monospace, monospace"
                 fontWeight="700"
                 tickLine={false} 

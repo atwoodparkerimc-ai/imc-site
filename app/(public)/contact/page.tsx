@@ -148,17 +148,19 @@ export default function ContactPage() {
                   </span>
                   <a 
                     href={phoneHref} 
-                    className="font-mono text-lg sm:text-xl font-black text-white hover:text-[#ea1f27] transition-colors block mb-1.5"
+                    className="font-mono text-lg sm:text-xl font-black text-white hover:text-[#ea1f27] active:text-[#ea1f27] active:scale-[0.98] transition-all inline-block mb-1.5 touch-manipulation"
                   >
                     {phoneDisplay}
                   </a>
-                  <a 
-                    href={`mailto:${estimatingEmail}`} 
-                    className="inline-flex items-center gap-2.5 bg-[#070a10] border border-slate-800 hover:border-[#ea1f27]/50 px-3 py-1.5 rounded-xs font-mono text-xs sm:text-sm font-bold text-slate-300 hover:text-white transition-all no-underline break-all"
-                  >
-                    <Mail className="w-3.5 h-3.5 text-[#ea1f27] shrink-0" />
-                    {estimatingEmail}
-                  </a>
+                  <div>
+                    <a 
+                      href={`mailto:${estimatingEmail}`} 
+                      className="inline-flex items-center gap-2.5 bg-[#070a10] border border-slate-800 hover:border-[#ea1f27]/50 active:border-[#ea1f27] px-3.5 py-2 rounded-xs font-mono text-xs sm:text-sm font-bold text-slate-300 hover:text-white active:scale-[0.98] transition-all no-underline break-all touch-manipulation"
+                    >
+                      <Mail className="w-3.5 h-3.5 text-[#ea1f27] shrink-0" />
+                      {estimatingEmail}
+                    </a>
+                  </div>
                 </div>
 
                 {/* HR & Recruiting */}
@@ -168,17 +170,19 @@ export default function ContactPage() {
                   </span>
                   <a 
                     href={phoneHref} 
-                    className="font-mono text-lg sm:text-xl font-black text-white hover:text-[#0088ff] transition-colors block mb-1.5"
+                    className="font-mono text-lg sm:text-xl font-black text-white hover:text-[#0088ff] active:text-[#0088ff] active:scale-[0.98] transition-all inline-block mb-1.5 touch-manipulation"
                   >
                     {phoneDisplay}
                   </a>
-                  <a 
-                    href={`mailto:${careersEmail}`} 
-                    className="inline-flex items-center gap-2.5 bg-[#070a10] border border-slate-800 hover:border-[#0088ff]/50 px-3 py-1.5 rounded-xs font-mono text-xs sm:text-sm font-bold text-slate-300 hover:text-white transition-all no-underline break-all"
-                  >
-                    <Mail className="w-3.5 h-3.5 text-[#0088ff] shrink-0" />
-                    {careersEmail}
-                  </a>
+                  <div>
+                    <a 
+                      href={`mailto:${careersEmail}`} 
+                      className="inline-flex items-center gap-2.5 bg-[#070a10] border border-slate-800 hover:border-[#0088ff]/50 active:border-[#0088ff] px-3.5 py-2 rounded-xs font-mono text-xs sm:text-sm font-bold text-slate-300 hover:text-white active:scale-[0.98] transition-all no-underline break-all touch-manipulation"
+                    >
+                      <Mail className="w-3.5 h-3.5 text-[#0088ff] shrink-0" />
+                      {careersEmail}
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>
@@ -223,9 +227,9 @@ export default function ContactPage() {
                   <Droplets className="w-4 h-4 text-[#64748b]" /> Specialized Disciplines
                 </span>
                 <div className="flex flex-wrap gap-2">
-                  <span className="px-2.5 py-1 bg-[#070a10] border border-slate-800 text-slate-200 text-[11px] font-mono font-bold uppercase tracking-wider rounded-xs hover:border-[#ea1f27]/40 transition-colors">Food & Beverage</span>
-                  <span className="px-2.5 py-1 bg-[#070a10] border border-slate-800 text-slate-200 text-[11px] font-mono font-bold uppercase tracking-wider rounded-xs hover:border-[#64748b]/40 transition-colors">High Purity</span>
-                  <span className="px-2.5 py-1 bg-[#070a10] border border-slate-800 text-slate-200 text-[11px] font-mono font-bold uppercase tracking-wider rounded-xs hover:border-[#0088ff]/40 transition-colors">Industrial Mfg</span>
+                  <span className="px-3 py-1.5 bg-[#070a10] border border-slate-800 text-slate-200 text-[11px] font-mono font-bold uppercase tracking-wider rounded-xs hover:border-[#ea1f27]/40 transition-colors">Food & Beverage</span>
+                  <span className="px-3 py-1.5 bg-[#070a10] border border-slate-800 text-slate-200 text-[11px] font-mono font-bold uppercase tracking-wider rounded-xs hover:border-[#64748b]/40 transition-colors">High Purity</span>
+                  <span className="px-3 py-1.5 bg-[#070a10] border border-slate-800 text-slate-200 text-[11px] font-mono font-bold uppercase tracking-wider rounded-xs hover:border-[#0088ff]/40 transition-colors">Industrial Mfg</span>
                 </div>
               </div>
             </div>
@@ -279,7 +283,7 @@ export default function ContactPage() {
                   />
                 </div>
 
-                {/* 2-Across Compact Contact Inputs on ALL devices */}
+                {/* 2-Across Compact Contact Inputs */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   <div>
                     <label htmlFor="fullName" className="block text-[11px] font-mono font-bold uppercase tracking-wider text-slate-300 mb-1">
@@ -337,12 +341,12 @@ export default function ContactPage() {
                   </div>
                 </div>
 
-                {/* 1-Tap Pill Chips: Project Type */}
+                {/* 1-Tap Pill Chips: Project Type (Enhanced Touch Targets) */}
                 <div>
-                  <span className="block text-[11px] font-mono font-bold uppercase tracking-wider text-slate-300 mb-1.5">
+                  <span className="block text-[11px] font-mono font-bold uppercase tracking-wider text-slate-300 mb-2">
                     Project Discipline <span className="text-[#ea1f27]">*</span>
                   </span>
-                  <div className="flex flex-wrap gap-1.5">
+                  <div className="flex flex-wrap gap-2">
                     {PROJECT_TYPES.map((type) => {
                       const isSelected = selectedProjectType === type;
                       return (
@@ -350,10 +354,10 @@ export default function ContactPage() {
                           key={type}
                           type="button"
                           onClick={() => setSelectedProjectType(type)}
-                          className={`px-3 py-1.5 rounded-xs text-xs font-mono font-bold transition-all ${
+                          className={`px-3.5 py-2 min-h-[38px] rounded-xs text-xs font-mono font-bold transition-all active:scale-95 touch-manipulation select-none cursor-pointer ${
                             isSelected
                               ? "bg-[#0088ff] text-white shadow-[0_0_12px_rgba(0,136,255,0.4)] border border-[#0088ff]"
-                              : "bg-[#070a10] text-slate-300 hover:text-white border border-slate-800 hover:border-slate-700"
+                              : "bg-[#070a10] text-slate-300 hover:text-white border border-slate-800 hover:border-slate-700 active:bg-slate-800"
                           }`}
                         >
                           {type}
@@ -363,12 +367,12 @@ export default function ContactPage() {
                   </div>
                 </div>
 
-                {/* 1-Tap Pill Chips: Estimated Timeline */}
+                {/* 1-Tap Pill Chips: Estimated Timeline (Enhanced Touch Targets) */}
                 <div>
-                  <span className="block text-[11px] font-mono font-bold uppercase tracking-wider text-slate-300 mb-1.5">
+                  <span className="block text-[11px] font-mono font-bold uppercase tracking-wider text-slate-300 mb-2">
                     Target Timeline
                   </span>
-                  <div className="flex flex-wrap gap-1.5">
+                  <div className="flex flex-wrap gap-2">
                     {TIMELINES.map((time) => {
                       const isSelected = selectedTimeline === time;
                       return (
@@ -376,10 +380,10 @@ export default function ContactPage() {
                           key={time}
                           type="button"
                           onClick={() => setSelectedTimeline(time)}
-                          className={`px-3 py-1.5 rounded-xs text-xs font-mono font-bold transition-all ${
+                          className={`px-3.5 py-2 min-h-[38px] rounded-xs text-xs font-mono font-bold transition-all active:scale-95 touch-manipulation select-none cursor-pointer ${
                             isSelected
-                              ? "bg-slate-700 text-white border border-slate-500"
-                              : "bg-[#070a10] text-slate-400 hover:text-slate-200 border border-slate-800 hover:border-slate-700"
+                              ? "bg-slate-700 text-white border border-slate-500 shadow-sm"
+                              : "bg-[#070a10] text-slate-400 hover:text-slate-200 border border-slate-800 hover:border-slate-700 active:bg-slate-800"
                           }`}
                         >
                           {time}
@@ -408,7 +412,7 @@ export default function ContactPage() {
                   <div className="flex items-center gap-3">
                     <label 
                       htmlFor="file-upload" 
-                      className="inline-flex items-center gap-2 px-3.5 py-2 bg-[#070a10] hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white text-xs font-mono font-bold rounded-xs cursor-pointer transition-colors"
+                      className="inline-flex items-center gap-2 px-4 py-2.5 min-h-[40px] bg-[#070a10] hover:bg-slate-800 active:bg-slate-700 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white text-xs font-mono font-bold rounded-xs cursor-pointer transition-all active:scale-95 touch-manipulation select-none"
                     >
                       <Paperclip className="w-3.5 h-3.5 text-[#0088ff]" />
                       <span>{attachedFileName ? "Change File" : "Attach Blueprints / Specs"}</span>
@@ -422,14 +426,15 @@ export default function ContactPage() {
                     </label>
 
                     {attachedFileName ? (
-                      <div className="flex items-center gap-1.5 text-xs font-mono text-emerald-400 bg-[#070a10] px-2.5 py-1.5 rounded-xs border border-emerald-500/30">
+                      <div className="flex items-center gap-1.5 text-xs font-mono text-emerald-400 bg-[#070a10] px-3 py-1.5 rounded-xs border border-emerald-500/30">
                         <span className="truncate max-w-[150px]">{attachedFileName}</span>
                         <button 
                           type="button" 
                           onClick={() => setAttachedFileName(null)}
-                          className="text-slate-400 hover:text-white ml-1"
+                          className="text-slate-400 hover:text-white active:text-white p-1 min-w-[32px] min-h-[32px] flex items-center justify-center active:scale-90 touch-manipulation cursor-pointer ml-1"
+                          aria-label="Remove attached file"
                         >
-                          <X className="w-3.5 h-3.5" />
+                          <X className="w-4 h-4" />
                         </button>
                       </div>
                     ) : (
@@ -455,7 +460,7 @@ export default function ContactPage() {
                   <button 
                     type="submit" 
                     disabled={isSubmitting}
-                    className="w-full sm:w-auto rounded-xs bg-[#ea1f27] hover:bg-[#d41920] disabled:bg-slate-700 px-7 py-3 text-xs font-mono font-bold uppercase tracking-[0.15em] text-white shadow-lg transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-2"
+                    className="w-full sm:w-auto rounded-xs bg-[#ea1f27] hover:bg-[#d41920] active:bg-[#b5181e] disabled:bg-slate-700 px-7 py-3 text-xs font-mono font-bold uppercase tracking-[0.15em] text-white shadow-lg transition-all duration-200 active:scale-[0.97] touch-manipulation select-none cursor-pointer flex items-center justify-center gap-2"
                   >
                     {isSubmitting ? (
                       <>
