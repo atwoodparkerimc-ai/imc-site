@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import Footer from "@/components/footer";
@@ -7,11 +8,13 @@ import { motion } from "framer-motion";
 import { 
   ArrowRight, 
   FileText, 
-  Microscope,
-  Factory,
-  Droplets,
-  ShieldCheck
-} from 'lucide-react';
+  Microscope, 
+  Factory, 
+  Droplets, 
+  ShieldCheck, 
+  Maximize2, 
+  Minimize2 
+} from "lucide-react";
 
 const AhuBlueprintAnimation = dynamic(
   () => import("../../components/ahu-blueprint-animation"),
@@ -38,6 +41,8 @@ const CERTIFICATIONS = [
 ];
 
 export default function Home() {
+  const [isInteractive, setIsInteractive] = useState<boolean>(false);
+
   const phoneDisplay = ["(801)", "360-5735"].join(" ");
   const phoneHref = ["tel:8013605735"].join("");
 
@@ -45,7 +50,7 @@ export default function Home() {
     <main className="w-full relative overflow-x-hidden bg-[#0b0f19] text-slate-100 font-sans selection:bg-[#0088ff] selection:text-white">
 
       {/* ========================================= */}
-      {/* 1. HERO SECTION: SPLIT-SCREEN NATIVE APP */}
+      {/* 1. HERO SECTION: DOCKED HUD APP LAYOUT   */}
       {/* ========================================= */}
       <section className="relative w-full h-[calc(100dvh-5rem)] lg:min-h-[calc(100vh-5rem)] lg:h-auto flex flex-col lg:block bg-[#0b0f19] border-b border-slate-800/80 overflow-hidden">
 
@@ -59,16 +64,40 @@ export default function Home() {
         </div>
 
         {/* ========================================= */}
-        {/* MOBILE LAYOUT (Docked HUD & Framed Canvas) */}
+        {/* MOBILE LAYOUT                             */}
         {/* ========================================= */}
         
-        {/* 1. Top Area: Dedicated 3D Canvas 
-            Using flex-1 allows the 3D camera to auto-fit the ENTIRE model perfectly 
-            in the remaining vertical space without any scaling hacks or clipping. */}
-        <div className="block lg:hidden relative flex-1 w-full z-10 pointer-events-auto">
-          <AhuBlueprintAnimation />
-          {/* Blend edge into the HUD */}
-          <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[#040812] to-transparent pointer-events-none" />
+        {/* 1. Top Area: Dedicated 3D Stage (Shifted Higher Up) */}
+        <div className="block lg:hidden relative flex-1 w-full z-10 overflow-hidden -mt-6 sm:-mt-8">
+          <div className={`w-full h-full relative -translate-y-3 sm:-translate-y-4 ${isInteractive ? "pointer-events-auto touch-none" : "pointer-events-none"}`}>
+            {/* @ts-ignore - Prop forwarded to internal Three.js canvas */}
+            <AhuBlueprintAnimation interactive={isInteractive} />
+          </div>
+
+          {/* Interactive Mode Mobile Toggle Button (Bottom-Right of Canvas) */}
+          <div className="absolute bottom-2 right-4 z-40 pointer-events-auto">
+            <button
+              onClick={() => setIsInteractive(!isInteractive)}
+              className={`inline-flex items-center font-mono text-[10px] font-bold uppercase tracking-widest transition-all cursor-pointer p-1 ${
+                isInteractive 
+                  ? "text-[#ea1f27] hover:text-white" 
+                  : "text-slate-400 hover:text-white"
+              }`}
+            >
+              {isInteractive ? (
+                <span className="inline-flex items-center gap-1.5">
+                  [ <Minimize2 className="w-3.5 h-3.5 text-[#ea1f27] shrink-0" /> Lock Camera ]
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5">
+                  [ <Maximize2 className="w-3.5 h-3.5 text-[#0088ff] shrink-0" /> Inspect 3D Model ]
+                </span>
+              )}
+            </button>
+          </div>
+
+          {/* Blend edge into the bottom HUD */}
+          <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-[#040812] to-transparent pointer-events-none" />
         </div>
 
         {/* 2. Bottom Area: Full-Width Docked HUD */}
@@ -100,11 +129,35 @@ export default function Home() {
         </div>
 
         {/* ========================================= */}
-        {/* DESKTOP LAYOUT (100% Untouched) */}
+        {/* DESKTOP LAYOUT (Side-by-Side)             */}
         {/* ========================================= */}
-        <div className="hidden lg:flex absolute inset-0 z-10 w-[60%] h-full items-center justify-center pointer-events-none">
-          <div className="w-full h-full pointer-events-auto">
-            <AhuBlueprintAnimation />
+        <div className="hidden lg:flex absolute inset-0 z-10 w-[60%] h-full items-center justify-center">
+          
+          {/* Desktop Interactive Toggle (Top-Left of Screen) */}
+          <div className="absolute top-8 left-8 z-40 pointer-events-auto">
+            <button
+              onClick={() => setIsInteractive(!isInteractive)}
+              className={`inline-flex items-center font-mono text-xs font-bold uppercase tracking-widest transition-all cursor-pointer ${
+                isInteractive 
+                  ? "text-[#ea1f27] hover:text-white" 
+                  : "text-slate-400 hover:text-white"
+              }`}
+            >
+              {isInteractive ? (
+                <span className="inline-flex items-center gap-2">
+                  [ <Minimize2 className="w-4 h-4 text-[#ea1f27] shrink-0" /> Lock Camera ]
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-2">
+                  [ <Maximize2 className="w-4 h-4 text-[#0088ff] shrink-0" /> Inspect 3D Model ]
+                </span>
+              )}
+            </button>
+          </div>
+
+          <div className={`w-full h-full ${isInteractive ? "pointer-events-auto" : "pointer-events-none"}`}>
+            {/* @ts-ignore - Prop forwarded to internal Three.js canvas */}
+            <AhuBlueprintAnimation interactive={isInteractive} />
           </div>
         </div>
 
@@ -144,7 +197,7 @@ export default function Home() {
       </section>
 
       {/* ========================================= */}
-      {/* 2. INDUSTRIAL CERTIFICATIONS TICKER */}
+      {/* 2. INDUSTRIAL CERTIFICATIONS TICKER       */}
       {/* ========================================= */}
       <div className="border-b border-slate-800/80 bg-[#030914] py-3.5 sm:py-4 relative z-20 overflow-hidden shadow-inner flex select-none">
         <svg width="0" height="0" className="absolute">
@@ -157,11 +210,9 @@ export default function Home() {
           </defs>
         </svg>
 
-        {/* Left/Right Edge Fade Masks */}
         <div className="absolute left-0 top-0 bottom-0 w-16 sm:w-24 bg-gradient-to-r from-[#030914] via-[#030914]/80 to-transparent z-10 pointer-events-none" />
         <div className="absolute right-0 top-0 bottom-0 w-16 sm:w-24 bg-gradient-to-l from-[#030914] via-[#030914]/80 to-transparent z-10 pointer-events-none" />
 
-        {/* Dual Synchronized Tracks */}
         <div className="flex w-max">
           <motion.div
             className="flex shrink-0 items-center gap-8 sm:gap-12 font-mono text-[9px] sm:text-[10px] font-bold text-slate-300 tracking-[0.2em] uppercase pr-8 sm:pr-12"
@@ -208,7 +259,7 @@ export default function Home() {
       </div>
 
       {/* ========================================= */}
-      {/* 3. THE MANIFESTO / STATS STRIP */}
+      {/* 3. THE MANIFESTO / STATS STRIP            */}
       {/* ========================================= */}
       <section className="bg-[#030914] py-12 sm:py-16 lg:py-20 border-b border-slate-800/80 relative z-20 shadow-inner">
         <div className="max-w-[1400px] mx-auto px-6 lg:px-12">
@@ -253,7 +304,7 @@ export default function Home() {
       </section>
 
       {/* ========================================= */}
-      {/* 4. MISSION CRITICAL ENVIRONMENTS */}
+      {/* 4. MISSION CRITICAL ENVIRONMENTS          */}
       {/* ========================================= */}
       <section className="relative z-20 py-12 sm:py-18 lg:py-24 px-6 lg:px-12 bg-[#070a10] border-b border-slate-800/80">
         <div className="max-w-[1400px] mx-auto relative z-10">
@@ -326,7 +377,7 @@ export default function Home() {
       </section>
 
       {/* ========================================= */}
-      {/* 5. CLIENT REPUTATION */}
+      {/* 5. CLIENT REPUTATION                      */}
       {/* ========================================= */}
       <section className="py-10 sm:py-14 bg-[#02060d] border-b border-slate-800/80">
         <div className="max-w-[1400px] mx-auto px-6 lg:px-12">
@@ -347,7 +398,7 @@ export default function Home() {
       </section>
 
       {/* ========================================= */}
-      {/* 6. INDUSTRIAL REFRIGERATION & AMMONIA */}
+      {/* 6. INDUSTRIAL REFRIGERATION & AMMONIA     */}
       {/* ========================================= */}
       <section className="relative z-20 py-12 sm:py-18 lg:py-24 px-6 lg:px-12 bg-[#030914] border-b border-slate-800/80 text-left">
         <div className="max-w-[1400px] mx-auto">
@@ -382,7 +433,7 @@ export default function Home() {
       </section>
 
       {/* ========================================= */}
-      {/* 7. PACKAGING LINES, FILLERS & CONVEYANCE */}
+      {/* 7. PACKAGING LINES, FILLERS & CONVEYANCE  */}
       {/* ========================================= */}
       <section className="relative z-20 py-12 sm:py-18 lg:py-24 px-6 lg:px-12 bg-[#070a10] border-b border-slate-800/80">
         <div className="max-w-[1400px] mx-auto">
@@ -424,7 +475,7 @@ export default function Home() {
       </section>
 
       {/* ========================================= */}
-      {/* 8. HIGH-INTENT CONVERSION ANCHOR */}
+      {/* 8. HIGH-INTENT CONVERSION ANCHOR          */}
       {/* ========================================= */}
       <section className="relative z-20 bg-[#030914] py-14 sm:py-20 lg:py-32 px-6 lg:px-12 border-b border-slate-800/80 shadow-inner">
         <div className="max-w-[1000px] mx-auto text-center flex flex-col items-center">
@@ -451,7 +502,7 @@ export default function Home() {
       </section>
 
       {/* ========================================= */}
-      {/* 9. SITE FOOTER */}
+      {/* 9. SITE FOOTER                            */}
       {/* ========================================= */}
       <Footer />
 

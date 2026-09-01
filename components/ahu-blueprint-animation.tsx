@@ -31,8 +31,19 @@ import { StationSpiralTower } from './ahu-blueprint/production-line/station-spir
 // --- LOCAL HELPER COMPONENTS ---
 // ============================================================================
 
-// FIX: Added props here so autoRotate actually passes through to OrbitControls
-function SafeOrbitControls(props: any) {
+interface SafeOrbitControlsProps {
+  interactive?: boolean;
+  autoRotate?: boolean;
+  autoRotateSpeed?: number;
+  [key: string]: any;
+}
+
+function SafeOrbitControls({ 
+  interactive = false, 
+  autoRotate = true, 
+  autoRotateSpeed = 0.5, 
+  ...props 
+}: SafeOrbitControlsProps) {
   const { gl } = useThree();
   const [mounted, setMounted] = useState(false);
 
@@ -46,8 +57,12 @@ function SafeOrbitControls(props: any) {
 
   return (
     <OrbitControls 
-      enableZoom={true} 
-      enablePan={false} 
+      enabled={true}
+      enableRotate={interactive}
+      enableZoom={interactive} 
+      enablePan={interactive} 
+      autoRotate={autoRotate}
+      autoRotateSpeed={autoRotateSpeed}
       maxPolarAngle={Math.PI / 1.5} 
       minPolarAngle={Math.PI / 4} 
       {...props} 
@@ -253,24 +268,33 @@ function CommercialAHUSystem() {
 // ============================================================================
 // --- VIEWPORT STAGE ---
 // ============================================================================
-export default function BlueprintAnimation() {
+interface BlueprintAnimationProps {
+  interactive?: boolean;
+}
+
+export default function BlueprintAnimation({ interactive = false }: BlueprintAnimationProps) {
   return (
-    <div className="w-full h-full flex items-center justify-center cursor-grab active:cursor-grabbing relative overflow-visible bg-transparent">
-      {/* FIX: Centered camera X and Y perfectly, pushed Z to 55 to see it all */}
+    <div 
+      className={`w-full h-full flex items-center justify-center relative overflow-visible bg-transparent ${
+        interactive ? "cursor-grab active:cursor-grabbing" : "cursor-default"
+      }`}
+    >
       <Canvas camera={{ position: [0, 8, 30], fov: 25 }} gl={{ antialias: true, alpha: true }}>
         <directionalLight position={[10, 20, 15]} intensity={1.5} color="#ffffff" />
         <ambientLight intensity={1.0} />
         <pointLight position={[-2, 0, 2]} intensity={2.0} color={COLOR_GLOW} distance={10} />
 
         <Float speed={1.5} rotationIntensity={0.05} floatIntensity={0.1}>
-          {/* FIX: Shifted the entire model UP by 4 to compensate for the deep production line */}
           <group position={[0, 4, 0]}>
             <CommercialAHUSystem />
           </group>
         </Float>
 
-        {/* FIX: autoRotate will now work because SafeOrbitControls accepts props */}
-        <SafeOrbitControls autoRotate={true} autoRotateSpeed={0.5} />
+        <SafeOrbitControls 
+          interactive={interactive} 
+          autoRotate={true} 
+          autoRotateSpeed={interactive ? 0.15 : 0.5} 
+        />
       </Canvas>
     </div>
   );
