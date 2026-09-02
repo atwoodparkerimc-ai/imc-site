@@ -38,7 +38,6 @@ export default function AddEmployeeModal({ isOpen, onClose, onSuccess }: AddEmpl
         throw new Error("Active session lost. Please log in again.");
       }
 
-      // Pointed to the canonical hardened account provisioning route
       const res = await fetch("/api/admin/create-user", {
         method: "POST",
         headers: { 
@@ -76,7 +75,7 @@ export default function AddEmployeeModal({ isOpen, onClose, onSuccess }: AddEmpl
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 font-mono select-none">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 font-mono select-none overscroll-contain">
       <div className="w-full max-w-md bg-[var(--color-brand-card)] border border-[var(--color-brand-border)] p-5 sm:p-6 shadow-2xl relative rounded-sm">
         
         {/* Top Accent Line */}
@@ -123,7 +122,7 @@ export default function AddEmployeeModal({ isOpen, onClose, onSuccess }: AddEmpl
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
                 placeholder="Parker"
-                className="w-full bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] focus:ring-1 focus:ring-[var(--color-brand-blue)] p-3 text-xs text-slate-100 outline-none rounded-sm transition-all"
+                className="w-full bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] focus:ring-1 focus:ring-[var(--color-brand-blue)] p-3 text-[16px] sm:text-xs text-slate-100 outline-none rounded-sm transition-all touch-manipulation"
               />
             </div>
             <div>
@@ -134,7 +133,7 @@ export default function AddEmployeeModal({ isOpen, onClose, onSuccess }: AddEmpl
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
                 placeholder="Test"
-                className="w-full bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] focus:ring-1 focus:ring-[var(--color-brand-blue)] p-3 text-xs text-slate-100 outline-none rounded-sm transition-all"
+                className="w-full bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] focus:ring-1 focus:ring-[var(--color-brand-blue)] p-3 text-[16px] sm:text-xs text-slate-100 outline-none rounded-sm transition-all touch-manipulation"
               />
             </div>
           </div>
@@ -146,7 +145,7 @@ export default function AddEmployeeModal({ isOpen, onClose, onSuccess }: AddEmpl
               value={nickname}
               onChange={(e) => setNickname(e.target.value)}
               placeholder="Parker Test"
-              className="w-full bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] focus:ring-1 focus:ring-[var(--color-brand-blue)] p-3 text-xs text-slate-100 outline-none rounded-sm transition-all"
+              className="w-full bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] focus:ring-1 focus:ring-[var(--color-brand-blue)] p-3 text-[16px] sm:text-xs text-slate-100 outline-none rounded-sm transition-all touch-manipulation"
             />
           </div>
 
@@ -158,7 +157,7 @@ export default function AddEmployeeModal({ isOpen, onClose, onSuccess }: AddEmpl
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="employee@domain.com"
-              className="w-full bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] focus:ring-1 focus:ring-[var(--color-brand-blue)] p-3 text-xs text-slate-100 outline-none rounded-sm transition-all"
+              className="w-full bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] focus:ring-1 focus:ring-[var(--color-brand-blue)] p-3 text-[16px] sm:text-xs text-slate-100 outline-none rounded-sm transition-all touch-manipulation"
             />
           </div>
 
@@ -168,7 +167,7 @@ export default function AddEmployeeModal({ isOpen, onClose, onSuccess }: AddEmpl
               <select
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                className="w-full bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] focus:ring-1 focus:ring-[var(--color-brand-blue)] p-3 text-xs text-slate-100 outline-none cursor-pointer rounded-sm transition-all"
+                className="w-full bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] focus:ring-1 focus:ring-[var(--color-brand-blue)] p-3 text-[16px] sm:text-xs text-slate-100 outline-none cursor-pointer rounded-sm transition-all touch-manipulation"
               >
                 <option value="Springville Shop" className="bg-[var(--color-brand-card)] text-white">Springville Shop</option>
                 <option value="Nestle Springville" className="bg-[var(--color-brand-card)] text-white">Nestle Springville</option>
@@ -181,7 +180,7 @@ export default function AddEmployeeModal({ isOpen, onClose, onSuccess }: AddEmpl
               <select
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
-                className="w-full bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] focus:ring-1 focus:ring-[var(--color-brand-blue)] p-3 text-xs text-slate-100 outline-none cursor-pointer rounded-sm transition-all"
+                className="w-full bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] focus:ring-1 focus:ring-[var(--color-brand-blue)] p-3 text-[16px] sm:text-xs text-slate-100 outline-none cursor-pointer rounded-sm transition-all touch-manipulation"
               >
                 <option value="employee" className="bg-[var(--color-brand-card)] text-white">Employee</option>
                 <option value="manager" className="bg-[var(--color-brand-card)] text-white">Manager</option>

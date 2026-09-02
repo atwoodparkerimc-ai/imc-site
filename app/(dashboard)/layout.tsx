@@ -35,8 +35,8 @@ const NAV_ITEMS: NavItem[] = [
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
         <rect x="3" y="3" width="7" height="7"></rect>
-        <rect x="14" y="3" width="7" height="7"></rect>
         <rect x="14" y="14" width="7" height="7"></rect>
+        <rect x="14" y="3" width="7" height="7"></rect>
         <rect x="3" y="14" width="7" height="7"></rect>
       </svg>
     )
@@ -72,7 +72,6 @@ const NAV_ITEMS: NavItem[] = [
   },
 ];
 
-// Motion Variants for Staggered Drawer Items
 const drawerContainerVariants: Variants = {
   hidden: { x: "-100%" },
   show: {
@@ -102,11 +101,7 @@ const drawerItemVariants: Variants = {
   show: { 
     opacity: 1, 
     x: 0, 
-    transition: { 
-      type: "spring", 
-      stiffness: 260, 
-      damping: 24 
-    } 
+    transition: { type: "spring", stiffness: 260, damping: 24 } 
   },
   exit: { 
     opacity: 0, 
@@ -128,26 +123,37 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [isManager, setIsManager] = useState<boolean>(false); 
   const [notification, setNotification] = useState<NotificationRecord | null>(null); 
   
-  // Smart Scroll-Up Header State
   const [showMobileHeader, setShowMobileHeader] = useState<boolean>(true);
   const lastScrollYRef = useRef<number>(0);
-
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
-  const handleScroll = (e: React.UIEvent<HTMLElement>) => {
-    const currentScrollY = e.currentTarget.scrollTop;
-    const diff = currentScrollY - lastScrollYRef.current;
+  // Throttled native window scroll listener
+  useEffect(() => {
+    let ticking = false;
+    const handleWindowScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const currentY = window.scrollY;
+          const diff = currentY - lastScrollYRef.current;
 
-    if (currentScrollY < 10) {
-      setShowMobileHeader(true);
-    } else if (diff > 8) {
-      setShowMobileHeader(false);
-    } else if (diff < -8) {
-      setShowMobileHeader(true);
-    }
+          if (currentY < 10) {
+            setShowMobileHeader(true);
+          } else if (diff > 12) {
+            setShowMobileHeader(false);
+          } else if (diff < -12) {
+            setShowMobileHeader(true);
+          }
 
-    lastScrollYRef.current = currentScrollY;
-  };
+          lastScrollYRef.current = currentY;
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener("scroll", handleWindowScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleWindowScroll);
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -157,10 +163,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         const { data: { user }, error: authError } = await supabase.auth.getUser();
         if (authError || !user) return;
 
-        // 1. Direct fallback for Super Admin email
         const isSuperAdmin = user.email?.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase();
 
-        // 2. Fetch profile role safely
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('role')
@@ -178,7 +182,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           setIsManager(true);
         }
 
-        // 3. Unread Notifications Feed
         const { data: alertFeed } = await supabase
           .from('notifications')
           .select('*')
@@ -224,7 +227,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const dismissNotification = async () => {
     if (!notification) return;
-    
     await supabase
       .from('notifications')
       .update({ is_read: true })
@@ -243,29 +245,27 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }, [pathname]);
 
   return (
-    <div className="flex h-screen bg-brand-bg font-mono overflow-hidden text-slate-100 selection:bg-[var(--color-brand-blue)] selection:text-white">
+    <div className="flex min-h-[100svh] w-full bg-brand-bg font-mono text-slate-100 selection:bg-[var(--color-brand-blue)] selection:text-white relative overscroll-none">
       
-      {/* 1. MOBILE SIDEBAR & BACKDROP WITH STAGGERED ITEM SLIDE-IN */}
+      {/* 1. MOBILE SIDEBAR */}
       <AnimatePresence>
         {isMobileOpen && (
-          <>
-            {/* Backdrop */}
+          <div className="fixed inset-0 h-[100svh] z-50 md:hidden flex touch-none overscroll-none">
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
               onClick={() => setIsMobileOpen(false)}
-              className="mobile-overlay-backdrop md:hidden fixed inset-0 z-40 bg-black/80 backdrop-blur-sm" 
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm" 
             />
 
-            {/* Slide-In Mobile Drawer Container */}
             <motion.aside
               variants={drawerContainerVariants}
               initial="hidden"
               animate="show"
               exit="exit"
-              className="sidebar-nav-container md:hidden fixed inset-y-0 left-0 z-50 w-64 h-full flex flex-col flex-shrink-0 bg-brand-card border-r border-[var(--color-brand-border)] shadow-2xl"
+              className="relative w-64 h-[100svh] flex flex-col flex-shrink-0 bg-brand-card border-r border-[var(--color-brand-border)] shadow-2xl z-10 overflow-hidden"
             >
               <div className="sidebar-header-bar h-16 flex items-center px-4 sm:px-6 justify-between border-b border-[var(--color-brand-border)]">
                 <Image 
@@ -278,7 +278,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 />
                 <button 
                   onClick={() => setIsMobileOpen(false)}
-                  className="text-slate-400 hover:text-white active:text-white transition-colors focus:outline-none cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center -mr-2 active:scale-90 touch-manipulation select-none"
+                  className="text-slate-400 hover:text-white active:text-white min-w-[48px] min-h-[48px] flex items-center justify-center -mr-2 active:scale-90 touch-manipulation focus:outline-none"
                   aria-label="Close Navigation Drawer"
                 >
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -288,8 +288,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </button>
               </div>
 
-              {/* Mobile Staggered Navigation Link List */}
-              <div className="flex flex-col flex-1 py-6 gap-2 px-3 overflow-y-auto">
+              <div className="flex flex-col flex-1 py-6 gap-2 px-3 overflow-y-auto overscroll-contain">
                 {NAV_ITEMS.map((item) => {
                   const isActive = pathname === item.path;
                   return (
@@ -298,10 +297,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       href={item.path}
                       variants={drawerItemVariants}
                       onClick={() => setIsMobileOpen(false)}
-                      className={`nav-item-link flex items-center gap-3.5 p-3 rounded-sm group relative min-h-[44px] transition-all active:scale-[0.98] touch-manipulation select-none ${
+                      className={`nav-item-link flex items-center gap-3.5 p-3 rounded-sm min-h-[48px] transition-all active:scale-[0.98] touch-manipulation ${
                         isActive 
                           ? "active text-[var(--color-brand-blue)] bg-[var(--color-brand-blue)]/10 border border-[var(--color-brand-blue)]/30" 
-                          : "text-slate-300 hover:text-white hover:bg-white/5 active:bg-white/10"
+                          : "text-slate-300 hover:text-white hover:bg-white/5"
                       }`}
                     >
                       <div className="w-5 flex justify-center items-center flex-shrink-0">
@@ -319,7 +318,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     href="/manager"
                     variants={drawerItemVariants}
                     onClick={() => setIsMobileOpen(false)}
-                    className={`nav-manager-btn flex items-center gap-3.5 p-3 mt-4 rounded-sm group min-h-[44px] transition-all active:scale-[0.98] touch-manipulation select-none ${
+                    className={`nav-manager-btn flex items-center gap-3.5 p-3 mt-4 rounded-sm min-h-[48px] transition-all active:scale-[0.98] touch-manipulation ${
                       pathname === "/manager" ? "active" : ""
                     }`}
                   >
@@ -337,13 +336,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 )}
               </div>
 
-              {/* Mobile Staggered Footer Actions */}
-              <div className="nav-footer-bar p-3 border-t border-[var(--color-brand-border)] flex flex-col gap-2">
+              <div className="nav-footer-bar p-3 border-t border-[var(--color-brand-border)] flex flex-col gap-2 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
                 <MotionLink 
                   href="/profile"
                   variants={drawerItemVariants}
                   onClick={() => setIsMobileOpen(false)}
-                  className={`nav-footer-btn w-full flex items-center gap-3 px-3 p-3 rounded-sm group min-h-[44px] transition-all active:scale-[0.98] touch-manipulation select-none ${
+                  className={`nav-footer-btn w-full flex items-center gap-3 px-3 p-3 rounded-sm min-h-[48px] transition-all active:scale-[0.98] touch-manipulation ${
                     pathname === "/profile" ? "active" : ""
                   }`}
                 >
@@ -361,7 +359,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <motion.button 
                   variants={drawerItemVariants}
                   onClick={handleLogout}
-                  className="nav-logout-btn w-full flex items-center gap-3 px-3 p-3 rounded-sm group cursor-pointer text-left min-h-[44px] transition-all active:scale-[0.98] touch-manipulation select-none"
+                  className="nav-logout-btn w-full flex items-center gap-3 px-3 p-3 rounded-sm text-left min-h-[48px] transition-all active:scale-[0.98] touch-manipulation"
                 >
                   <div className="w-5 flex justify-center items-center flex-shrink-0">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -376,14 +374,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </motion.button>
               </div>
             </motion.aside>
-          </>
+          </div>
         )}
       </AnimatePresence>
 
       {/* 2. DESKTOP PERMANENT SIDEBAR */}
       <motion.nav 
         animate={{ width: isSidebarOpen ? 240 : 80 }}
-        className="sidebar-nav-container hidden md:flex relative inset-y-0 left-0 z-50 h-full flex-col flex-shrink-0"
+        className="sidebar-nav-container hidden md:flex sticky top-0 h-[100svh] flex-col flex-shrink-0 z-40 border-r border-[var(--color-brand-border)]"
       >
         <div className="sidebar-header-bar h-16 flex items-center px-4 justify-between">
           <AnimatePresence>
@@ -408,7 +406,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           
           <button 
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            className="text-slate-400 hover:text-white active:text-white transition-colors focus:outline-none ml-auto cursor-pointer min-w-[40px] min-h-[40px] flex items-center justify-center rounded-sm hover:bg-white/5 active:scale-90 touch-manipulation select-none"
+            className="text-slate-400 hover:text-white transition-colors ml-auto min-w-[40px] min-h-[40px] flex items-center justify-center rounded-sm hover:bg-white/5 active:scale-90 touch-manipulation focus:outline-none"
             aria-label={isSidebarOpen ? "Collapse Sidebar" : "Expand Sidebar"}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -419,8 +417,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </button>
         </div>
 
-        {/* Navigation Menu Link List */}
-        <div className="flex flex-col flex-1 py-6 gap-2 px-3">
+        <div className="flex flex-col flex-1 py-6 gap-2 px-3 overflow-y-auto">
           {NAV_ITEMS.map((item) => {
             const isActive = pathname === item.path;
             return (
@@ -480,7 +477,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           )}
         </div>
 
-        {/* Footer Actions Matrix Block */}
         <div className="nav-footer-bar p-3 flex flex-col gap-2">
           <Link 
             href="/profile"
@@ -537,13 +533,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       </motion.nav>
 
-      {/* Main Content Area Wrapper */}
-      <main 
-        onScroll={handleScroll}
-        className="flex-1 relative overflow-y-auto overflow-x-hidden flex flex-col justify-between bg-brand-bg touch-pan-y"
-      >
+      {/* 3. MAIN DOCUMENT SCROLL VIEWPORT */}
+      <div className="flex-1 flex flex-col min-w-0 bg-brand-bg relative">
         
-        {/* Mobile Top Header: Smart Auto-Reveal on Scroll Up */}
+        {/* Mobile Fixed Top Header */}
         <div 
           className={`sidebar-header-bar md:hidden fixed top-0 left-0 right-0 z-30 h-16 bg-brand-card/95 backdrop-blur-md border-b border-[var(--color-brand-border)] flex items-center justify-between px-4 sm:px-6 transition-transform duration-300 ${
             showMobileHeader ? "translate-y-0 shadow-lg" : "-translate-y-full pointer-events-none"
@@ -564,7 +557,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               setIsMobileOpen(true);
               setIsSidebarOpen(true);
             }}
-            className="text-slate-400 hover:text-white active:text-white transition-colors focus:outline-none cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center -mr-2 active:scale-90 touch-manipulation select-none"
+            className="text-slate-400 hover:text-white min-w-[48px] min-h-[48px] flex items-center justify-center -mr-2 active:scale-90 touch-manipulation focus:outline-none"
             aria-label="Open Navigation Menu"
           >
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -575,35 +568,30 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </button>
         </div>
 
-        {/* Top spacer on mobile */}
+        {/* Mobile Header Spacer */}
         <div className="h-16 md:hidden flex-shrink-0" />
         
-        {/* UNREAD RECOGNITION POPUP MODAL */}
         <UnreadRecognitionModal 
           notification={notification} 
           onDismiss={dismissNotification} 
         />
 
-        {/* Tactical Blueprint Grid Background Overlay */}
         <div className="absolute inset-0 pointer-events-none z-0 tactical-graph-paper" />
 
-        {/* Dynamic Inner Page Node Rendering */}
-        <div className="relative z-10 flex-1 flex flex-col">
+        {/* Main Content Area */}
+        <main className="relative z-10 flex-1 w-full flex flex-col">
           {children}
-        </div>
+        </main>
 
-        {/* RESPONSIVE PORTAL FOOTER */}
-        <footer className="relative z-10 border-t border-[var(--color-brand-border)] bg-[#030914]/95 backdrop-blur-md px-6 sm:px-8 py-6 font-mono text-slate-300">
+        {/* Portal Footer */}
+        <footer className="relative z-10 border-t border-[var(--color-brand-border)] bg-[#030914]/95 backdrop-blur-md px-6 sm:px-8 py-6 font-mono text-slate-300 mt-auto">
           <div className="w-full flex flex-col lg:flex-row items-center justify-between gap-5 lg:gap-6">
-            
-            {/* Left: Copyright */}
             <div className="w-full lg:w-auto lg:flex-1 flex items-center justify-center lg:justify-start">
               <p className="text-xs sm:text-sm text-slate-400 font-medium text-center lg:text-left">
                 &copy; {currentYear} Interwest Mechanical Contractors. All Rights Reserved.
               </p>
             </div>
 
-            {/* Center: Scaled-Up Builders of Industry Lockup */}
             <div className="flex-shrink-0 flex items-center justify-center my-1 lg:my-0">
               <div className="inline-flex items-center gap-2.5 sm:gap-3.5 font-black uppercase text-lg sm:text-2xl leading-none">
                 <span className="text-slate-500 tracking-[0.2em] sm:tracking-[0.24em]">BUILDERS</span>
@@ -616,25 +604,24 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </div>
             </div>
 
-            {/* Right: Legal Links, Employee Terms, & ID. Attribution */}
             <div className="w-full lg:w-auto lg:flex-1 flex flex-wrap items-center justify-center lg:justify-end gap-x-2 sm:gap-x-3 gap-y-1 text-xs sm:text-sm font-bold tracking-wider">
               <Link 
                 href="/privacy-policy" 
-                className="py-2 px-1 text-slate-300 hover:text-white active:text-white transition-colors whitespace-nowrap touch-manipulation"
+                className="py-2 px-1 text-slate-300 hover:text-white transition-colors whitespace-nowrap touch-manipulation"
               >
                 PRIVACY POLICY
               </Link>
               <span className="text-slate-700">|</span>
               <Link 
                 href="/terms" 
-                className="py-2 px-1 text-slate-300 hover:text-white active:text-white transition-colors whitespace-nowrap touch-manipulation"
+                className="py-2 px-1 text-slate-300 hover:text-white transition-colors whitespace-nowrap touch-manipulation"
               >
                 TERMS OF SERVICE
               </Link>
               <span className="text-slate-700">|</span>
               <Link 
                 href="/employee-terms" 
-                className="py-2 px-1 text-slate-300 hover:text-white active:text-white transition-colors whitespace-nowrap touch-manipulation"
+                className="py-2 px-1 text-slate-300 hover:text-white transition-colors whitespace-nowrap touch-manipulation"
               >
                 EMPLOYEE TERMS OF USE
               </Link>
@@ -657,11 +644,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </a>
               </span>
             </div>
-
           </div>
         </footer>
 
-      </main>
+      </div>
     </div>
   );
 }

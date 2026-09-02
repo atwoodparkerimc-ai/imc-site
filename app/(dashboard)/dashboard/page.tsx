@@ -25,7 +25,7 @@ import {
 import FirstLoginPasswordModal from "./_components/FirstLoginPasswordModal";
 import TermsAcceptanceModal from "./_components/TermsAcceptanceModal";
 
-// --- NEON PARTICLE CLOUD (PERFORMANCE-OPTIMIZED) ---
+// --- NEON PARTICLE CLOUD (PERFORMANCE-OPTIMIZED WITH VISIBILITY PAUSE) ---
 const ParticleCloud = ({ r, g, b }: { r: number, g: number, b: number }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -60,7 +60,20 @@ const ParticleCloud = ({ r, g, b }: { r: number, g: number, b: number }) => {
     }
 
     let animationId: number;
+    let isVisible = true;
+
+    const observer = new IntersectionObserver(([entry]) => {
+      isVisible = entry.isIntersecting;
+      if (isVisible) {
+        cancelAnimationFrame(animationId);
+        animationId = requestAnimationFrame(render);
+      }
+    }, { threshold: 0.1 });
+
+    observer.observe(canvas);
+
     const render = () => {
+      if (!isVisible) return;
       ctx.clearRect(0, 0, size, size);
       
       particles.forEach(p => {
@@ -81,8 +94,12 @@ const ParticleCloud = ({ r, g, b }: { r: number, g: number, b: number }) => {
       animationId = requestAnimationFrame(render);
     };
 
-    render();
-    return () => cancelAnimationFrame(animationId);
+    animationId = requestAnimationFrame(render);
+
+    return () => {
+      cancelAnimationFrame(animationId);
+      observer.disconnect();
+    };
   }, [r, g, b]);
 
   return <canvas ref={canvasRef} className="absolute inset-0 rounded-full mix-blend-screen pointer-events-none" />;
@@ -321,7 +338,7 @@ export default function DashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col justify-center items-center px-4 relative overflow-hidden min-h-[100dvh] font-mono bg-transparent">
+      <div className="flex flex-col justify-center items-center px-4 py-24 relative font-mono bg-transparent flex-1">
         <p className="text-[var(--color-brand-blue)] animate-pulse uppercase tracking-widest text-xs font-black z-10">
           Initializing System Console Terminal...
         </p>
@@ -336,7 +353,7 @@ export default function DashboardPage() {
 
   return (
     <motion.div 
-      className="max-w-7xl mx-auto relative z-10 p-4 sm:p-8 pt-4 sm:pt-6 pb-28 sm:pb-20 w-full font-mono text-slate-100 bg-transparent min-h-[100dvh]"
+      className="max-w-7xl mx-auto relative z-10 p-4 sm:p-8 pt-4 sm:pt-6 pb-12 sm:pb-16 w-full font-mono text-slate-100 bg-transparent flex-1 flex flex-col"
       variants={containerVariants} 
       initial="hidden" 
       animate="show"

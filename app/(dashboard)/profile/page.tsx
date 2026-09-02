@@ -138,7 +138,7 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="p-10 min-h-[100dvh] flex items-center justify-center font-mono text-xs uppercase tracking-widest text-[var(--color-brand-blue,#0088ff)] animate-pulse">
+      <div className="p-10 flex-1 flex items-center justify-center font-mono text-xs uppercase tracking-widest text-[var(--color-brand-blue,#0088ff)] animate-pulse">
         INITIALIZING PERSONNEL FILE SYSTEM...
       </div>
     );
@@ -147,7 +147,7 @@ export default function ProfilePage() {
   const assignedLocationDisplay = (profile?.location || "Main Yard").toUpperCase();
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-3.5 sm:px-8 py-4 sm:py-8 space-y-4 sm:space-y-6 min-h-[100dvh] pb-32 sm:pb-16 font-mono text-slate-100 overflow-x-hidden select-none">
+    <div className="w-full max-w-4xl mx-auto px-3.5 sm:px-8 py-4 sm:py-8 space-y-4 sm:space-y-6 pb-12 sm:pb-16 font-mono text-slate-100 overflow-x-hidden select-none flex-1 flex flex-col">
       
       {/* USER PASSPORT HEADER CARD */}
       <div className="w-full border p-3.5 sm:p-6 shadow-2xl relative overflow-hidden rounded-sm bg-[var(--color-brand-card)] border-[var(--color-brand-border)]">
@@ -359,7 +359,7 @@ export default function ProfilePage() {
                 value={displayName} 
                 onChange={(e) => setDisplayName(e.target.value)} 
                 placeholder="Display Nickname"
-                className="w-full min-h-[44px] border p-2.5 sm:p-3 text-slate-100 text-xs font-bold uppercase outline-none rounded-sm transition-all bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue,#0088ff)] touch-manipulation" 
+                className="w-full min-h-[44px] border p-2.5 sm:p-3 text-slate-100 text-[16px] sm:text-xs font-bold uppercase outline-none rounded-sm transition-all bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue,#0088ff)] touch-manipulation" 
               />
               <button 
                 type="button"
@@ -399,7 +399,7 @@ export default function ProfilePage() {
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full min-h-[44px] border p-2.5 sm:p-3 text-xs text-slate-100 outline-none rounded-sm transition-all bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue,#0088ff)] touch-manipulation"
+                    className="w-full min-h-[44px] border p-2.5 sm:p-3 text-[16px] sm:text-xs text-slate-100 outline-none rounded-sm transition-all bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue,#0088ff)] touch-manipulation"
                   />
                 </div>
 
@@ -413,7 +413,7 @@ export default function ProfilePage() {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full min-h-[44px] border p-2.5 sm:p-3 text-xs text-slate-100 outline-none rounded-sm transition-all bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue,#0088ff)] touch-manipulation"
+                    className="w-full min-h-[44px] border p-2.5 sm:p-3 text-[16px] sm:text-xs text-slate-100 outline-none rounded-sm transition-all bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue,#0088ff)] touch-manipulation"
                   />
                 </div>
               </div>

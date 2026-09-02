@@ -97,7 +97,7 @@ export default function ReportingPage() {
   };
 
   return (
-    <div className="w-full relative min-h-[100dvh] flex flex-col justify-start sm:justify-center py-4 sm:py-12 pb-28 sm:pb-12 font-mono text-slate-100 select-none">
+    <div className="w-full relative flex-1 flex flex-col justify-start sm:justify-center py-4 sm:py-8 pb-12 sm:pb-16 font-mono text-slate-100 select-none">
       {/* Blueprint Grid Background Overlay */}
       <div className="absolute inset-0 pointer-events-none opacity-5 bg-[linear-gradient(to_right,var(--color-brand-border)_1px,transparent_1px),linear-gradient(to_bottom,var(--color-brand-border)_1px,transparent_1px)] bg-[size:32px_32px] z-0" />
 
@@ -149,7 +149,7 @@ export default function ReportingPage() {
         {/* MAIN SPLIT CONTENT GRID */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           
-          {/* RECOGNITION RULES & TELEMETRY: ORDER-1 ON MOBILE, RIGHT COL ON DESKTOP */}
+          {/* RECOGNITION RULES & TELEMETRY */}
           <motion.div 
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
@@ -195,7 +195,7 @@ export default function ReportingPage() {
             </div>
           </motion.div>
 
-          {/* SAFE ACT FORM: ORDER-2 ON MOBILE, LEFT 2 COLS ON DESKTOP */}
+          {/* SAFE ACT FORM */}
           <motion.div 
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
@@ -233,7 +233,7 @@ export default function ReportingPage() {
                   <div className="relative">
                     <select 
                       disabled={hasCompletedToday}
-                      className="w-full min-h-[48px] border p-3 text-slate-100 uppercase font-bold text-xs sm:text-sm outline-none cursor-pointer appearance-none rounded-sm transition-all bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue,#0088ff)] disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
+                      className="w-full min-h-[48px] border p-3 text-slate-100 uppercase font-bold text-[16px] sm:text-sm outline-none cursor-pointer appearance-none rounded-sm transition-all bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue,#0088ff)] disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
                       onChange={(e) => setSelectedUser(e.target.value)}
                       value={selectedUser}
                     >
@@ -260,7 +260,7 @@ export default function ReportingPage() {
                   </label>
                   <textarea 
                     disabled={hasCompletedToday}
-                    className="w-full border p-3 sm:p-4 text-slate-100 h-32 sm:h-40 outline-none resize-none text-xs sm:text-sm leading-relaxed rounded-sm font-sans transition-all bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue,#0088ff)] disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
+                    className="w-full border p-3 sm:p-4 text-slate-100 h-32 sm:h-40 outline-none resize-none text-[16px] sm:text-sm leading-relaxed rounded-sm font-sans transition-all bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue,#0088ff)] disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
                     placeholder={hasCompletedToday ? "You have completed your peer safe act submission for today." : "Describe the safe behavior, hazard mitigation, or peer assistance observed on site..."}
                     onChange={(e) => setReport(e.target.value)}
                     value={report}

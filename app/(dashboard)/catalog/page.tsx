@@ -114,7 +114,7 @@ export default function CatalogPage() {
 
   if (isLoading) {
     return (
-      <div className="w-full flex items-center justify-center min-h-[100dvh] font-mono">
+      <div className="w-full flex-1 flex items-center justify-center py-24 font-mono">
         <div 
           className="w-4 h-4 animate-ping rounded-none" 
           style={{ backgroundColor: "var(--color-brand-blue)" }}
@@ -124,7 +124,7 @@ export default function CatalogPage() {
   }
 
   return (
-    <div className="w-full relative min-h-[100dvh] flex flex-col pt-4 sm:pt-8 pb-28 sm:pb-24 px-3 sm:px-8 font-mono text-slate-100">
+    <div className="w-full relative flex-1 flex flex-col pt-4 sm:pt-8 pb-12 sm:pb-16 px-3 sm:px-8 font-mono text-slate-100">
       
       {/* Structural Framework Grid Overlay */}
       <div className="absolute inset-0 pointer-events-none opacity-[0.035] bg-[linear-gradient(to_right,#334155_1px,transparent_1px),linear-gradient(to_bottom,#334155_1px,transparent_1px)] bg-[size:32px_32px] z-0" />

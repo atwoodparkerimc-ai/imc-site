@@ -541,7 +541,7 @@ export default function ManagerDashboard() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col justify-center items-center px-4 min-h-[100dvh] relative font-mono text-slate-100">
+      <div className="flex flex-col justify-center items-center px-4 py-24 relative font-mono text-slate-100 flex-1">
         <div className="w-2.5 h-2.5 animate-pulse mb-3 bg-[var(--color-brand-blue)]" />
         <p className="uppercase tracking-[0.25em] text-xs font-bold text-center text-[var(--color-brand-blue)]">
           Authenticating System Access Terminal...
@@ -551,11 +551,11 @@ export default function ManagerDashboard() {
   }
 
   return (
-    <div className="max-w-[1600px] mx-auto p-3.5 sm:p-8 pt-4 sm:pt-8 pb-28 sm:pb-24 min-h-[100dvh] w-full relative font-mono text-slate-100 select-none">
+    <div className="max-w-[1600px] mx-auto p-3.5 sm:p-8 pt-4 sm:pt-8 pb-12 sm:pb-16 flex-1 w-full relative font-mono text-slate-100 select-none flex flex-col">
       {/* TACTICAL BLUEPRINT GRID OVERLAY */}
       <div className="absolute inset-0 pointer-events-none opacity-[0.035] bg-[linear-gradient(to_right,#334155_1px,transparent_1px),linear-gradient(to_bottom,#334155_1px,transparent_1px)] bg-[size:32px_32px] z-0" />
 
-      <motion.div variants={containerVariants} initial="hidden" animate="show" className="relative z-10">
+      <motion.div variants={containerVariants} initial="hidden" animate="show" className="relative z-10 flex-1 flex flex-col">
         
         {/* GLOBAL COMMAND HEADER & NAVIGATION MATRIX */}
         <motion.header variants={itemVariants} className="mb-4 sm:mb-8 print:hidden">
@@ -583,7 +583,7 @@ export default function ManagerDashboard() {
               <select 
                 value={selectedLocation}
                 onChange={(e) => setSelectedLocation(e.target.value)}
-                className="text-xs font-bold uppercase text-slate-200 p-2.5 outline-none cursor-pointer w-full sm:w-auto rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] transition-colors min-h-[44px]"
+                className="text-[16px] sm:text-xs font-bold uppercase text-slate-200 p-2.5 outline-none cursor-pointer w-full sm:w-auto rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] transition-colors min-h-[44px]"
               >
                 <option value="ALL" className="bg-[var(--color-brand-card)]">-- ALL LOCATIONS (COMPANY-WIDE) --</option>
                 {locations.map(loc => (
@@ -639,7 +639,7 @@ export default function ManagerDashboard() {
           />
         </div>
 
-        {/* TAB 2: MANAGE USERS (CREW LOCATION ON TOP ON MOBILE, NORMAL ORDER ON DESKTOP) */}
+        {/* TAB 2: MANAGE USERS */}
         <div className={activeTab === 'users' ? 'flex flex-col md:block print:hidden space-y-4 sm:space-y-6' : 'hidden'}>
           <div className="order-2 md:order-1">
             <EmployeeCertManager 

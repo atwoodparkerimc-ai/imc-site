@@ -129,7 +129,7 @@ export default function SafetyMeetingPage() {
   const allChecksComplete = acknowledged.length === checks.length;
 
   return (
-    <div className="w-full relative min-h-[100dvh] flex flex-col justify-start sm:justify-center py-4 sm:py-12 pb-28 sm:pb-12 font-mono text-slate-100 select-none">
+    <div className="w-full relative flex-1 flex flex-col justify-start sm:justify-center py-4 sm:py-8 pb-12 sm:pb-16 font-mono text-slate-100 select-none">
       
       {/* 60-SECOND MANDATORY BRIEFING MODAL */}
       <DailyBriefingModal
@@ -189,7 +189,7 @@ export default function SafetyMeetingPage() {
         {/* MAIN SPLIT CONTENT GRID */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           
-          {/* TOPIC SPOTLIGHT: ORDER-1 ON MOBILE, RIGHT COL ON DESKTOP */}
+          {/* TOPIC SPOTLIGHT */}
           <motion.div 
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
@@ -202,7 +202,6 @@ export default function SafetyMeetingPage() {
                 Today's Safety Briefing
               </h2>
 
-              {/* ACTIVE TOPIC CARD */}
               <div className="p-3.5 sm:p-4 border rounded-sm bg-[var(--color-brand-bg)] border-[var(--color-brand-border)]">
                 <span className="text-[10px] sm:text-[11px] font-bold text-[var(--color-brand-blue,#0088ff)] uppercase tracking-wider block">
                   {dailyBriefing.category}
@@ -222,7 +221,6 @@ export default function SafetyMeetingPage() {
                 </button>
               </div>
 
-              {/* REWARD BREAKDOWN */}
               <div className="p-3.5 sm:p-4 border rounded-sm bg-[var(--color-brand-bg)] border-[var(--color-brand-border)]">
                 <p className="text-[10px] sm:text-[11px] text-slate-400 font-bold uppercase tracking-wider">COMPLETION AWARD</p>
                 <p className="text-2xl sm:text-3xl font-black text-[var(--color-brand-green,#00ff9d)] tabular-nums mt-0.5 sm:mt-1">+10 PTS</p>
@@ -239,7 +237,7 @@ export default function SafetyMeetingPage() {
             </div>
           </motion.div>
 
-          {/* CHECKLIST FORM: ORDER-2 ON MOBILE, LEFT 2 COLS ON DESKTOP */}
+          {/* CHECKLIST FORM */}
           <motion.div 
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}

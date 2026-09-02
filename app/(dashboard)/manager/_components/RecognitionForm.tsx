@@ -114,7 +114,7 @@ export default function RecognitionForm({ employees = [], onAwardSuccess, itemVa
                 value={selectedUser} 
                 onChange={(e) => setSelectedUser(e.target.value)} 
                 required 
-                className="w-full min-h-[44px] bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] rounded-sm px-4 py-2.5 text-xs text-white font-mono uppercase tracking-wide focus:outline-none transition-all appearance-none cursor-pointer pr-8 touch-manipulation"
+                className="w-full min-h-[44px] bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] rounded-sm px-4 py-2.5 text-[16px] sm:text-xs text-white font-mono uppercase tracking-wide focus:outline-none transition-all appearance-none cursor-pointer pr-8 touch-manipulation"
               >
                 <option value="" disabled className="text-slate-500">Select Team Member</option>
                 {(employees || []).map(emp => {
@@ -143,7 +143,7 @@ export default function RecognitionForm({ employees = [], onAwardSuccess, itemVa
               <select 
                 value={category} 
                 onChange={(e) => setCategory(e.target.value)} 
-                className="w-full min-h-[44px] bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] rounded-sm px-4 py-2.5 text-xs text-white font-mono uppercase tracking-wide focus:outline-none transition-all appearance-none cursor-pointer pr-8 touch-manipulation"
+                className="w-full min-h-[44px] bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] rounded-sm px-4 py-2.5 text-[16px] sm:text-xs text-white font-mono uppercase tracking-wide focus:outline-none transition-all appearance-none cursor-pointer pr-8 touch-manipulation"
               >
                 {REWARD_CATEGORIES.map(cat => (
                   <option key={cat} value={cat} className="bg-[var(--color-brand-card)] text-white">{cat}</option>
@@ -168,7 +168,7 @@ export default function RecognitionForm({ employees = [], onAwardSuccess, itemVa
               onChange={(e) => setAmount(e.target.value)} 
               required 
               placeholder="PTS" 
-              className="w-full min-h-[44px] bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] rounded-sm px-4 py-2.5 text-xs text-[var(--color-brand-green,#00ff9d)] font-mono font-black uppercase tracking-wide focus:outline-none transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none touch-manipulation" 
+              className="w-full min-h-[44px] bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] rounded-sm px-4 py-2.5 text-[16px] sm:text-xs text-[var(--color-brand-green,#00ff9d)] font-mono font-black uppercase tracking-wide focus:outline-none transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none touch-manipulation" 
             />
           </div>
         </div>
@@ -184,7 +184,7 @@ export default function RecognitionForm({ employees = [], onAwardSuccess, itemVa
             required 
             rows={2} 
             placeholder="OPERATIONAL NOTE..." 
-            className="w-full bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] rounded-sm p-3 text-xs text-white font-mono uppercase tracking-wide placeholder-slate-500 focus:outline-none transition-all resize-none touch-manipulation" 
+            className="w-full bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] rounded-sm p-3 text-[16px] sm:text-xs text-white font-mono uppercase tracking-wide placeholder-slate-500 focus:outline-none transition-all resize-none touch-manipulation" 
           />
         </div>
 
@@ -193,7 +193,7 @@ export default function RecognitionForm({ employees = [], onAwardSuccess, itemVa
           <button 
             type="submit" 
             disabled={isSubmitting || !selectedUser || !amount || !reason} 
-            className="w-full min-h-[44px] bg-[var(--color-brand-blue)] hover:bg-white active:bg-slate-200 hover:text-black disabled:bg-slate-800 disabled:text-slate-500 text-white font-mono text-xs sm:text-sm font-black uppercase tracking-widest py-3 px-6 rounded-sm transition-all shadow-[0_0_20px_rgba(0,136,255,0.25)] flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed active:scale-[0.98] touch-manipulation focus:outline-none"
+            className="w-full min-h-[48px] bg-[var(--color-brand-blue)] hover:bg-white active:bg-slate-200 hover:text-black disabled:bg-slate-800 disabled:text-slate-500 text-white font-mono text-xs sm:text-sm font-black uppercase tracking-widest py-3 px-6 rounded-sm transition-all shadow-[0_0_20px_rgba(0,136,255,0.25)] flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed active:scale-[0.98] touch-manipulation focus:outline-none"
           >
             {isSubmitting ? (
               <>

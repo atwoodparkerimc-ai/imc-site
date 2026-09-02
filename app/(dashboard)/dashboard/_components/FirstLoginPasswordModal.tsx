@@ -70,7 +70,7 @@ export default function FirstLoginPasswordModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 font-mono select-none">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 font-mono select-none overscroll-contain">
       <div className="w-full max-w-md bg-[var(--color-brand-card)] border-2 border-[#eab308] p-5 sm:p-6 shadow-[0_0_25px_rgba(234,179,8,0.2)] relative overflow-hidden rounded-sm">
         
         {/* Animated Amber Accent Line */}
@@ -117,7 +117,7 @@ export default function FirstLoginPasswordModal({
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full min-h-[44px] bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] focus:border-[#eab308] focus:ring-1 focus:ring-[#eab308] p-3 text-xs text-slate-100 font-mono outline-none rounded-sm disabled:opacity-50 transition-all"
+              className="w-full min-h-[44px] bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] focus:border-[#eab308] focus:ring-1 focus:ring-[#eab308] p-3 text-[16px] sm:text-xs text-slate-100 font-mono outline-none rounded-sm disabled:opacity-50 transition-all touch-manipulation"
             />
           </div>
 
@@ -132,7 +132,7 @@ export default function FirstLoginPasswordModal({
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full min-h-[44px] bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] focus:border-[#eab308] focus:ring-1 focus:ring-[#eab308] p-3 text-xs text-slate-100 font-mono outline-none rounded-sm disabled:opacity-50 transition-all"
+              className="w-full min-h-[44px] bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] focus:border-[#eab308] focus:ring-1 focus:ring-[#eab308] p-3 text-[16px] sm:text-xs text-slate-100 font-mono outline-none rounded-sm disabled:opacity-50 transition-all touch-manipulation"
             />
           </div>
 
