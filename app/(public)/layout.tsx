@@ -21,10 +21,10 @@ export default function PublicLayout({
 }>) {
   return (
     <div
-      className={`${inter.variable} font-sans antialiased bg-[#0b0f19] min-h-[100dvh] text-slate-100 selection:bg-[#0088ff] selection:text-white flex flex-col justify-between`}
+      className={`${inter.variable} font-sans antialiased bg-[#0b0f19] min-h-[100svh] text-slate-100 selection:bg-[#0088ff] selection:text-white flex flex-col justify-between w-full overflow-x-hidden overscroll-none relative`}
     >
       <Navbar />
-      <main className="flex-1 w-full flex flex-col">{children}</main>
+      <main className="flex-1 w-full flex flex-col relative">{children}</main>
     </div>
   );
 }

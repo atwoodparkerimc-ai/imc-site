@@ -40,6 +40,25 @@
     --color-metric-observation: #eab308;
     --color-metric-assistance: #f97316;
   }
+
+  html, body {
+    -webkit-text-size-adjust: 100%;
+    /* Locks horizontal sway */
+    overflow-x: hidden;
+    /* Kills Apple's elastic bounce / dead space at the bottom */
+    overscroll-behavior-y: none; 
+    background-color: var(--color-brand-bg);
+    color: #f8fafc;
+    /* Clean layout flexbox flow with auto-height */
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  ::selection {
+    background-color: #0088ff;
+    color: #ffffff;
+  }
 }
 
 /* Base Styles & Nav Component Classes */

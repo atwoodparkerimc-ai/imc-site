@@ -46,7 +46,6 @@ const NAV_LINKS: MainNavItem[] = [
   },
 ];
 
-// Motion Variants for Staggered Drawer Items
 const drawerPanelVariants: Variants = {
   hidden: { x: "-100%" },
   show: {
@@ -95,14 +94,18 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
 
+  // Preserves CSS overflow-x and overscroll rules when unlocking
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = "hidden";
+      document.body.style.overflowY = "hidden";
+      document.body.style.touchAction = "none";
     } else {
-      document.body.style.overflow = "unset";
+      document.body.style.overflowY = "";
+      document.body.style.touchAction = "";
     }
     return () => {
-      document.body.style.overflow = "unset";
+      document.body.style.overflowY = "";
+      document.body.style.touchAction = "";
     };
   }, [isOpen]);
 
@@ -185,10 +188,10 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* INDUSTRIAL SLIDE-OVER DRAWER WITH TRUE STAGGER ANIMATION */}
+      {/* INDUSTRIAL SLIDE-OVER DRAWER WITH STATIC VIEWPORT HEIGHT */}
       <AnimatePresence>
         {isOpen && (
-          <div className="fixed inset-0 z-50 md:hidden flex">
+          <div className="fixed inset-0 h-[100svh] z-50 md:hidden flex overscroll-none touch-none">
             
             {/* Backdrop */}
             <motion.div 
@@ -206,7 +209,7 @@ export default function Navbar() {
               initial="hidden"
               animate="show"
               exit="exit"
-              className="relative w-64 h-full bg-[#070b13] border-r border-slate-800/80 shadow-2xl flex flex-col justify-between p-0 z-10 overflow-hidden"
+              className="relative w-64 h-[100svh] bg-[#070b13] border-r border-slate-800/80 shadow-2xl flex flex-col justify-between p-0 z-10 overflow-hidden"
             >
               {/* Header Bar */}
               <div>
@@ -221,7 +224,6 @@ export default function Navbar() {
                       priority
                     />
                   </Link>
-                  {/* Expanded Close Hit Target (48x48px standard) */}
                   <button 
                     onClick={() => setIsOpen(false)}
                     aria-label="Close menu"
@@ -234,8 +236,8 @@ export default function Navbar() {
                   </button>
                 </div>
 
-                {/* Staggered Navigation Link Items (48px Hit Targets) */}
-                <div className="flex flex-col py-6 gap-2 px-3 overflow-y-auto">
+                {/* Staggered Navigation Link Items */}
+                <div className="flex flex-col py-6 gap-2 px-3 overflow-y-auto overscroll-contain">
                   {NAV_LINKS.map((item) => {
                     const isActive = pathname === item.href;
                     return (
@@ -260,8 +262,8 @@ export default function Navbar() {
                 </div>
               </div>
 
-              {/* Staggered Bottom CTA Dock */}
-              <div className="p-3 border-t border-slate-800/80 flex flex-col gap-2">
+              {/* Bottom CTA Dock */}
+              <div className="p-3 border-t border-slate-800/80 flex flex-col gap-2 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
                 <MotionLink 
                   href="/login"
                   variants={drawerItemVariants}

@@ -52,7 +52,8 @@ export default function Home() {
       {/* ========================================= */}
       {/* 1. HERO SECTION: DOCKED HUD APP LAYOUT   */}
       {/* ========================================= */}
-      <section className="relative w-full min-h-[calc(100vh-5rem)] flex flex-col justify-between lg:block bg-[#0b0f19] border-b border-slate-800/80 overflow-hidden">
+      {/* FIX: Changed 100vh to 100svh to stop layout thrashing on mobile */}
+      <section className="relative w-full min-h-[calc(100svh-5rem)] flex flex-col justify-between lg:block bg-[#0b0f19] border-b border-slate-800/80 overflow-hidden">
 
         {/* Tactical Grid Background */}
         <div className="absolute inset-0 z-0 tactical-graph-paper opacity-30 pointer-events-none" />
@@ -165,7 +166,8 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="hidden lg:flex relative z-20 w-full h-full min-h-[calc(100vh-5rem)] max-w-[1800px] mx-auto flex-col justify-center items-end pointer-events-none lg:px-16 lg:py-0">
+        {/* FIX: Changed 100vh to 100svh here as well to keep desktop and mobile scaling consistent */}
+        <div className="hidden lg:flex relative z-20 w-full h-full min-h-[calc(100svh-5rem)] max-w-[1800px] mx-auto flex-col justify-center items-end pointer-events-none lg:px-16 lg:py-0">
           <div className="w-[45%] xl:w-[35%] pointer-events-auto flex flex-col">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#ea1f27]/10 border border-[#ea1f27]/30 text-[#ea1f27] font-mono text-[10px] font-bold tracking-[0.2em] uppercase rounded-xs mb-8 w-fit">
               Interwest Mechanical Contractors

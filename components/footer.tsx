@@ -289,7 +289,7 @@ export default function Footer() {
                       name="fullName"
                       required
                       placeholder="Full Name" 
-                      className="w-full bg-[#030914] border border-slate-700/80 focus:border-[#0088ff] rounded-xs px-3.5 py-2.5 text-xs text-white placeholder:text-slate-400 focus:outline-none transition-colors"
+                      className="w-full bg-[#030914] border border-slate-700/80 focus:border-[#0088ff] rounded-xs px-3.5 py-2.5 text-[16px] sm:text-xs text-white placeholder:text-slate-400 focus:outline-none transition-colors"
                     />
                   </div>
 
@@ -301,7 +301,7 @@ export default function Footer() {
                       name="phone"
                       required
                       placeholder="Phone Number" 
-                      className="w-full bg-[#030914] border border-slate-700/80 focus:border-[#0088ff] rounded-xs px-3.5 py-2.5 text-xs text-white placeholder:text-slate-400 focus:outline-none transition-colors"
+                      className="w-full bg-[#030914] border border-slate-700/80 focus:border-[#0088ff] rounded-xs px-3.5 py-2.5 text-[16px] sm:text-xs text-white placeholder:text-slate-400 focus:outline-none transition-colors"
                     />
                   </div>
 
@@ -313,7 +313,7 @@ export default function Footer() {
                       name="email"
                       required
                       placeholder="Email" 
-                      className="w-full bg-[#030914] border border-slate-700/80 focus:border-[#0088ff] rounded-xs px-3.5 py-2.5 text-xs text-white placeholder:text-slate-400 focus:outline-none transition-colors"
+                      className="w-full bg-[#030914] border border-slate-700/80 focus:border-[#0088ff] rounded-xs px-3.5 py-2.5 text-[16px] sm:text-xs text-white placeholder:text-slate-400 focus:outline-none transition-colors"
                     />
                   </div>
 
@@ -324,7 +324,7 @@ export default function Footer() {
                       name="message"
                       rows={3}
                       placeholder="Scope, specs, or facility location..." 
-                      className="w-full bg-[#030914] border border-slate-700/80 focus:border-[#0088ff] rounded-xs px-3.5 py-2.5 text-xs text-white placeholder:text-slate-400 focus:outline-none transition-colors resize-none"
+                      className="w-full bg-[#030914] border border-slate-700/80 focus:border-[#0088ff] rounded-xs px-3.5 py-2.5 text-[16px] sm:text-xs text-white placeholder:text-slate-400 focus:outline-none transition-colors resize-none"
                     />
                   </div>
 
