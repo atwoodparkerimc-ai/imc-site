@@ -35,8 +35,8 @@ const NAV_ITEMS: NavItem[] = [
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
         <rect x="3" y="3" width="7" height="7"></rect>
-        <rect x="14" y="14" width="7" height="7"></rect>
         <rect x="14" y="3" width="7" height="7"></rect>
+        <rect x="14" y="14" width="7" height="7"></rect>
         <rect x="3" y="14" width="7" height="7"></rect>
       </svg>
     )
@@ -72,41 +72,46 @@ const NAV_ITEMS: NavItem[] = [
   },
 ];
 
+// Hardware-accelerated drawer variants with synchronized timeline
 const drawerContainerVariants: Variants = {
-  hidden: { x: "-100%" },
+  hidden: { 
+    x: "-100%",
+    transition: {
+      duration: 0.25,
+      ease: [0.4, 0, 0.2, 1]
+    }
+  },
   show: {
     x: "0%",
     transition: {
-      type: "spring",
-      stiffness: 320,
-      damping: 32,
-      staggerChildren: 0.06,
-      delayChildren: 0.1
+      duration: 0.3,
+      ease: [0.22, 1, 0.36, 1],
+      staggerChildren: 0.04,
+      delayChildren: 0.05
     }
   },
   exit: {
     x: "-100%",
     transition: {
-      type: "spring",
-      stiffness: 350,
-      damping: 35,
-      staggerChildren: 0.03,
-      staggerDirection: -1
+      duration: 0.22,
+      ease: [0.4, 0, 1, 1]
     }
   }
 };
 
 const drawerItemVariants: Variants = {
-  hidden: { opacity: 0, x: -24 },
+  hidden: { opacity: 0, x: -14 },
   show: { 
     opacity: 1, 
     x: 0, 
-    transition: { type: "spring", stiffness: 260, damping: 24 } 
+    transition: { 
+      duration: 0.2,
+      ease: [0.22, 1, 0.36, 1]
+    } 
   },
   exit: { 
     opacity: 0, 
-    x: -16, 
-    transition: { duration: 0.15 } 
+    transition: { duration: 0.1 } 
   }
 };
 
@@ -127,7 +132,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const lastScrollYRef = useRef<number>(0);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
-  // Throttled native window scroll listener
   useEffect(() => {
     let ticking = false;
     const handleWindowScroll = () => {
@@ -265,7 +269,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               initial="hidden"
               animate="show"
               exit="exit"
-              className="relative w-64 h-[100svh] flex flex-col flex-shrink-0 bg-brand-card border-r border-[var(--color-brand-border)] shadow-2xl z-10 overflow-hidden"
+              className="relative w-64 h-[100svh] flex flex-col flex-shrink-0 bg-brand-card border-r border-[var(--color-brand-border)] shadow-2xl z-10 overflow-hidden will-change-transform"
             >
               <div className="sidebar-header-bar h-16 flex items-center px-4 sm:px-6 justify-between border-b border-[var(--color-brand-border)]">
                 <Image 

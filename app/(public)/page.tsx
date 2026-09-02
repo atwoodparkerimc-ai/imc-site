@@ -52,7 +52,6 @@ export default function Home() {
       {/* ========================================= */}
       {/* 1. HERO SECTION: DOCKED HUD APP LAYOUT   */}
       {/* ========================================= */}
-      {/* FIX: Changed 100vh to 100svh to stop layout thrashing on mobile */}
       <section className="relative w-full min-h-[calc(100svh-5rem)] flex flex-col justify-between lg:block bg-[#0b0f19] border-b border-slate-800/80 overflow-hidden">
 
         {/* Tactical Grid Background */}
@@ -68,23 +67,23 @@ export default function Home() {
         {/* MOBILE LAYOUT                             */}
         {/* ========================================= */}
         
-        {/* 1. Top Area: Dedicated 3D Stage */}
-        <div className="block lg:hidden relative flex-1 min-h-[360px] w-full z-10 overflow-hidden">
-          <div className={`w-full h-full relative ${isInteractive ? "pointer-events-auto touch-none" : "pointer-events-none"}`}>
+        {/* 1. Top Area: Dedicated 3D Stage (Expanded height to fill top screen area) */}
+        <div className="block lg:hidden relative flex-1 h-[55vh] min-h-[420px] w-full z-10 overflow-hidden">
+          <div className={`w-full h-full relative ${isInteractive ? "pointer-events-auto" : "pointer-events-none"}`}>
             {/* @ts-ignore - Prop forwarded to internal Three.js canvas */}
             <AhuBlueprintAnimation interactive={isInteractive} />
           </div>
 
           {/* Interactive Mode Mobile Toggle Button */}
-          <div className="absolute bottom-1 right-2 z-40 pointer-events-auto">
+          <div className="absolute bottom-3 right-3 z-40 pointer-events-auto">
             <button
               type="button"
               onClick={() => setIsInteractive(!isInteractive)}
               aria-label={isInteractive ? "Lock camera rotation" : "Inspect 3D model controls"}
-              className={`inline-flex items-center justify-center p-3 font-mono text-[10px] font-bold uppercase tracking-widest transition-all active:scale-95 cursor-pointer touch-manipulation select-none ${
+              className={`inline-flex items-center justify-center px-3.5 py-2 bg-[#040812]/90 border border-slate-700/80 rounded-sm font-mono text-[10px] font-bold uppercase tracking-widest transition-all active:scale-95 cursor-pointer touch-manipulation select-none shadow-lg ${
                 isInteractive 
-                  ? "text-[#ea1f27] active:text-white" 
-                  : "text-slate-400 active:text-white"
+                  ? "text-[#ea1f27] border-[#ea1f27]/50 active:text-white" 
+                  : "text-slate-300 active:text-white"
               }`}
             >
               {isInteractive ? (
@@ -104,7 +103,7 @@ export default function Home() {
         </div>
 
         {/* 2. Bottom Area: Full-Width Docked HUD */}
-        <div className="block lg:hidden relative z-30 w-full bg-[#040812]/85 backdrop-blur-2xl border-t border-slate-700/60 px-5 py-6 shadow-[0_-20px_50px_rgba(0,0,0,0.8)]">
+        <div className="block lg:hidden relative z-30 w-full bg-[#040812]/95 backdrop-blur-2xl border-t border-slate-700/60 px-5 py-6 shadow-[0_-20px_50px_rgba(0,0,0,0.8)]">
           <h1 className="text-[2.2rem] xs:text-[2.5rem] font-black tracking-tighter uppercase leading-[0.93] text-white drop-shadow-md mb-3">
             The <span className="inline-block bg-gradient-to-r from-[#ea1f27] from-0% via-[#ea1f27] via-[28%] to-[#64748b]/80 to-[80%] bg-clip-text text-transparent">NERVOUS</span> <br />
             <span className="inline-block bg-gradient-to-r from-[#64748b]/80 from-[20%] to-[#0088ff] to-[72%] to-[#0088ff] to-100% bg-clip-text text-transparent">SYSTEM</span> <br />
@@ -166,7 +165,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* FIX: Changed 100vh to 100svh here as well to keep desktop and mobile scaling consistent */}
         <div className="hidden lg:flex relative z-20 w-full h-full min-h-[calc(100svh-5rem)] max-w-[1800px] mx-auto flex-col justify-center items-end pointer-events-none lg:px-16 lg:py-0">
           <div className="w-[45%] xl:w-[35%] pointer-events-auto flex flex-col">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#ea1f27]/10 border border-[#ea1f27]/30 text-[#ea1f27] font-mono text-[10px] font-bold tracking-[0.2em] uppercase rounded-xs mb-8 w-fit">

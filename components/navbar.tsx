@@ -47,44 +47,44 @@ const NAV_LINKS: MainNavItem[] = [
 ];
 
 const drawerPanelVariants: Variants = {
-  hidden: { x: "-100%" },
+  hidden: { 
+    x: "-100%",
+    transition: {
+      duration: 0.25,
+      ease: [0.4, 0, 0.2, 1]
+    }
+  },
   show: {
     x: 0,
     transition: {
-      type: "spring",
-      stiffness: 300,
-      damping: 30,
-      staggerChildren: 0.08,
-      delayChildren: 0.12
+      duration: 0.3,
+      ease: [0.22, 1, 0.36, 1],
+      staggerChildren: 0.04,
+      delayChildren: 0.05
     }
   },
   exit: {
     x: "-100%",
     transition: {
-      type: "spring",
-      stiffness: 350,
-      damping: 35,
-      staggerChildren: 0.04,
-      staggerDirection: -1
+      duration: 0.22,
+      ease: [0.4, 0, 1, 1]
     }
   }
 };
 
 const drawerItemVariants: Variants = {
-  hidden: { opacity: 0, x: -30 },
+  hidden: { opacity: 0, x: -14 },
   show: { 
     opacity: 1, 
     x: 0, 
     transition: { 
-      type: "spring", 
-      stiffness: 260, 
-      damping: 22 
+      duration: 0.2,
+      ease: [0.22, 1, 0.36, 1]
     } 
   },
   exit: { 
     opacity: 0, 
-    x: -20, 
-    transition: { duration: 0.15 } 
+    transition: { duration: 0.1 } 
   }
 };
 
@@ -209,7 +209,7 @@ export default function Navbar() {
               initial="hidden"
               animate="show"
               exit="exit"
-              className="relative w-64 h-[100svh] bg-[#070b13] border-r border-slate-800/80 shadow-2xl flex flex-col justify-between p-0 z-10 overflow-hidden"
+              className="relative w-64 h-[100svh] bg-[#070b13] border-r border-slate-800/80 shadow-2xl flex flex-col justify-between p-0 z-10 overflow-hidden will-change-transform"
             >
               {/* Header Bar */}
               <div>

@@ -19,7 +19,6 @@ export default function DailyBriefingModal({ briefing, isOpen, onComplete }: Dai
   const [answerState, setAnswerState] = useState<"unanswered" | "correct" | "incorrect">("unanswered");
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Active Screen Time Detection (Pauses if user leaves tab or minimizes)
   useEffect(() => {
     const handleVisibilityChange = () => {
       setIsTabActive(document.visibilityState === "visible");
@@ -29,7 +28,6 @@ export default function DailyBriefingModal({ briefing, isOpen, onComplete }: Dai
     return () => window.removeEventListener("visibilitychange", handleVisibilityChange);
   }, []);
 
-  // Countdown timer
   useEffect(() => {
     if (!isOpen) return;
 
@@ -63,7 +61,6 @@ export default function DailyBriefingModal({ briefing, isOpen, onComplete }: Dai
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
-  // Helper to cleanly render bullet titles with distinct contrast
   const renderBullet = (bullet: string) => {
     const cleanText = bullet.replace(/\*\*/g, "");
     const colonIndex = cleanText.indexOf(":");
@@ -87,25 +84,25 @@ export default function DailyBriefingModal({ briefing, isOpen, onComplete }: Dai
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4 md:p-6 bg-black/90 backdrop-blur-md select-none font-mono">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/95 backdrop-blur-md select-none font-mono overscroll-contain touch-none">
       <motion.div 
         initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-4xl h-full sm:h-auto sm:max-h-[92vh] flex flex-col rounded-none sm:rounded-sm shadow-2xl overflow-hidden relative border-0 sm:border bg-[var(--color-brand-card)] border-[var(--color-brand-border)] text-slate-100"
+        className="w-full max-w-4xl max-h-[calc(100svh-1.5rem)] sm:max-h-[90vh] flex flex-col rounded-sm shadow-2xl overflow-hidden relative border bg-[var(--color-brand-card)] border-[var(--color-brand-border)] text-slate-100 touch-auto"
       >
         {/* Accent Top Blueprint Line */}
-        <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-[var(--color-brand-blue,#0088ff)] via-[var(--color-brand-blue,#0088ff)] to-[var(--color-brand-green,#00ff9d)]" />
+        <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-[var(--color-brand-blue,#0088ff)] via-[var(--color-brand-blue,#0088ff)] to-[var(--color-brand-green,#00ff9d)] z-10" />
 
         {/* Modal Header */}
-        <div className="p-4 sm:p-5 md:p-6 border-b border-[var(--color-brand-border)] flex flex-col sm:flex-row justify-between sm:items-center gap-3.5 shrink-0 bg-[var(--color-brand-bg)]">
+        <div className="p-3.5 sm:p-5 md:p-6 border-b border-[var(--color-brand-border)] flex flex-col sm:flex-row justify-between sm:items-center gap-3 shrink-0 bg-[var(--color-brand-bg)]">
           <div className="flex items-center gap-3 sm:gap-4">
             <img 
               src="/imclogo.svg" 
               alt="IMC Logo" 
-              className="h-7 sm:h-8 md:h-9 w-auto object-contain max-w-[100px] sm:max-w-[120px] shrink-0" 
+              className="h-6 sm:h-8 md:h-9 w-auto object-contain max-w-[90px] sm:max-w-[120px] shrink-0" 
             />
             
-            <div className="border-l border-[var(--color-brand-border)] pl-3 sm:pl-4">
+            <div className="border-l border-[var(--color-brand-border)] pl-2.5 sm:pl-4">
               <div className="flex items-center gap-2 font-mono">
                 <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-[var(--color-brand-blue,#0088ff)]">
                   {briefing.category}
@@ -114,7 +111,7 @@ export default function DailyBriefingModal({ briefing, isOpen, onComplete }: Dai
                   • DAILY COMPLIANCE
                 </span>
               </div>
-              <h2 className="text-base sm:text-lg md:text-xl font-black uppercase text-white tracking-tight mt-0.5 leading-snug">
+              <h2 className="text-sm sm:text-lg md:text-xl font-black uppercase text-white tracking-tight mt-0.5 leading-snug">
                 {briefing.title}
               </h2>
             </div>
@@ -139,10 +136,10 @@ export default function DailyBriefingModal({ briefing, isOpen, onComplete }: Dai
         </div>
 
         {/* Modal Body - Policy Content */}
-        <div className="p-4 sm:p-6 md:p-8 overflow-y-auto space-y-5 sm:space-y-6 text-sm text-slate-200 leading-relaxed custom-scrollbar flex-1">
+        <div className="p-3.5 sm:p-6 md:p-8 overflow-y-auto overscroll-contain space-y-4 sm:space-y-6 text-sm text-slate-200 leading-relaxed custom-scrollbar flex-1">
           
           {/* Briefing Intro */}
-          <div className="p-3.5 sm:p-4 rounded-sm bg-[var(--color-brand-bg)] border-l-2 border-[var(--color-brand-blue,#0088ff)] border-t border-r border-b border-[var(--color-brand-border)]">
+          <div className="p-3 sm:p-4 rounded-sm bg-[var(--color-brand-bg)] border-l-2 border-[var(--color-brand-blue,#0088ff)] border-t border-r border-b border-[var(--color-brand-border)]">
             <p className="text-slate-200 font-sans text-xs sm:text-sm md:text-base leading-relaxed">
               {briefing.intro}
             </p>
@@ -150,9 +147,9 @@ export default function DailyBriefingModal({ briefing, isOpen, onComplete }: Dai
 
           {/* Core Policy Highlight Card */}
           {briefing.core_reminder && (
-            <div className="p-4 sm:p-5 rounded-sm border border-[var(--color-brand-border)] bg-[var(--color-brand-bg)]/80 relative overflow-hidden shadow-sm flex flex-col items-center text-center space-y-3">
+            <div className="p-3.5 sm:p-5 rounded-sm border border-[var(--color-brand-border)] bg-[var(--color-brand-bg)]/80 relative overflow-hidden shadow-sm flex flex-col items-center text-center space-y-2.5">
               <div className="flex justify-center w-full">
-                <span className="font-mono text-[10px] sm:text-xs font-black uppercase tracking-widest px-3 py-1 rounded-xs border border-[#eab308]/40 bg-[#eab308]/10 text-[#eab308]">
+                <span className="font-mono text-[10px] sm:text-xs font-black uppercase tracking-widest px-2.5 py-0.5 rounded-xs border border-[#eab308]/40 bg-[#eab308]/10 text-[#eab308]">
                   CORE POLICY DIRECTIVE
                 </span>
               </div>
@@ -163,17 +160,17 @@ export default function DailyBriefingModal({ briefing, isOpen, onComplete }: Dai
           )}
 
           {/* Policy Sections */}
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {briefing.sections.map((sec: BriefingSection, idx: number) => (
               <div 
                 key={idx} 
-                className="space-y-3 bg-[var(--color-brand-bg)]/50 p-4 sm:p-5 border border-[var(--color-brand-border)] rounded-sm"
+                className="space-y-2.5 bg-[var(--color-brand-bg)]/50 p-3.5 sm:p-5 border border-[var(--color-brand-border)] rounded-sm"
               >
                 <h3 className="font-mono text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-100 flex items-center gap-2 pb-2 border-b border-[var(--color-brand-border)]">
                   <span className="w-1.5 h-1.5 bg-[var(--color-brand-blue,#0088ff)] rounded-none flex-shrink-0" />
                   {sec.heading}
                 </h3>
-                <ul className="space-y-2.5">
+                <ul className="space-y-2">
                   {sec.bullets.map((bullet: string, bIdx: number) => (
                     <li key={bIdx} className="flex items-start gap-2.5">
                       <span className="text-[var(--color-brand-blue,#0088ff)] font-mono text-sm leading-none mt-1 shrink-0">›</span>
@@ -188,8 +185,8 @@ export default function DailyBriefingModal({ briefing, isOpen, onComplete }: Dai
           </div>
 
           {/* Comprehension Check Section */}
-          <div className="pt-5 border-t border-[var(--color-brand-border)] font-mono">
-            <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-1 mb-3">
+          <div className="pt-4 border-t border-[var(--color-brand-border)] font-mono">
+            <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-1 mb-2.5">
               <h4 className="text-xs font-black uppercase tracking-widest text-slate-200 flex items-center gap-2">
                 <span className="w-1.5 h-1.5 bg-[var(--color-brand-blue,#0088ff)] flex-shrink-0" />
                 Comprehension Verification
@@ -201,16 +198,16 @@ export default function DailyBriefingModal({ briefing, isOpen, onComplete }: Dai
               )}
             </div>
 
-            <div className={`p-4 sm:p-5 rounded-sm border transition-all ${
+            <div className={`p-3.5 sm:p-5 rounded-sm border transition-all ${
               isTimerComplete 
                 ? "bg-[var(--color-brand-bg)] border-[var(--color-brand-blue,#0088ff)]/40 shadow-lg" 
                 : "bg-black/30 border-[var(--color-brand-border)] opacity-50 pointer-events-none"
             }`}>
-              <p className="font-sans font-bold text-xs sm:text-sm text-white mb-4 leading-relaxed">
+              <p className="font-sans font-bold text-xs sm:text-sm text-white mb-3.5 leading-relaxed">
                 {briefing.question.prompt}
               </p>
 
-              <div className="space-y-2.5 font-sans">
+              <div className="space-y-2 font-sans">
                 {briefing.question.options.map((opt: string, oIdx: number) => {
                   const isSelected = selectedOption === oIdx;
                   const isCorrect = oIdx === briefing.question.correct_index;
@@ -228,10 +225,10 @@ export default function DailyBriefingModal({ briefing, isOpen, onComplete }: Dai
                       type="button"
                       disabled={!isTimerComplete}
                       onClick={() => handleSelectOption(oIdx)}
-                      className={`w-full min-h-[48px] text-left p-3.5 rounded-sm border text-xs sm:text-sm transition-all flex items-center justify-between cursor-pointer gap-3 active:scale-[0.98] touch-manipulation focus:outline-none ${optionClasses}`}
+                      className={`w-full min-h-[48px] text-left p-3 rounded-sm border text-[16px] sm:text-sm transition-all flex items-center justify-between cursor-pointer gap-3 active:scale-[0.98] touch-manipulation focus:outline-none ${optionClasses}`}
                     >
-                      <span className="flex items-center gap-3">
-                        <span className="w-6 h-6 rounded-xs border border-[var(--color-brand-border)] bg-[var(--color-brand-bg)] flex items-center justify-center font-mono text-[10px] font-black text-slate-300 shrink-0">
+                      <span className="flex items-center gap-2.5">
+                        <span className="w-5 h-5 rounded-xs border border-[var(--color-brand-border)] bg-[var(--color-brand-bg)] flex items-center justify-center font-mono text-[10px] font-black text-slate-300 shrink-0">
                           {String.fromCharCode(65 + oIdx)}
                         </span>
                         <span>{opt}</span>
@@ -248,14 +245,14 @@ export default function DailyBriefingModal({ briefing, isOpen, onComplete }: Dai
 
               {/* Feedback Notifications */}
               {answerState === "incorrect" && (
-                <div className="mt-3.5 p-3 bg-[var(--color-brand-red,#ff3b5c)]/10 border border-[var(--color-brand-red,#ff3b5c)]/40 rounded-sm text-xs font-sans text-red-200 flex items-start gap-2.5">
+                <div className="mt-3 p-3 bg-[var(--color-brand-red,#ff3b5c)]/10 border border-[var(--color-brand-red,#ff3b5c)]/40 rounded-sm text-xs font-sans text-red-200 flex items-start gap-2">
                   <span className="font-mono text-sm font-black text-[var(--color-brand-red,#ff3b5c)]">⚠</span>
                   <span>Incorrect selection. Review the policy above and choose the correct answer to unlock the checklist.</span>
                 </div>
               )}
 
               {answerState === "correct" && (
-                <div className="mt-3.5 p-3 bg-[var(--color-brand-green,#00ff9d)]/10 border border-[var(--color-brand-green,#00ff9d)]/40 rounded-sm text-xs font-sans text-emerald-200 flex items-start gap-2.5">
+                <div className="mt-3 p-3 bg-[var(--color-brand-green,#00ff9d)]/10 border border-[var(--color-brand-green,#00ff9d)]/40 rounded-sm text-xs font-sans text-emerald-200 flex items-start gap-2">
                   <span className="font-mono text-sm font-black text-[var(--color-brand-green,#00ff9d)]">✓</span>
                   <span>{briefing.question.explanation}</span>
                 </div>
@@ -265,7 +262,7 @@ export default function DailyBriefingModal({ briefing, isOpen, onComplete }: Dai
         </div>
 
         {/* Modal Footer */}
-        <div className="p-3.5 sm:p-4 md:p-5 border-t border-[var(--color-brand-border)] bg-[var(--color-brand-bg)] flex flex-col sm:flex-row justify-between items-center gap-3 shrink-0 font-mono">
+        <div className="p-3 sm:p-4 border-t border-[var(--color-brand-border)] bg-[var(--color-brand-bg)] flex flex-col sm:flex-row justify-between items-center gap-2.5 shrink-0 font-mono">
           <p className="text-[10px] sm:text-[11px] text-slate-400 uppercase tracking-wider text-center sm:text-left hidden xs:block">
             Verification required to complete shift sign-in.
           </p>
@@ -274,7 +271,7 @@ export default function DailyBriefingModal({ briefing, isOpen, onComplete }: Dai
             type="button"
             disabled={!isTimerComplete || answerState !== "correct"}
             onClick={onComplete}
-            className={`w-full sm:w-auto min-h-[48px] px-6 py-3 rounded-sm text-xs font-bold uppercase tracking-wider transition-all duration-200 active:scale-[0.98] touch-manipulation focus:outline-none ${
+            className={`w-full sm:w-auto min-h-[48px] px-6 py-2.5 rounded-sm text-xs font-bold uppercase tracking-wider transition-all duration-200 active:scale-[0.98] touch-manipulation focus:outline-none ${
               isTimerComplete && answerState === "correct"
                 ? "bg-[var(--color-brand-blue,#0088ff)] hover:bg-white hover:text-black text-white shadow-[0_0_15px_rgba(0,136,255,0.35)] cursor-pointer"
                 : "bg-[var(--color-brand-card)] border border-[var(--color-brand-border)] text-slate-500 cursor-not-allowed opacity-50"
