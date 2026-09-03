@@ -43,14 +43,10 @@
 
   html {
     -webkit-text-size-adjust: 100%;
-    overscroll-behavior-y: none;
-    overflow-y: auto;
-    overflow-x: hidden;
   }
 
   body {
     min-height: 100vh;
-    overflow-x: hidden;
     background-color: var(--color-brand-bg);
     color: #f8fafc;
   }

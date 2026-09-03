@@ -249,7 +249,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }, [pathname]);
 
   return (
-    <div className="flex min-h-[100svh] w-full bg-brand-bg font-mono text-slate-100 selection:bg-[var(--color-brand-blue)] selection:text-white relative overscroll-none">
+    <div className="flex min-h-[100svh] w-full bg-brand-bg font-mono text-slate-100 selection:bg-[var(--color-brand-blue)] selection:text-white relative">
       
       {/* 1. MOBILE SIDEBAR */}
       <AnimatePresence>
