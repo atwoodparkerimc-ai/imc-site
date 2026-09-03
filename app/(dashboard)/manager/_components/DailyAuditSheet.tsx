@@ -10,6 +10,7 @@ import { finalizeDailyAuditLog } from "@/lib/db/operations";
 export interface EmployeeProfile {
   id: string;
   first_name: string;
+  last_name?: string | null;
   nickname: string | null;
   role: string;
 }
@@ -267,36 +268,42 @@ export default function DailyAuditSheet({ employees = [], itemVariants }: DailyA
             </thead>
 
             <tbody>
-              {(employees || []).map((emp, idx) => (
-                <tr key={emp.id} className={`${idx % 2 === 0 ? 'bg-[var(--color-brand-card)]' : 'bg-[var(--color-brand-bg)]'} print:bg-white hover:bg-[var(--color-brand-border)]/30 transition-colors`}>
-                  <td className="border p-3 truncate font-bold tracking-tight text-xs text-slate-100 border-[var(--color-brand-border)] print:border-black">
-                    {emp.nickname || emp.first_name}
-                  </td>
+              {(employees || []).map((emp, idx) => {
+                const primaryName = emp.nickname?.trim() || emp.first_name?.trim() || '';
+                const last = emp.last_name?.trim() || '';
+                const fullName = last ? `${primaryName} ${last}` : primaryName;
 
-                  {timeColumns.map(col => (
-                    <td 
-                      key={col.id} 
-                      className="border p-0 text-center relative cursor-pointer border-[var(--color-brand-border)] print:border-black" 
-                      onClick={() => toggleAuditStatus(emp.id, col.id)}
-                    >
-                      <div className={`w-full h-full min-h-[44px] flex items-center justify-center text-xs transition-all active:scale-95 select-none touch-manipulation ${getStatusColor(auditGrid[emp.id]?.[col.id])} print:text-black print:bg-transparent`}>
-                        {auditGrid[emp.id]?.[col.id] || ''}
-                      </div>
+                return (
+                  <tr key={emp.id} className={`${idx % 2 === 0 ? 'bg-[var(--color-brand-card)]' : 'bg-[var(--color-brand-bg)]'} print:bg-white hover:bg-[var(--color-brand-border)]/30 transition-colors`}>
+                    <td className="border p-3 truncate font-bold tracking-tight text-xs text-slate-100 border-[var(--color-brand-border)] print:border-black">
+                      {fullName}
                     </td>
-                  ))}
 
-                  <td className="border p-0 border-[var(--color-brand-border)] print:border-black">
-                    <input 
-                      type="text" 
-                      value={auditGrid[emp.id]?.comment || ''} 
-                      onChange={(e) => updateEmployeeComment(emp.id, e.target.value)} 
-                      className="w-full h-full min-h-[44px] px-3 bg-transparent text-slate-100 placeholder-slate-600 outline-none focus:bg-[var(--color-brand-bg)] print:hidden text-xs font-bold" 
-                      placeholder="Enter notes..." 
-                    />
-                    <span className="hidden print:block px-3 font-normal text-xs">{auditGrid[emp.id]?.comment || ''}</span>
-                  </td>
-                </tr>
-              ))}
+                    {timeColumns.map(col => (
+                      <td 
+                        key={col.id} 
+                        className="border p-0 text-center relative cursor-pointer border-[var(--color-brand-border)] print:border-black" 
+                        onClick={() => toggleAuditStatus(emp.id, col.id)}
+                      >
+                        <div className={`w-full h-full min-h-[44px] flex items-center justify-center text-xs transition-all active:scale-95 select-none touch-manipulation ${getStatusColor(auditGrid[emp.id]?.[col.id])} print:text-black print:bg-transparent`}>
+                          {auditGrid[emp.id]?.[col.id] || ''}
+                        </div>
+                      </td>
+                    ))}
+
+                    <td className="border p-0 border-[var(--color-brand-border)] print:border-black">
+                      <input 
+                        type="text" 
+                        value={auditGrid[emp.id]?.comment || ''} 
+                        onChange={(e) => updateEmployeeComment(emp.id, e.target.value)} 
+                        className="w-full h-full min-h-[44px] px-3 bg-transparent text-slate-100 placeholder-slate-600 outline-none focus:bg-[var(--color-brand-bg)] print:hidden text-xs font-bold" 
+                        placeholder="Enter notes..." 
+                      />
+                      <span className="hidden print:block px-3 font-normal text-xs">{auditGrid[emp.id]?.comment || ''}</span>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

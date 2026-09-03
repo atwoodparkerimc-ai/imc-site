@@ -13,6 +13,7 @@ export interface ComplianceRecord {
 export interface UserProfileRecord {
   id: string;
   first_name: string;
+  last_name?: string | null;
   nickname: string | null;
   role: string;
 }
@@ -66,11 +67,18 @@ export default function ComplianceTracker({
             onChange={(e) => setCompUser(e.target.value)} 
             className="w-full sm:w-auto min-h-[44px] px-3 py-2 text-xs text-slate-200 uppercase font-bold outline-none cursor-pointer rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] transition-all touch-manipulation"
           >
-            {(allUsers || []).map(emp => (
-              <option key={emp.id} value={emp.id} className="bg-[var(--color-brand-card)] text-slate-200">
-                {emp.nickname || emp.first_name} {emp.role === 'manager' ? '(Manager)' : ''}
-              </option>
-            ))}
+            {(allUsers || []).map(emp => {
+              const primaryName = emp.nickname?.trim() || emp.first_name?.trim() || '';
+              const last = emp.last_name?.trim() || '';
+              const fullName = last ? `${primaryName} ${last}` : primaryName;
+              const managerTag = emp.role === 'manager' ? ' (Manager)' : '';
+
+              return (
+                <option key={emp.id} value={emp.id} className="bg-[var(--color-brand-card)] text-slate-200">
+                  {fullName}{managerTag}
+                </option>
+              );
+            })}
           </select>
 
           <select 

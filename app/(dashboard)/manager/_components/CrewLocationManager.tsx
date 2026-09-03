@@ -49,6 +49,10 @@ export default function CrewLocationManager({
       <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3 text-xs">
         {(allUsers || []).map((user) => {
           const isUpdating = updatingId === user.id;
+          const primaryName = user.nickname?.trim() || user.first_name?.trim() || '';
+          const last = user.last_name?.trim() || '';
+          const fullName = last ? `${primaryName} ${last}` : primaryName;
+          const managerTag = user.role === 'manager' ? ' (Manager)' : '';
 
           return (
             <div 
@@ -65,7 +69,7 @@ export default function CrewLocationManager({
                     <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-brand-blue)] animate-ping flex-shrink-0" />
                   )}
                   <p className="font-bold text-slate-100 text-[11px] sm:text-xs uppercase truncate">
-                    {user.nickname || user.first_name} {user.role === 'manager' ? '(Manager)' : ''}
+                    {fullName}{managerTag}
                   </p>
                 </div>
                 <p className="text-[10px] sm:text-[11px] text-slate-400 font-bold uppercase mt-0.5 tracking-wider">

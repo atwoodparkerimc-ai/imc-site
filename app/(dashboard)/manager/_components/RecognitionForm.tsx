@@ -19,6 +19,7 @@ const REWARD_CATEGORIES = [
 export interface EmployeeRecord {
   id: string;
   first_name: string;
+  last_name?: string | null;
   nickname: string | null;
   role: string;
 }
@@ -118,11 +119,14 @@ export default function RecognitionForm({ employees = [], onAwardSuccess, itemVa
               >
                 <option value="" disabled className="text-slate-500">Select Team Member</option>
                 {(employees || []).map(emp => {
-                  const nameDisplay = emp.nickname || emp.first_name;
+                  const primaryName = emp.nickname?.trim() || emp.first_name?.trim() || '';
+                  const last = emp.last_name?.trim() || '';
+                  const fullName = last ? `${primaryName} ${last}` : primaryName;
                   const roleLabel = emp.role === 'manager' ? ' (Manager)' : '';
+
                   return (
                     <option key={emp.id} value={emp.id} className="bg-[var(--color-brand-card)] text-white">
-                      {nameDisplay}{roleLabel}
+                      {fullName}{roleLabel}
                     </option>
                   );
                 })}

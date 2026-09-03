@@ -150,7 +150,10 @@ export default function SafeActTracker({
   const getUserName = (id?: string) => {
     if (!id) return "N/A";
     const u = (allUsers || []).find((user) => user.id === id);
-    return u ? u.nickname || u.first_name : "Unknown User";
+    if (!u) return "Unknown User";
+    const primary = u.nickname?.trim() || u.first_name?.trim() || "";
+    const last = u.last_name?.trim() || "";
+    return last ? `${primary} ${last}` : primary;
   };
 
   return (
@@ -183,11 +186,18 @@ export default function SafeActTracker({
                   className="min-h-[44px] py-2 px-3 pr-8 text-xs text-slate-200 uppercase font-bold outline-none cursor-pointer w-full sm:w-auto appearance-none rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] transition-all truncate touch-manipulation"
                 >
                   <option value="ALL" className="bg-[var(--color-brand-card)] text-slate-200">-- ALL TEAM MEMBERS --</option>
-                  {(allUsers || []).map((emp) => (
-                    <option key={emp.id} value={emp.id} className="bg-[var(--color-brand-card)] text-white">
-                      {emp.nickname || emp.first_name} {emp.role === "manager" ? "(Manager)" : ""}
-                    </option>
-                  ))}
+                  {(allUsers || []).map((emp) => {
+                    const primary = emp.nickname?.trim() || emp.first_name?.trim() || "";
+                    const last = emp.last_name?.trim() || "";
+                    const fullName = last ? `${primary} ${last}` : primary;
+                    const roleLabel = emp.role === "manager" ? " (Manager)" : "";
+
+                    return (
+                      <option key={emp.id} value={emp.id} className="bg-[var(--color-brand-card)] text-white">
+                        {fullName}{roleLabel}
+                      </option>
+                    );
+                  })}
                 </select>
                 <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400">
                   <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">

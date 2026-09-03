@@ -1150,3 +1150,14 @@ export async function getActiveSiteBriefingId(
   
   return null;
 }
+
+/** Format employee display name with priority on nickname, combined with last name */
+export function formatEmployeeName(profile: { 
+  first_name?: string | null; 
+  last_name?: string | null; 
+  nickname?: string | null;
+}): string {
+  const primaryName = profile.nickname?.trim() || profile.first_name?.trim() || '';
+  const last = profile.last_name?.trim() || '';
+  return last ? `${primaryName} ${last}`.trim() : primaryName;
+}

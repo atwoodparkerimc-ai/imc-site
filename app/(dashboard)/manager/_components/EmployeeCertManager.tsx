@@ -118,11 +118,18 @@ export default function EmployeeCertManager({ supabase, allUsers = [] }: Employe
             onChange={(e) => setSelectedUserId(e.target.value)}
             className="w-full sm:w-auto min-h-[44px] text-xs text-slate-200 font-bold uppercase py-2 px-3 outline-none transition-all cursor-pointer rounded-sm border bg-[var(--color-brand-card)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] touch-manipulation"
           >
-            {(allUsers || []).map((u) => (
-              <option key={u.id} value={u.id} className="bg-[var(--color-brand-card)] text-white">
-                {u.nickname || (u as any).full_name || u.first_name || "User"} {u.role === 'manager' ? '(Manager)' : ''} ({u.location || "Shop"})
-              </option>
-            ))}
+            {(allUsers || []).map((u) => {
+              const primaryName = u.nickname?.trim() || u.first_name?.trim() || "User";
+              const last = u.last_name?.trim() || "";
+              const fullName = last ? `${primaryName} ${last}` : primaryName;
+              const managerTag = u.role === 'manager' ? ' (Manager)' : '';
+
+              return (
+                <option key={u.id} value={u.id} className="bg-[var(--color-brand-card)] text-white">
+                  {fullName}{managerTag} ({u.location || "Shop"})
+                </option>
+              );
+            })}
           </select>
         </div>
       </div>

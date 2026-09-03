@@ -145,6 +145,14 @@ export default function ProfilePage() {
   }
 
   const assignedLocationDisplay = (profile?.location || "Main Yard").toUpperCase();
+  
+  const primaryName = profile?.nickname?.trim() || profile?.first_name?.trim() || "Employee";
+  const lastName = profile?.last_name?.trim() || "";
+  const fullDisplayName = lastName ? `${primaryName} ${lastName}` : primaryName;
+  
+  const avatarInitials = profile?.last_name
+    ? `${(profile.first_name || 'E')[0]}${profile.last_name[0]}`.toUpperCase()
+    : (profile?.first_name || "E").slice(0, 2).toUpperCase();
 
   return (
     <div className="w-full max-w-4xl mx-auto px-3.5 sm:px-8 py-4 sm:py-8 space-y-4 sm:space-y-6 pb-12 sm:pb-16 font-mono text-slate-100 overflow-x-hidden select-none flex-1 flex flex-col">
@@ -156,11 +164,11 @@ export default function ProfilePage() {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3 sm:gap-4 min-w-0">
             <div className="w-12 h-12 sm:w-14 sm:h-14 border flex items-center justify-center text-base sm:text-xl font-black uppercase rounded-sm shrink-0 bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] text-[var(--color-brand-blue,#0088ff)]">
-              {(profile?.first_name || "E").slice(0, 2)}
+              {avatarInitials}
             </div>
             <div className="min-w-0 flex-1">
               <h1 className="text-lg sm:text-3xl font-black text-slate-100 uppercase tracking-tighter truncate">
-                {profile?.nickname || profile?.first_name}
+                {fullDisplayName}
               </h1>
               <p className="text-[10px] sm:text-[11px] text-slate-400 font-bold uppercase tracking-wider mt-0.5 truncate">
                 ID: <span className="text-slate-100 font-bold">{profile?.id.slice(0, 8)}</span> • {profile?.role.toUpperCase()}

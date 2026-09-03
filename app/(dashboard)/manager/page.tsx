@@ -10,6 +10,7 @@ import {
   getManagerMasterData, 
   getInventoryItems,
   getJobLocations,
+  formatEmployeeName,
   UserProfile,
   PointLedgerEntry,
   SafeActRecord,
@@ -421,7 +422,7 @@ export default function ManagerDashboard() {
     const map: Record<string, { name: string; points: number }> = {};
 
     locationFilteredUsers.forEach(u => {
-      const displayName = u.nickname || (u as any).full_name || u.first_name || "User";
+      const displayName = formatEmployeeName(u) || "User";
       map[u.id] = { name: displayName, points: 0 };
     });
 
@@ -444,7 +445,7 @@ export default function ManagerDashboard() {
 
       const matchedEmp = allUsers.find(p => p.id === targetUserId);
       if (matchedEmp) {
-        const displayName = matchedEmp.nickname || (matchedEmp as any).full_name || matchedEmp.first_name || "User";
+        const displayName = formatEmployeeName(matchedEmp) || "User";
         if (!map[targetUserId]) {
           map[targetUserId] = { name: displayName, points: 0, count: 0 };
         }
@@ -467,7 +468,7 @@ export default function ManagerDashboard() {
 
       const matchedEmp = allUsers.find(p => p.id === reporterId);
       if (matchedEmp) {
-        const displayName = matchedEmp.nickname || (matchedEmp as any).full_name || matchedEmp.first_name || "User";
+        const displayName = formatEmployeeName(matchedEmp) || "User";
         if (!map[reporterId]) {
           map[reporterId] = { name: displayName, points: 0, count: 0 };
         }

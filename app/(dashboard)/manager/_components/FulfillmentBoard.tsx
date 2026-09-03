@@ -115,7 +115,14 @@ export default function FulfillmentBoard({ itemVariants, managers = [] }: Fulfil
                 </p>
                 <ul className="list-disc list-inside text-slate-400 space-y-1 text-xs font-mono mt-2">
                   <li><span className="text-[var(--color-brand-red,#ff3b5c)] font-bold">Status:</span> Marked as CANCELLED</li>
-                  <li><span className="text-[var(--color-brand-green,#00ff9d)] font-bold">Refund:</span> +{cancellingOrder.points_spent} PTS returned to {cancellingOrder.employee?.nickname || cancellingOrder.employee?.first_name}</li>
+                  <li>
+                    <span className="text-[var(--color-brand-green,#00ff9d)] font-bold">Refund:</span> +{cancellingOrder.points_spent} PTS returned to {(() => {
+                      const emp = cancellingOrder.employee;
+                      const primary = emp?.nickname?.trim() || emp?.first_name?.trim() || "Employee";
+                      const last = emp?.last_name?.trim() || "";
+                      return last ? `${primary} ${last}` : primary;
+                    })()}
+                  </li>
                   <li><span className="text-[var(--color-brand-blue,#0088ff)] font-bold">Inventory:</span> +1 unit restored to stock</li>
                 </ul>
               </div>
@@ -169,7 +176,9 @@ export default function FulfillmentBoard({ itemVariants, managers = [] }: Fulfil
             </p>
           ) : (
             activeOrders.map(order => {
-              const empName = order.employee?.nickname || order.employee?.first_name || "Unknown User";
+              const primaryName = order.employee?.nickname?.trim() || order.employee?.first_name?.trim() || "Unknown User";
+              const last = order.employee?.last_name?.trim() || "";
+              const empName = last ? `${primaryName} ${last}` : primaryName;
               const loc = order.employee?.location || "Unknown Site";
               const itemName = order.item?.item_name || "Unknown Item";
               const photo = order.item?.images?.[0] || order.item?.image_url;
@@ -211,11 +220,16 @@ export default function FulfillmentBoard({ itemVariants, managers = [] }: Fulfil
                         className="w-full min-h-[44px] p-2.5 sm:p-3 text-xs font-bold uppercase outline-none cursor-pointer rounded-sm border bg-[var(--color-brand-card)] text-slate-200 border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] touch-manipulation"
                       >
                         <option value="">-- UNASSIGNED --</option>
-                        {managers.map(mgr => (
-                          <option key={mgr.id} value={mgr.id} className="bg-[var(--color-brand-card)] text-white">
-                            {mgr.nickname || mgr.first_name}
-                          </option>
-                        ))}
+                        {managers.map(mgr => {
+                          const mgrPrimary = mgr.nickname?.trim() || mgr.first_name?.trim() || "Manager";
+                          const mgrLast = mgr.last_name?.trim() || "";
+                          const mgrFullName = mgrLast ? `${mgrPrimary} ${mgrLast}` : mgrPrimary;
+                          return (
+                            <option key={mgr.id} value={mgr.id} className="bg-[var(--color-brand-card)] text-white">
+                              {mgrFullName}
+                            </option>
+                          );
+                        })}
                       </select>
                     </div>
 
@@ -277,12 +291,22 @@ export default function FulfillmentBoard({ itemVariants, managers = [] }: Fulfil
               <p className="text-slate-600 text-xs uppercase font-bold">No fulfilled orders yet.</p>
             ) : (
               completedOrders.map(order => {
-                const managerName = order.manager ? (order.manager.nickname || order.manager.first_name) : null;
+                const empPrimary = order.employee?.nickname?.trim() || order.employee?.first_name?.trim() || "Employee";
+                const empLast = order.employee?.last_name?.trim() || "";
+                const empFullName = empLast ? `${empPrimary} ${empLast}` : empPrimary;
+
+                let managerFullName: string | null = null;
+                if (order.manager) {
+                  const mgrPrimary = order.manager.nickname?.trim() || order.manager.first_name?.trim() || "Manager";
+                  const mgrLast = order.manager.last_name?.trim() || "";
+                  managerFullName = mgrLast ? `${mgrPrimary} ${mgrLast}` : mgrPrimary;
+                }
+
                 return (
                   <div key={order.id} className="flex justify-between items-center py-2 border-b border-[var(--color-brand-border)]/50 last:border-0 text-[10px] sm:text-[11px] uppercase font-bold tracking-wider">
                     <span className="text-slate-400">
-                      {order.employee?.nickname || order.employee?.first_name} • <span className="text-slate-200">{order.item?.item_name}</span>
-                      {managerName && <span className="text-slate-500 font-normal"> ({managerName})</span>}
+                      {empFullName} • <span className="text-slate-200">{order.item?.item_name}</span>
+                      {managerFullName && <span className="text-slate-500 font-normal"> ({managerFullName})</span>}
                     </span>
                     <span className="text-[var(--color-brand-green,#00ff9d)]">✓ FULFILLED</span>
                   </div>
@@ -305,14 +329,20 @@ export default function FulfillmentBoard({ itemVariants, managers = [] }: Fulfil
             {cancelledOrders.length === 0 ? (
               <p className="text-slate-600 text-xs uppercase font-bold">No cancelled orders.</p>
             ) : (
-              cancelledOrders.map(order => (
-                <div key={order.id} className="flex justify-between items-center py-2 border-b border-[var(--color-brand-border)]/50 last:border-0 text-[10px] sm:text-[11px] uppercase font-bold tracking-wider">
-                  <span className="text-slate-500 line-through">
-                    {order.employee?.nickname || order.employee?.first_name} • {order.item?.item_name}
-                  </span>
-                  <span className="text-[var(--color-brand-red,#ff3b5c)]">REFUNDED (+{order.points_spent} PTS)</span>
-                </div>
-              ))
+              cancelledOrders.map(order => {
+                const empPrimary = order.employee?.nickname?.trim() || order.employee?.first_name?.trim() || "Employee";
+                const empLast = order.employee?.last_name?.trim() || "";
+                const empFullName = empLast ? `${empPrimary} ${empLast}` : empPrimary;
+
+                return (
+                  <div key={order.id} className="flex justify-between items-center py-2 border-b border-[var(--color-brand-border)]/50 last:border-0 text-[10px] sm:text-[11px] uppercase font-bold tracking-wider">
+                    <span className="text-slate-500 line-through">
+                      {empFullName} • {order.item?.item_name}
+                    </span>
+                    <span className="text-[var(--color-brand-red,#ff3b5c)]">REFUNDED (+{order.points_spent} PTS)</span>
+                  </div>
+                );
+              })
             )}
           </div>
         </div>
