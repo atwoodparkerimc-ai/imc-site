@@ -9,7 +9,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   getEmployeeProfile, 
   completeDailySafetyBriefing,
-  getActiveSiteBriefingId
+  getActiveSiteBriefingId,
+  UserProfile
 } from "@/lib/db/operations";
 import { getDailyBriefing, getBriefingById, SafetyBriefing } from "@/lib/data/safetyBriefings";
 import DailyBriefingModal from "./_components/DailyBriefingModal";
@@ -37,6 +38,9 @@ export default function SafetyMeetingPage() {
   const [showCelebration, setShowCelebration] = useState<boolean>(false);
   const [terminalFeedback, setTerminalFeedback] = useState<{ message: string; isError: boolean } | null>(null);
 
+  // User Profile State
+  const [currentUserProfile, setCurrentUserProfile] = useState<UserProfile | null>(null);
+
   // Daily Briefing Interactive Gate State
   const [dailyBriefing, setDailyBriefing] = useState<SafetyBriefing>(() => getDailyBriefing());
   const [showBriefingModal, setShowBriefingModal] = useState<boolean>(false);
@@ -49,6 +53,7 @@ export default function SafetyMeetingPage() {
         if (!user) return;
 
         const userProfile = await getEmployeeProfile(supabase, user.id);
+        setCurrentUserProfile(userProfile);
         const todayDate = new Date().toISOString().split('T')[0];
 
         // --- CHECK FOR MANAGER SITE OVERRIDE ---
@@ -99,10 +104,22 @@ export default function SafetyMeetingPage() {
         return;
       }
 
-      // Passes briefing topic and title to write an audit entry into briefing_completions
+      // Explicit metadata payload with fallbacks
+      const activeBriefingId = dailyBriefing?.id || "briefing-001";
+      const activeBriefingTitle = dailyBriefing?.title || "Daily Safety Briefing";
+      const userLocation = currentUserProfile?.location || "Springville Shop";
+
+      console.log("[SafetySign] Committing completion with meta:", {
+        userId: user.id,
+        briefingId: activeBriefingId,
+        briefingTitle: activeBriefingTitle,
+        location: userLocation
+      });
+
       const result = await completeDailySafetyBriefing(supabase, user.id, {
-        briefingId: dailyBriefing.id,
-        briefingTitle: dailyBriefing.title,
+        briefingId: activeBriefingId,
+        briefingTitle: activeBriefingTitle,
+        location: userLocation,
       });
 
       if (!result.success) {
@@ -123,9 +140,9 @@ export default function SafetyMeetingPage() {
         router.push("/dashboard");
       }, 2000);
 
-    } catch (err) {
+    } catch (err: any) {
       console.error("Safety briefing ledger logging failure:", err);
-      setTerminalFeedback({ message: "Critical routing breakdown committing authorization ledger.", isError: true });
+      setTerminalFeedback({ message: `Critical routing breakdown: ${err?.message || "Check network/permissions"}`, isError: true });
       setIsSigning(false);
     }
   };
