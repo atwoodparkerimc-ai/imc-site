@@ -7,6 +7,7 @@ import { SupabaseClient } from "@supabase/supabase-js";
 export interface UserProfile {
   id: string;
   first_name: string;
+  last_name?: string | null;
   nickname: string | null;
   role: string;
   points_balance: number;
@@ -72,7 +73,7 @@ export async function getEmployeeProfile(
 ): Promise<UserProfile | null> {
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, first_name, nickname, role, points_balance, location, must_change_password, last_safety_check, last_safe_act_date, terms_accepted_at')
+    .select('id, first_name, last_name, nickname, role, points_balance, location, must_change_password, last_safety_check, last_safe_act_date, terms_accepted_at')
     .eq('id', userId)
     .single();
 
@@ -169,10 +170,10 @@ export async function getPeerProfiles(
   supabase: SupabaseClient, 
   userId: string,
   userLocation?: string | null
-): Promise<Pick<UserProfile, 'id' | 'first_name' | 'nickname' | 'location'>[]> {
+): Promise<Pick<UserProfile, 'id' | 'first_name' | 'last_name' | 'nickname' | 'location'>[]> {
   let query = supabase
     .from('profiles')
-    .select('id, first_name, nickname, location')
+    .select('id, first_name, last_name, nickname, location')
     .neq('id', userId);
 
   // Strictly filter peers matching active site location if provided
@@ -450,7 +451,7 @@ export async function submitSafeActReport(
   // 1. Verify reporter hasn't already filed a report today & fetch display name
   const { data: reporterProfile } = await supabase
     .from('profiles')
-    .select('last_safe_act_date, first_name, nickname')
+    .select('last_safe_act_date, first_name, last_name, nickname')
     .eq('id', payload.reporterId)
     .single();
 
@@ -458,7 +459,7 @@ export async function submitSafeActReport(
     return { success: false, alreadyReportedToday: true };
   }
 
-  const reporterName = reporterProfile?.nickname || reporterProfile?.first_name || "a coworker";
+  const reporterName = reporterProfile?.nickname || `${reporterProfile?.first_name || ''} ${reporterProfile?.last_name || ''}`.trim() || "a coworker";
 
   // 2. Check how many Safe Acts recipient has already received TODAY
   const { data: existingActsToday } = await supabase
@@ -553,11 +554,11 @@ export async function awardPointsToEmployee(
   // 1. Fetch manager name for clean popup messaging
   const { data: managerProfile } = await supabase
     .from('profiles')
-    .select('first_name, nickname')
+    .select('first_name, last_name, nickname')
     .eq('id', payload.managerId)
     .single();
 
-  const managerName = managerProfile?.nickname || managerProfile?.first_name || "a Manager";
+  const managerName = managerProfile?.nickname || `${managerProfile?.first_name || ''} ${managerProfile?.last_name || ''}`.trim() || "a Manager";
 
   // 2. Record transaction in point_ledger
   // (The Supabase DB Trigger automatically updates profiles.points_balance)
@@ -709,7 +710,7 @@ export async function getUserLedgerActivity(
 /** Fetch master data set required for the Manager Command Center */
 export async function getManagerMasterData(supabase: SupabaseClient) {
   const [teamRes, awardsRes, actsRes, meetingsRes, redemptionsRes] = await Promise.all([
-    supabase.from('profiles').select('id, first_name, nickname, role, points_balance, location, must_change_password').order('first_name'),
+    supabase.from('profiles').select('id, first_name, last_name, nickname, role, points_balance, location, must_change_password').order('first_name'),
     supabase.from('point_ledger').select('*').gt('amount', 0),
     supabase.from('safe_acts').select('*'),
     supabase.from('safety_meetings').select('*'),
@@ -954,9 +955,9 @@ export interface RedemptionRecord {
   assigned_manager_id?: string | null;
   
   // Joined Data
-  employee?: { first_name: string; nickname: string | null; location: string | null };
+  employee?: { first_name: string; last_name?: string | null; nickname: string | null; location: string | null };
   item?: { item_name: string; image_url: string | null; images: string[] | null };
-  manager?: { first_name: string; nickname: string | null };
+  manager?: { first_name: string; last_name?: string | null; nickname: string | null };
 }
 
 /** Fetch all redemption orders with joined employee and item data */
@@ -967,9 +968,9 @@ export async function getFulfillmentOrders(
     .from('redemptions')
     .select(`
       *,
-      employee:profiles!employee_id(first_name, nickname, location),
+      employee:profiles!employee_id(first_name, last_name, nickname, location),
       item:inventory!item_id(item_name, image_url, images),
-      manager:profiles!assigned_manager_id(first_name, nickname)
+      manager:profiles!assigned_manager_id(first_name, last_name, nickname)
     `)
     .order('created_at', { ascending: false });
 

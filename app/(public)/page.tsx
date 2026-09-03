@@ -52,7 +52,7 @@ export default function Home() {
       {/* ========================================= */}
       {/* 1. HERO SECTION: DOCKED HUD APP LAYOUT   */}
       {/* ========================================= */}
-      <section className="relative w-full min-h-[calc(100svh-5rem)] flex flex-col justify-between lg:block bg-[#0b0f19] border-b border-slate-800/80 overflow-hidden">
+      <section className="relative w-full h-[100svh] min-h-[600px] lg:h-[calc(100svh-5rem)] lg:min-h-[700px] flex flex-col justify-between lg:block bg-[#0b0f19] border-b border-slate-800/80 overflow-hidden">
 
         {/* Tactical Grid Background */}
         <div className="absolute inset-0 z-0 tactical-graph-paper opacity-30 pointer-events-none" />
@@ -68,8 +68,8 @@ export default function Home() {
         {/* ========================================= */}
         
         {/* 1. Top Area: Dedicated 3D Stage (Expanded height to fill top screen area) */}
-        <div className="block lg:hidden relative flex-1 h-[55vh] min-h-[420px] w-full z-10 overflow-hidden">
-          <div className={`w-full h-full relative ${isInteractive ? "pointer-events-auto" : "pointer-events-none"}`}>
+        <div className="block lg:hidden relative flex-1 h-[60vh] min-h-[420px] w-full z-10 overflow-hidden">
+          <div className={`absolute inset-0 w-full h-full ${isInteractive ? "pointer-events-auto" : "pointer-events-none"}`}>
             {/* @ts-ignore - Prop forwarded to internal Three.js canvas */}
             <AhuBlueprintAnimation interactive={isInteractive} />
           </div>
@@ -159,13 +159,13 @@ export default function Home() {
             </button>
           </div>
 
-          <div className={`w-full h-full ${isInteractive ? "pointer-events-auto" : "pointer-events-none"}`}>
+          <div className={`absolute inset-0 w-full h-full ${isInteractive ? "pointer-events-auto" : "pointer-events-none"}`}>
             {/* @ts-ignore - Prop forwarded to internal Three.js canvas */}
             <AhuBlueprintAnimation interactive={isInteractive} />
           </div>
         </div>
 
-        <div className="hidden lg:flex relative z-20 w-full h-full min-h-[calc(100svh-5rem)] max-w-[1800px] mx-auto flex-col justify-center items-end pointer-events-none lg:px-16 lg:py-0">
+        <div className="hidden lg:flex relative z-20 w-full h-full lg:h-[calc(100svh-5rem)] max-w-[1800px] mx-auto flex-col justify-center items-end pointer-events-none lg:px-16 lg:py-0">
           <div className="w-[45%] xl:w-[35%] pointer-events-auto flex flex-col">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#ea1f27]/10 border border-[#ea1f27]/30 text-[#ea1f27] font-mono text-[10px] font-bold tracking-[0.2em] uppercase rounded-xs mb-8 w-fit">
               Interwest Mechanical Contractors

@@ -13,7 +13,7 @@ import {
   UserProfile 
 } from "@/lib/db/operations";
 
-type MinimalUserRecord = Pick<UserProfile, 'id' | 'first_name' | 'nickname'>;
+type MinimalUserRecord = Pick<UserProfile, 'id' | 'first_name' | 'last_name' | 'nickname'>;
 
 export default function ReportingPage() {
   const router = useRouter();
@@ -240,11 +240,14 @@ export default function ReportingPage() {
                       <option value="" className="bg-[var(--color-brand-card)] text-slate-400">
                         {hasCompletedToday ? "Safe Act Logged for Today" : "Choose a team member..."}
                       </option>
-                      {users.map(u => (
-                        <option key={u.id} value={u.id} className="bg-[var(--color-brand-card)] text-white">
-                          {u.nickname || u.first_name}
-                        </option>
-                      ))}
+                      {users.map(u => {
+                        const fullName = `${u.first_name} ${u.last_name || ''}`.trim();
+                        return (
+                          <option key={u.id} value={u.id} className="bg-[var(--color-brand-card)] text-white">
+                            {fullName}
+                          </option>
+                        );
+                      })}
                     </select>
                     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400">
                       <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
