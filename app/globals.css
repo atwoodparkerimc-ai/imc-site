@@ -41,18 +41,18 @@
     --color-metric-assistance: #f97316;
   }
 
-  html, body {
+  html {
     -webkit-text-size-adjust: 100%;
-    /* Locks horizontal sway */
+    overscroll-behavior-y: none;
+    overflow-y: auto;
     overflow-x: hidden;
-    /* Kills Apple's elastic bounce / dead space at the bottom */
-    overscroll-behavior-y: none; 
+  }
+
+  body {
+    min-height: 100vh;
+    overflow-x: hidden;
     background-color: var(--color-brand-bg);
     color: #f8fafc;
-    /* Clean layout flexbox flow with auto-height */
-    min-height: 100%;
-    display: flex;
-    flex-direction: column;
   }
 
   ::selection {
