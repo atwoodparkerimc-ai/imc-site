@@ -99,7 +99,11 @@ export default function SafetyMeetingPage() {
         return;
       }
 
-      const result = await completeDailySafetyBriefing(supabase, user.id);
+      // Passes briefing topic and title to write an audit entry into briefing_completions
+      const result = await completeDailySafetyBriefing(supabase, user.id, {
+        briefingId: dailyBriefing.id,
+        briefingTitle: dailyBriefing.title,
+      });
 
       if (!result.success) {
         if (result.alreadyCheckedIn) {

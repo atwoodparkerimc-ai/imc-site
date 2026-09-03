@@ -18,6 +18,8 @@ import {
   InventoryItem
 } from "@/lib/db/operations";
 
+import { SAFETY_BRIEFINGS } from "@/lib/data/safetyBriefings";
+
 // --- COMPONENT IMPORTS ---
 import RecognitionForm from "./_components/RecognitionForm";
 import VelocityChart from "./_components/VelocityChart";
@@ -32,6 +34,17 @@ import CrewLocationManager from "./_components/CrewLocationManager";
 import EmployeeCertManager from "./_components/EmployeeCertManager";
 import AddEmployeeModal from "../dashboard/_components/AddEmployeeModal";
 import ManagerBriefingSelector from "./_components/ManagerBriefingSelector";
+import SafetyMeetingComplianceLog, { SafetyBriefingTopic, MeetingCompletionLogEntry } from "./_components/SafetyMeetingComplianceLog";
+
+// Type compatibility shim for SafetyMeetingComplianceLog component
+interface UserProfileSubset {
+  id: string;
+  first_name?: string;
+  last_name?: string;
+  nickname?: string;
+  location?: string;
+  role?: string;
+}
 
 interface DataBucket {
   name: string;
@@ -213,6 +226,10 @@ export default function ManagerDashboard() {
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [requisitionCount, setRequisitionCount] = useState<number>(0);
   
+  // Safety Meeting Compliance States
+  const [briefingTopics, setBriefingTopics] = useState<SafetyBriefingTopic[]>([]);
+  const [briefingCompletions, setBriefingCompletions] = useState<MeetingCompletionLogEntry[]>([]);
+  
   // Metrics Filters
   const [tfVelocity, setTfVelocity] = useState<string>('week');
   const [tfCategory, setTfCategory] = useState<string>('month');
@@ -261,6 +278,25 @@ export default function ManagerDashboard() {
     setRawSafeActs(masterData.safeActs);
     setRawMeetings(masterData.safetyMeetings);
     setRequisitionCount(masterData.requisitionCount);
+
+    // Load briefing topics from catalog
+    setBriefingTopics(
+      (SAFETY_BRIEFINGS || []).map((b) => ({
+        id: b.id,
+        title: b.title,
+        category: b.category,
+      }))
+    );
+
+    // Fetch live audit completions
+    const { data: completionsData, error: completionsErr } = await supabase
+      .from('briefing_completions')
+      .select('*')
+      .order('completed_at', { ascending: false });
+
+    if (!completionsErr && completionsData) {
+      setBriefingCompletions(completionsData);
+    }
   };
 
   const fetchInventory = async () => {
@@ -638,6 +674,16 @@ export default function ManagerDashboard() {
             }} 
             itemVariants={itemVariants} 
           />
+          
+          {/* NEW MODULE: SAFETY MEETING COMPLIANCE & HISTORICAL LEDGER */}
+          <SafetyMeetingComplianceLog 
+            briefings={briefingTopics}
+            completions={briefingCompletions}
+            allUsers={allUsers as unknown as UserProfileSubset[]}
+            activeSite={selectedLocation}
+            formatEmployeeName={formatEmployeeName}
+            itemVariants={itemVariants}
+          />
         </div>
 
         {/* TAB 2: MANAGE USERS */}
@@ -743,12 +789,12 @@ export default function ManagerDashboard() {
         </div>
 
         {/* TAB 6: CLIPBOARD AUDIT LOG SHEET */}
-        <div className={activeTab === 'audit' ? 'block' : 'hidden print:block'}>
-          <DailyAuditSheet 
-            employees={employees} 
-            itemVariants={itemVariants} 
-          />
-        </div>
+<div className={activeTab === 'audit' ? 'block' : 'hidden'}>
+  <DailyAuditSheet 
+    employees={employees} 
+    itemVariants={itemVariants} 
+  />
+</div>
 
         {/* PROVISION EMPLOYEE MODAL */}
         <AddEmployeeModal

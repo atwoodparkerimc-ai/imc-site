@@ -389,14 +389,19 @@ export async function redeemStoreItem(
 /** Process user completion of the daily safety briefing (+10 PTS) */
 export async function completeDailySafetyBriefing(
   supabase: SupabaseClient, 
-  userId: string
+  userId: string,
+  briefingMeta?: {
+    briefingId?: string;
+    briefingTitle?: string;
+    location?: string;
+  }
 ): Promise<{ success: boolean; alreadyCheckedIn?: boolean; error?: string }> {
   const todayStr = new Date().toISOString().split('T')[0];
 
   // 1. Check if user already signed the daily check-in
   const { data: profile } = await supabase
     .from('profiles')
-    .select('last_safety_check')
+    .select('last_safety_check, location')
     .eq('id', userId)
     .single();
 
@@ -421,7 +426,28 @@ export async function completeDailySafetyBriefing(
     return { success: false, error: ledgerError.message };
   }
 
-  // 3. Record daily check-in date on profile
+  // 3. Log compliance audit record to briefing_completions
+  if (briefingMeta?.briefingId && briefingMeta?.briefingTitle) {
+    const userLocation = briefingMeta.location || profile?.location || null;
+    const { error: briefingLogErr } = await supabase
+      .from('briefing_completions')
+      .insert([
+        {
+          user_id: userId,
+          briefing_id: briefingMeta.briefingId,
+          briefing_title: briefingMeta.briefingTitle,
+          location: userLocation,
+          completed_at: new Date().toISOString()
+        }
+      ]);
+
+    if (briefingLogErr) {
+      // Non-blocking catch to ensure points & check-in are never impacted
+      console.warn("Briefing completion ledger log error:", briefingLogErr.message);
+    }
+  }
+
+  // 4. Record daily check-in date on profile
   const { error: profileError } = await supabase
     .from('profiles')
     .update({ last_safety_check: todayStr })
@@ -434,8 +460,7 @@ export async function completeDailySafetyBriefing(
   return { success: true };
 }
 
-/** 
- * Submit a peer Safe Act report:
+/** * Submit a peer Safe Act report:
  * - Reporter always gets +5 PTS.
  * - Recipient 1st report today = +10 PTS.
  * - Recipient 2nd report today = +5 PTS (hits 15 PTS daily cap).
