@@ -617,7 +617,7 @@ export async function awardPointsToEmployee(
 }
 
 // ==========================================
-// 5. HAZARDS & ROLL CALL AUDITS
+// 5. HAZARDS & ROLL CALL AUDITS wont work 
 // ==========================================
 
 /** Fetch the latest broadcast hazard score for a specific job location */
