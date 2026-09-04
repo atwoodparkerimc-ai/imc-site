@@ -557,15 +557,15 @@ export const SAFETY_BRIEFINGS: SafetyBriefing[] = [
     id: "briefing-013",
     title: "Portable Fire Extinguisher Safety & Inspection Policy",
     category: "Fire & Gas Safety",
-    core_reminder: "36\" CLEARANCE, MONTHLY INSPECTIONS & PASS METHOD: Maintain a minimum 36-inch clear clearance around all fire extinguishers at all times. Extinguishers must undergo a visual inspection every 30 days. A fully charged ABC dry chemical extinguisher must be within arm's reach of any Hot Work.",
+    core_reminder: "36\" CLEARANCE, MONTHLY INSPECTIONS & PASS METHOD: Maintain a minimum 36-inch clearance in front of and around all fire extinguishers at all times. Units must undergo a visual inspection every 30 days verified on the tag. A fully charged ABC extinguisher must be within arm's reach of any Hot Work. Extinguishers are for initial stage fires only—evacuate if fire spreads or smoke compromises your path.",
     intro: "Portable extinguishers are intended only for small, contained, early-stage fires. If a fire spreads beyond the point of origin, produces thick smoke, or endangers your escape route, immediately evacuate and pull the building fire alarm.",
     sections: [
       {
         heading: "1. Visual Inspection & Maintenance Protocol",
         bullets: [
-          "Monthly Visual Checks (Every 30 Days): Confirm the unit is mounted and accessible, pressure gauge is in the green zone, locking pin and seal are intact, nozzle is clear, and the tag is signed/dated.",
+          "Monthly Visual Checks (Every 30 Days): Confirm the unit is in its designated location/mounted, gauge needle is in the green zone, pin/seal are intact, nozzle is clear of obstructions/corrosion, and the tag is signed and dated.",
           "Annual Certified Maintenance: All fire extinguishers must undergo a certified annual maintenance check and hydrostatic testing according to NFPA 10 schedules.",
-          "Discharged or Defective Units: Any extinguisher that is discharged, leaking, or damaged must be taken out of service immediately, tagged out, and replaced with a charged spare."
+          "Discharged or Defective Units: Any extinguisher that is discharged (even partially), leaking, unpressurized, or damaged must be taken out of service immediately, tagged out, and replaced with a charged spare."
         ]
       },
       {
@@ -574,7 +574,7 @@ export const SAFETY_BRIEFINGS: SafetyBriefing[] = [
           "Class A (Combustibles): Wood, paper, cloth, trash, and rubber.",
           "Class B (Flammable Liquids/Gases): Gasoline, diesel, oils, solvents, grease, and paints.",
           "Class C (Energized Electrical): Motors, electrical panels, wiring, and transformers. (Never use water on electrical fires).",
-          "Standard IMC Equipment: IMC standardizes on multi-purpose ABC Dry Chemical extinguishers across all shops and job trailers to handle mixed industrial hazards safely."
+          "Standard IMC Equipment: IMC standardizes on multi-purpose ABC Dry Chemical extinguishers across all shops, job trailers, and mobile service rigs to handle mixed industrial hazards safely."
         ]
       },
       {
@@ -603,33 +603,33 @@ export const SAFETY_BRIEFINGS: SafetyBriefing[] = [
     id: "briefing-014",
     title: "Motor Vehicle, Fleet & Trailer Towing Safety Policy",
     category: "Site Compliance",
-    core_reminder: "ZERO DISTRACTED DRIVING, PRE-TRIP CHECKS & 100% LOAD SECUREMENT: Zero cell phone use while operating a company vehicle. Drivers must complete a daily visual inspection of the vehicle and any attached trailer prior to driving. All materials transported on truck beds or racks must be secured with rated ratchet straps or chains.",
+    core_reminder: "ZERO DISTRACTED DRIVING, PRE-TRIP CHECKS & 100% LOAD SECUREMENT: Zero mobile phone use while driving on company business. Drivers must complete a daily visual pre-trip walkaround of the vehicle and any attached trailer. Positive load securement is mandatory—all cargo, pipe, cylinders, and boxes must be secured with rated ratchet straps, chains, or clamps (never rope or gravity). Valid driver's license required; report violations or accidents immediately.",
     intro: "Operating company-owned vehicles, service trucks, and towing equipment trailers carries significant safety and liability exposure. Safe vehicle operation, strict load securement, attentive driving, and daily mechanical pre-trip checks are mandatory for all IMC drivers.",
     sections: [
       {
         heading: "1. Distracted Driving, Seatbelts & General Driving Rules",
         bullets: [
-          "Zero Cell Phone Tolerance: Operating a mobile phone (calling without a hands-free device, texting, emailing, browsing, or adjusting GPS) while in motion is strictly prohibited.",
-          "Seatbelt Mandate: Seatbelts must be fastened by the driver and all passengers prior to shifting the vehicle into drive.",
-          "Speed & Defensive Driving: Obey posted limits, adjust for weather/traffic, and maintain a minimum 4-second following distance (6+ seconds when towing).",
-          "Backing Protocol: Avoid backing by parking in drive-through spots. If backing is necessary, deploy a spotter or conduct a 360-degree walkaround before reversing."
+          "Seatbelt Mandate: Seatbelts must be fastened by the driver and all passengers prior to shifting the vehicle into drive. No exceptions.",
+          "Speed & Defensive Driving: Obey posted limits, adjust for weather/traffic/weight, and maintain a minimum 4-second following distance (6+ seconds when towing or in rain/snow).",
+          "Impaired Driving: Operating under the influence of alcohol, illegal drugs, or impairing medication is strictly prohibited and results in immediate termination and drug testing.",
+          "Backing Protocol: Avoid backing by using drive-through spots. If backing in tight jobsite areas, deploy a spotter or conduct a 360-degree walkaround before reversing."
         ]
       },
       {
         heading: "2. Trailer Towing & Hitch Connection Standards",
         bullets: [
-          "Hitch & Ball Matching: Verify the trailer coupler matches the hitch ball diameter exactly. Ensure the latch is fully engaged and locked with a safety pin or padlock.",
-          "Crossed Safety Chains: Connect dual safety chains in an 'X' pattern beneath the trailer tongue to create a cradle, ensuring enough slack for turning.",
-          "Breakaway Cable & Brakes: Attach the emergency breakaway cable securely to the vehicle frame (never the safety chains). Verify trailer brakes and lights function before entering traffic.",
-          "Weight Distribution: Ensure 10% to 15% of the total trailer weight rests on the hitch tongue to prevent dangerous high-speed trailer sway."
+          "Hitch & Ball Matching: Verify the trailer coupler matches the hitch ball diameter exactly. Ensure the coupler latch is fully engaged and locked with a steel safety pin or padlock.",
+          "Crossed Safety Chains: Connect dual safety chains in an 'X' pattern beneath the trailer tongue to cradle the tongue if it disconnects, leaving sufficient slack for turning without dragging.",
+          "Breakaway Cable & Electric Brakes: Attach the emergency breakaway cable securely to the vehicle frame (never the safety chains or ball). Verify electric brakes and all lights function before entering traffic.",
+          "Weight Distribution & Tongue Weight: Ensure 10% to 15% of total trailer weight rests on the hitch tongue to prevent dangerous fishtailing. Distribute heavy cargo over or slightly ahead of the axles."
         ]
       },
       {
         heading: "3. Cargo Securement, Pipe Racks & Tool Storage",
         bullets: [
-          "Overhead Pipe & Strut Racks: Bundle materials securely using heavy-duty ratchet straps. Red danger flags must be attached to loads extending more than 4 feet beyond the bumper.",
-          "Compressed Gas Cylinders: Must be stored upright in approved racks, chained securely, and equipped with threaded steel valve protection caps. Never transport them loose.",
-          "Heavy Tools: Secure gang boxes, welders, and generators to vehicle D-rings or structural tie-down rails with rated transport chains or ratchet straps."
+          "Overhead Pipe & Strut Racks: Bundle materials securely using heavy-duty ratchet straps or engineered brackets. Red danger flags must be attached to loads extending more than 4 feet beyond the bumper.",
+          "Compressed Gas Cylinders: Cylinders transported in truck beds must be stored upright in approved racks, chained/strapped securely, and equipped with threaded steel valve protection caps. Never transport them loose.",
+          "Gang Boxes & Heavy Tools: Secure gang boxes, welders, threaders, and generators directly to vehicle D-rings or structural tie-down rails with rated transport chains or ratchet straps."
         ]
       }
     ],
@@ -649,74 +649,67 @@ export const SAFETY_BRIEFINGS: SafetyBriefing[] = [
     id: "briefing-015",
     title: "Heat & Cold Stress Prevention Policy",
     category: "Occupational Health",
-    core_reminder: "WATER/SHADE, THERMAL PPE, ACCLIMATIZATION & BUDDY SYSTEM: When the Heat Index reaches 90°F, employees must have immediate access to cool drinking water and shaded rest areas. When entering industrial ammonia freezers or working below 32°F, mandatory thermal PPE and buddy systems are strictly enforced. Never work alone in extreme environments.",
-    intro: "Mechanical, piping, and fabrication work frequently exposes employees to extreme environmental temperatures. Thermal stress can impair mental focus, cause severe physical illness, or result in fatal medical emergencies.",
+    core_reminder: "WATER/SHADE, THERMAL PPE, ACCLIMATIZATION & BUDDY SYSTEM: At a Heat Index of 90°F+, ensure immediate access to cool water (at least 1 qt/worker/hr) and shaded/AC rest areas. In ambient temps below 32°F or industrial freezers (-20°F), thermal PPE, warm-up breaks, and buddy systems are mandatory. Never work alone in extreme environments.",
+    intro: "Our work frequently exposes employees to extreme environmental temperatures—from rooftop pipe installations in the summer to sub-zero industrial ammonia freezer boxes and winter field work. Thermal stress can impair mental focus, cause severe physical illness, or result in fatal medical emergencies.",
     sections: [
       {
         heading: "1. Heat Stress Prevention",
         bullets: [
-          "Hydration Protocol: Drink small amounts of cool water frequently (every 15 to 20 minutes). Do not rely on thirst alone as a guide.",
-          "Work/Rest Cycles: Foremen must schedule mandatory shaded rest breaks at heat index levels above 90°F. When exceeding 100°F, shift heavy tasks to cooler morning hours.",
-          "Recognizing Heat Stroke: High body temperature (103°F+), hot/red/dry skin or profuse sweating, confusion, and slurred speech. This is a medical emergency requiring immediate action."
+          "Hydration Protocol: Drink small amounts of cool water or electrolyte beverages frequently (every 15 to 20 minutes) rather than large volumes occasionally. Do not rely on thirst alone as a guide.",
+          "Work/Rest Cycles: At heat index levels above 90°F, foremen must schedule mandatory shaded rest breaks. When temperatures exceed 100°F, heavy tasks (manual rigging, torch cutting, climbing ladders) must be shifted to cooler morning hours whenever feasible.",
+          "Heat Exhaustion Signs & Actions: Heavy sweating, cool/pale/clammy skin, dizziness, headache, nausea, weakness, muscle cramps. Action: Move to shade/AC, loosen clothing, apply cool damp cloths, and sip water.",
+          "Heat Stroke (Medical Emergency): High body temperature (103°F+), hot/red/dry skin or profuse sweating, confusion, slurred speech, seizures, loss of consciousness. Call 911 / site ERT immediately and cool the worker rapidly."
         ]
       },
       {
         heading: "2. Cold Stress & Industrial Freezer Protocols",
         bullets: [
-          "Layered Clothing & Thermal PPE: Wear three layers of clothing, insulated boots, thermal glove liners, and knit caps/hard-hat liners in sub-zero or cold-storage environments.",
-          "Industrial Cold-Storage / Ammonia Freezers: No employee may work in a sub-zero commercial freezer or ammonia refrigeration space alone.",
-          "Recognizing Hypothermia: Uncontrollable shivering, slurred speech, clumsy fingers, apathy, extreme confusion, and drowsiness."
+          "Layered Clothing & Thermal PPE: Wear three layers of clothing: an inner moisture-wicking synthetic layer, a middle insulating fleece/wool layer, and a wind/waterproof outer shell. Wear insulated work boots, thermal glove liners, and knit caps/hard-hat liners.",
+          "Industrial Cold-Storage / Ammonia Freezers: No employee may work in a sub-zero commercial freezer or ammonia refrigeration space alone. Strict buddy system enforcement applies.",
+          "Frostbite Recognition: Numbness, tingling, pale/waxy/white or blue skin on fingers, toes, nose, or ears.",
+          "Hypothermia (Medical Emergency): Uncontrollable shivering, slurred speech, clumsy fingers, apathy, extreme confusion, and drowsiness."
         ]
       },
       {
         heading: "3. Personal Accountability",
         bullets: [
           "Self-Monitoring: Employees are responsible for monitoring their personal physical condition, pacing their work, taking prescribed rest breaks, and reporting symptoms immediately to their crew lead.",
-          "Buddy System: Use the buddy system to continuously monitor each other for early warning signs of heat stroke or hypothermia."
+          "Continuous Observation: Work partners must actively monitor each other's cognitive state and physical condition during extreme hot or cold assignments."
         ]
       }
     ],
     question: {
-      prompt: "When the Heat Index reaches or exceeds 90°F, how often should employees drink cool water?",
+      prompt: "When the Heat Index reaches or exceeds 90°F, how often should employees drink cool water or electrolyte beverages?",
       options: [
         "Wait until you feel thirsty, then drink a large volume of water",
-        "Drink small amounts of cool water frequently, every 15 to 20 minutes",
+        "Drink small amounts frequently, every 15 to 20 minutes",
         "Drink one full quart at the beginning of the shift, and one at the end",
         "Drink primarily electrolyte sports drinks only during scheduled lunch breaks"
       ],
       correct_index: 1,
-      explanation: "Employees should drink small amounts of cool water frequently (every 15 to 20 minutes) rather than large volumes occasionally, and should not rely on thirst alone as a guide."
+      explanation: "Employees must drink small amounts of cool water or electrolyte beverages frequently (every 15 to 20 minutes) rather than large volumes occasionally, and never rely on thirst alone."
     }
   },
   {
     id: "briefing-016",
     title: "Crystalline Silica Exposure Control Policy",
     category: "Occupational Health",
-    core_reminder: "TABLE 1 COMPLIANCE, HEPA SHROUDS & ZERO DRY SWEEPING: All concrete drilling, coring, and cutting tools must be operated using integrated water delivery systems or dust collection shrouds paired with a HEPA vacuum. If engineering controls cannot maintain exposure below the PEL, respiratory protection is mandatory.",
-    intro: "Cutting, drilling, grinding, or chipping concrete releases Respirable Crystalline Silica (SiO2) dust, which causes severe lung disease, silicosis, and lung cancer. Compliance with OSHA Table 1 exposure control methods is mandatory for all concrete penetration tasks.",
+    core_reminder: "MANDATORY CONTROLS, ZERO DRY SWEEPING & HEPA FILTRATION: All hammer drills, core drills, rotary hammers, and cut-off saws must use integrated water delivery systems or HEPA-filtered vacuum shrouds. Dry sweeping, dry shoveling, or using compressed air to clean dust or slurry is strictly prohibited. Dust extractors require 99.97% HEPA filtration. Respiratory protection (N95, P100, or supplied-air) is mandatory whenever engineering controls cannot maintain exposure below the PEL or when specified by OSHA Table 1.",
+    intro: "Interwest Mechanical Contractors frequently conducts concrete drilling for pipe hangers, strut installation, core drilling through floor slabs/walls, and masonry anchoring. Cutting, drilling, grinding, or chipping concrete releases Respirable Crystalline Silica dust, which causes severe lung disease, silicosis, and lung cancer.",
     sections: [
       {
-        heading: "1. Specified Exposure Control Methods (OSHA Table 1)",
-        bullets: [
-          "Hammer Drills & Rotary Hammers: Use a drill equipped with a commercially designed shroud/suction bit connected to a HEPA vacuum extractor with a filter-cleaning mechanism.",
-          "Handheld Concrete Cut-Off Saws: Require a continuous integrated water delivery system wetting the blade continuously at the cut point. Indoors requires a Half-mask APF 10 (P100) respirator.",
-          "Handheld Grinders: Require a commercially designed grinding shroud connected to a HEPA vacuum. Indoors requires a Half-mask APF 10 (P100) respirator.",
-          "Core Drills: Require an integrated water feed system continuous to the drill bit to suppress all slurry at the penetration point."
-        ]
-      },
-      {
-        heading: "2. Housekeeping & Slurry Management",
+        heading: "1. Housekeeping & Slurry Management",
         bullets: [
           "Slurry Cleanup: Wet slurry generated from core drilling or wet sawing must be cleaned up using wet-vac extraction before it dries into respirable airborne dust.",
-          "Dust Disposal: Vacuum collection bags containing dry silica dust must be sealed and tied off inside the vacuum chamber before removal to prevent dust cloud dispersion.",
+          "Dust Disposal: Vacuum collection bags containing dry silica dust must be sealed and tied off inside the vacuum chamber before removal to prevent dust cloud dispersion. Dispose of sealed bags in heavy-duty contractor trash bags.",
           "Prohibited Cleaning Practices: Never blow concrete dust off clothing, boots, or tools with compressed air lines."
         ]
       },
       {
-        heading: "3. Competent Person & Written Control Plan",
+        heading: "2. Competent Person & Written Control Plan",
         bullets: [
-          "Designated Competent Person: Every jobsite involving concrete penetration must have a designated Silica Competent Person capable of identifying hazards and selecting Table 1 controls.",
-          "Regulated Work Zones: Establish a perimeter barrier when dry cutting, deep core drilling, or surface grinding occurs to keep unauthorized workers without proper PPE out of the dust generation zone."
+          "Designated Competent Person: Every IMC jobsite involving concrete penetration must have a designated Silica Competent Person (Foreman / Lead) capable of identifying silica hazards and enforcing compliance.",
+          "Regulated Work Zones: When dry cutting, deep core drilling, or surface grinding occurs, establish a perimeter barrier to keep unauthorized workers without proper PPE out of the dust generation zone."
         ]
       }
     ],
@@ -736,23 +729,24 @@ export const SAFETY_BRIEFINGS: SafetyBriefing[] = [
     id: "briefing-017",
     title: "Hand, Portable Power, Pneumatic & Powder-Actuated Tool Safety Policy",
     category: "Tools & Equipment",
-    core_reminder: "TWO-HAND CONTROL, HOSE WHIP CHECKS, LICENSING & GFCI PROTECTION: Handheld power tools equipped with secondary handles must be operated with both hands firmly on designated grips at all times. Pneumatic tools must be secured with safety lock pins and whip checks. All 120V portable electric tools must be GFCI protected.",
-    intro: "Hand and portable power tools are fundamental to mechanical, piping, and fabrication work. Because these tools generate high-speed rotational forces, pressurized air hazards, and ballistic impacts, strict control, mandatory two-hand operation, and proper line securing, are strictly enforced.",
+    core_reminder: "TWO-HAND CONTROL, HOSE WHIP CHECKS, & GFCI PROTECTION: Handheld power tools equipped with secondary handles must be operated with both hands firmly on designated grips at all times—one-handed use is prohibited. Pneumatic twist-lock couplings require safety lock pins/wire, and safety whip checks are mandatory at all connections. All 120V portable tools and cords must be GFCI protected.",
+    intro: "Hand and portable power tools are fundamental to mechanical, piping, and fabrication work. Because these tools generate high-speed rotational forces, pressurized air hazards, and ballistic impacts, strict control, mandatory two-hand operation, and proper line securing are strictly enforced.",
     sections: [
       {
         heading: "1. Electric Power Tool Safety & Two-Hand Operation",
         bullets: [
-          "Guards & Auxiliary Handles: Never remove, pin back, or modify factory wheel guards, blade guards, or side handles. Side handles must be installed and adjusted for secure two-handed control.",
-          "Grinding Wheel Inspection: Inspect abrasive discs for cracks or chips before mounting. Ensure the wheel's rated RPM meets or exceeds the maximum operating RPM of the grinder.",
+          "Guards & Auxiliary Handles: Never remove, pin back, or modify factory wheel guards, blade guards, or side handles.",
+          "Grinding Wheel Inspection & Matching: Inspect abrasive discs and cutoff wheels for cracks or chips before mounting. Ensure the wheel's rated RPM meets or exceeds the maximum operating RPM of the grinder.",
           "Trigger Locks Prohibited: Continuous-run lock-on buttons on handheld grinders, sanders, and saws must not be engaged or locked during manual hand operation."
         ]
       },
       {
         heading: "2. Pneumatic (Air) Powered Tools & Hose Safety",
         bullets: [
-          "Positive Hose Connections: Every quarter-turn coupling must have a safety clip/cotter pin or be wired together to prevent accidental disengagement under pressure.",
-          "Whip Check Cables: Install braided steel whip check cables across all hose connections and at the tool manifold.",
-          "Air Cleaning Restrictions: Compressed air must never be used to blow debris or dust from clothing or skin. For surface cleaning, nozzles must be OSHA-compliant with pressure regulated below 30 PSI."
+          "Positive Hose Connections: Pneumatic tools must be secured to air supply lines by positive locking means. Every quarter-turn coupling must have a safety clip/cotter pin or be wired together to prevent accidental disengagement under pressure.",
+          "Whip Check Cables: Install braided steel whip check cables across all hose connections and at the tool manifold to restrain the hose if a fitting fails.",
+          "No Radiator Clamps: Never use automotive worm-drive (radiator) hose clamps to repair or couple pneumatic lines. Use only factory-crimped or approved mechanical ferrule fittings.",
+          "Air Cleaning Restrictions: Compressed air must never be used to blow debris or dust from clothing or skin. For surface cleaning, air nozzles must be OSHA-compliant with pressure regulated below 30 PSI and equipped with chip guarding."
         ]
       },
       {
@@ -760,13 +754,15 @@ export const SAFETY_BRIEFINGS: SafetyBriefing[] = [
         bullets: [
           "Qualified Operators Only: Only authorized craftsmen may handle or fire powder-actuated tools.",
           "Pre-Operation Material Check: Never fire fasteners into brittle, hardened steel, cast iron, glazed tile, or thin base materials where ricochet or full penetration is possible.",
-          "Misfire Protocol: Hold the tool firmly against the surface for at least 30 seconds, attempt a second firing, then remove the power load and submerge in water if it fails again."
+          "Misfire Protocol: Hold the tool firmly against the working surface for at least 30 seconds. Attempt a second firing while maintaining pressure. If it fails again, keep pointed in a safe direction, carefully remove the charge, and submerge it in water."
         ]
       },
       {
         heading: "4. Electrical Cords, Grounding & Hand Tool Maintenance",
         bullets: [
           "GFCI Mandate: All temporary jobsite power feeds and extension cords must run through a tested GFCI receptacle or in-line portable GFCI unit.",
+          "Cord Routing & Protection: Keep extension cords off wet floors, away from high-traffic aisles, and protected from sharp metal corners or pinch points around doors and hatches.",
+          "Impact Tool Dressing: Hand impact tools (chisels, punches, wedges) with mushroomed or flared heads must be dressed square on a bench grinder before use to prevent metal fragments from flying off under hammer impact.",
           "No 'Cheater' Pipes: Never use cheater bars, pipes, or improvised levers to extend the handle of a ratchet or wrench to increase torque."
         ]
       }
@@ -787,30 +783,30 @@ export const SAFETY_BRIEFINGS: SafetyBriefing[] = [
     id: "briefing-018",
     title: "Rigging Hardware, Slings & Material Handling Safety Policy",
     category: "Material Handling",
-    core_reminder: "LEGIBLE TAGS, DAILY INSPECTIONS, CORNER PADDING & CRUSH ZONE CLEARANCE: Every sling and piece of rigging hardware must have a clearly legible manufacturer rating tag. Inspect all equipment prior to each shift. Softeners or corner pads must be installed on sharp edges. Never stand or walk beneath a suspended load.",
+    core_reminder: "LEGIBLE TAGS, DAILY INSPECTIONS, CORNER PADDING & CRUSH ZONE CLEARANCE: Every sling and hardware item must have a clearly legible manufacturer rating tag or stamp. Pre-use visual inspections are mandatory prior to each shift. Softeners or corner pads must protect slings from sharp edges. Never position any part of your body beneath a suspended load or within the red zone / fall line.",
     intro: "Rigging and hoisting heavy mechanical components presents extreme hazards of dropped loads, crushing injuries, and structural collapse. IMC mandates daily visual inspections, strict load rating verifications, proper hitch configurations, and certified hardware usage.",
     sections: [
       {
         heading: "1. Sling Inspection & Rejection Criteria",
         bullets: [
-          "Synthetic Web Slings: Destroy slings with missing tags, acid burns, melting/charring, holes, tears, snags, or broken stitches.",
-          "Wire Rope Slings: Remove slings with 10 randomly distributed broken wires in one lay, 5 broken wires in one strand, severe kinking, bird-caging, or core protrusion.",
-          "Alloy Steel Chains: Inspect for excessive wear, stretching, gouges, twists, or heat distortion. Never shorten chain slings with knots, bolts, or makeshift pins."
+          "Synthetic Web Slings: Immediately remove and destroy slings with missing/unreadable tags, acid/chemical/caustic burns, melting or charring from torch/welding slag, holes, tears, cuts, snags, exposed red warning core yarns, or broken stitches in load-bearing splices.",
+          "Wire Rope Slings: Immediately remove wire rope slings with 10 randomly distributed broken wires in one lay, 5 broken wires in one strand, severe kinking, bird-caging, core protrusion, or heat/arc strike damage.",
+          "Alloy Steel Chains: Daily inspect chain links for excessive wear, stretching, gouges, twists, or heat distortion. Never shorten chain slings with knots, bolts, or makeshift pins."
         ]
       },
       {
         heading: "2. Hardware, Shackles & Safe Rigging Practices",
         bullets: [
-          "Shackles & Hoist Rings: Use drop-forged, alloy steel screw-pin shackles with embossed WLL. Screw pins must be tightened completely and backed off a quarter-turn.",
-          "Shoulder Eyebolts: Standard non-shoulder eyebolts are approved for vertical inline lifts only. For angular loading, use shoulder-type eyebolts or swivel hoist rings.",
+          "Shackles & Hoist Rings: Use only drop-forged, alloy steel screw-pin shackles with clearly embossed Working Load Limits. Screw pins must be tightened completely and backed off a quarter-turn (or cotter-pinned if using safety bolt shackles). Never substitute a bolt for a shackle pin.",
+          "Shoulder Eyebolts: Standard non-shoulder eyebolts are approved for vertical inline lifts only.",
           "Hook Latches: All crane, hoist, and come-along hooks must be equipped with a functional, spring-loaded safety latch."
         ]
       },
       {
         heading: "3. Sling & Hitch Configurations",
         bullets: [
-          "Choker Hitches: Ensure the choke angle pulls down flat against the load. Never force the eye down with a hammer, as this drastically weakens the sling.",
-          "Tag Lines: Always utilize clean, non-conductive synthetic tag lines to guide and orient suspended loads. Never use your bare hands."
+          "Choker Hitches: When utilizing a choker hitch, ensure the choke angle pulls down flat against the load. Never force the eye down with a hammer, as this drastically weakens the sling at the point of contact.",
+          "Tag Lines: Always utilize clean, non-conductive synthetic tag lines of sufficient length to guide and orient suspended loads. Never use your bare hands or body to manually move a suspended load."
         ]
       }
     ],
@@ -826,31 +822,32 @@ export const SAFETY_BRIEFINGS: SafetyBriefing[] = [
       explanation: "A wire rope sling must be immediately removed from service if there are 10 randomly distributed broken wires in one lay, or 5 broken wires in one strand."
     }
   },
-  {
+ {
     id: "briefing-019",
     title: "Stop Work Authority (SWA) & Safety Intervention Policy",
     category: "Company Policy",
-    core_reminder: "STOP WORK OBLIGATION, ZERO RETRIBUTION & 6-STEP RESOLUTION: Every employee is empowered and required to halt any task if they perceive imminent danger. Retaliation for initiating a stop-work action is strictly prohibited. If modifications are required, a formal Stop Work Issuance Form must be completed.",
-    intro: "IMC guarantees every employee and on-site contractor the absolute responsibility, authority, and obligation to stop work whenever an unsafe condition, behavior, scope change, or environmental hazard arises. Exercising Stop Work Authority in good faith will never result in retribution.",
+    core_reminder: "STOP WORK OBLIGATION, ZERO RETRIBUTION & 6-STEP RESOLUTION: Every employee, regardless of rank, is empowered and required to stop work immediately if they perceive imminent danger. Retaliation or disciplinary action for initiating SWA in good faith is strictly prohibited—if a worker still feels unsafe after resolution, they will be reassigned. A formal Stop Work Form must be completed before restart if corrective action was required.",
+    intro: "IMC guarantees every employee and on-site contractor the absolute responsibility, authority, and obligation to stop work whenever an unsafe condition, behavior, scope change, or environmental hazard arises. Exercising Stop Work Authority in good faith will never result in retribution, reprimand, or negative career impact.",
     sections: [
       {
         heading: "1. Situations Requiring a Stop Work Action",
         bullets: [
           "Alarms & Signals: Facility alarms, gas detection sirens/strobes, or equipment warning indicators.",
-          "Scope Changes & Plan Shifts: Unplanned changes to the work plan, unexpected piping configurations, or sudden structural surprises.",
-          "Equipment Failures: Defective rigging, missing machine guards, or damaged cords.",
-          "Environmental Hazards: High winds, lightning, excessive heat, chemical spills, or severe leaks."
+          "Scope Changes: Unplanned changes to the job task.",
+          "Equipment & Safeguard Failures: Defective rigging, missing machine guards, or damaged cords.",
+          "Environmental & Weather Hazards: High winds exceeding lift limits, lightning, excessive heat, chemical spills, or severe leaks.",
+          "Unclear Information or Missing Controls: Lack of understanding, unperformed Risk Predictions, missing permits, or untrained personnel."
         ]
       },
       {
         heading: "2. The 6-Step SWA Resolution Process",
         bullets: [
-          "Stop: Immediately halt the hazardous activity in a direct and professional manner.",
-          "Notify: Notify affected crew members and the immediate supervisor.",
-          "Investigate: Discuss the hazard collaboratively to determine if corrections are needed.",
-          "Correct: Implement required physical corrections, PPE changes, or procedural controls.",
-          "Resume: Reopen the area and communicate the corrective actions to all affected workers.",
-          "Follow-Up: Operations Management conducts root-cause analysis and shares lessons learned."
+          "Stop: Immediately halt the hazardous activity in a direct, professional, and non-combative manner with the person(s) at risk.",
+          "Notify: Notify affected crew members and the immediate supervisor. Remove personnel from the hazard zone and stabilize the area.",
+          "Investigate: Discuss the hazard collaboratively. If resolved simply, resume work after thanking the initiator. If valid corrections are needed, complete the Stop Work Issuance Form and suspend work.",
+          "Correct: Implement required physical corrections, PPE changes, or procedural controls. A qualified supervisor must inspect and verify modifications.",
+          "Resume: Authorized personnel reopen the area and communicate the corrective actions to all affected workers before work recommences.",
+          "Follow-Up: Operations Management conducts root-cause analysis, and the Safety Department publishes the lessons learned across all crews."
         ]
       }
     ],
@@ -870,30 +867,33 @@ export const SAFETY_BRIEFINGS: SafetyBriefing[] = [
     id: "briefing-020",
     title: "Workplace Conduct, Anti-Harassment & Security Policy",
     category: "Company Policy",
-    core_reminder: "ZERO TOLERANCE FOR HARASSMENT, WEAPONS, HORSEPLAY & JOB ABANDONMENT: Derogatory remarks and harassment result in immediate termination. Firearms and explosives are strictly forbidden on company or client property. Horseplay and job abandonment are direct violations of conduct policies.",
-    intro: "IMC is committed to maintaining a safe, professional, respectful, and secure work environment. Physical horseplay, harassment, discriminatory behavior, weapons possession, and job abandonment directly undermine workplace safety and will not be tolerated.",
+    core_reminder: "ZERO TOLERANCE FOR HARASSMENT, WEAPONS, HORSEPLAY & JOB ABANDONMENT: Slurs, demeaning acts, or derogatory remarks result in immediate termination. Carrying or storing firearms, concealed weapons, or explosives on company property, vehicles, or client jobsites is strictly forbidden regardless of permits. Horseplay, practical jokes, scuffling, and throwing tools are strictly prohibited.",
+    intro: "IMC is committed to maintaining a safe, professional, respectful, and secure work environment across all fabrication shops, administrative offices, and customer job sites. Harassment, discriminatory behavior, weapons possession, and job abandonment directly undermine workplace safety and will not be tolerated.",
     sections: [
       {
         heading: "1. Anti-Harassment, Discrimination & Professional Conduct",
         bullets: [
-          "Respectful Workplace: Every associate has the right to work in an environment free of hostility and intimidation.",
-          "Prohibited Behavior: Abusive language, unwelcome physical contact, sexual harassment, or circulating offensive media.",
-          "Reporting & Non-Retaliation: Witnessed or experienced misconduct must be reported immediately. Retaliation for reporting is strictly prohibited."
+          "Respectful Workplace: Every associate has the right to work in an environment free of hostility and intimidation. Conduct that creates an intimidating, hostile, or offensive working environment is strictly prohibited.",
+          "Prohibited Behavior: Abusive, profane, or threatening language directed at coworkers, subcontractors, client representatives, or the public.",
+          "Unwelcome Physical Contact: Suggestive remarks, propositions, or sexual harassment of any nature are strictly forbidden.",
+          "Offensive Media: Displaying or circulating offensive, sexually explicit, or racially derogatory images, graffiti, or digital media in shops, break areas, or job sites is prohibited.",
+          "Reporting & Non-Retaliation: Employees who witness or experience harassment or discrimination must report the incident immediately to their Foreman, Project Manager, or the Safety Department. Retaliation against any employee reporting in good faith is strictly prohibited."
         ]
       },
       {
         heading: "2. Workplace Security, Weapons & Property Protection",
         bullets: [
-          "Weapons Prohibition: Firearms, concealed weapons, or explosives are forbidden on company property, vehicles, or client jobsites, regardless of state-issued permits.",
-          "Authorized Access: Only authorized personnel and approved subcontractors are permitted in shop fabrication areas or client work zones.",
-          "Property Respect: Theft or deliberate damage to IMC or client property is grounds for immediate termination and criminal prosecution."
+          "Weapons Prohibition: IMC maintains a weapons-free workplace. This policy applies to all employees, visitors, suppliers, and subcontractors regardless of state-issued concealed carry permits while on IMC property or client facilities.",
+          "Authorized Facility Access: Only authorized IMC personnel and approved subcontractors are permitted in shop fabrication areas, mechanical rooms, or client work zones. Visitors must sign in and be accompanied by authorized personnel.",
+          "Company & Client Property Respect: Theft, unauthorized removal, deliberate damage, or misuse of IMC property, tools, scrap metal, or client equipment is grounds for immediate termination and potential criminal prosecution."
         ]
       },
       {
         heading: "3. Attendance, Communication & Job Abandonment",
         bullets: [
-          "Reporting Absences: Employees must notify their supervisor prior to the shift start time if unable to report to work.",
-          "Five-Day Rule: Failing to report to work and failing to communicate with management for five consecutive working days is considered a voluntary surrender of employment."
+          "Reporting Absences: Employees unable to report to their scheduled shift must notify their direct supervisor or project manager before shift start time.",
+          "Unexcused Absences: Unscheduled, unexcused, or patterned absences disrupt jobsite safety planning and crew coordination.",
+          "Five-Day Rule (Automatic Resignation): In accordance with IMC General Company Policy, failing to report to work and failing to communicate with IMC management for five consecutive working days is considered a voluntary surrender of employment."
         ]
       }
     ],
@@ -909,35 +909,40 @@ export const SAFETY_BRIEFINGS: SafetyBriefing[] = [
       explanation: "Failing to report to work and failing to communicate with IMC management for five consecutive working days is considered a voluntary surrender of employment."
     }
   },
+
+
   {
     id: "briefing-021",
     title: "Powered Industrial Trucks: Forklifts & Telehandlers Policy",
     category: "Heavy Equipment",
-    core_reminder: "AUTHORIZED OPERATORS ONLY: No employee may operate without active certification. Carry loads low with the mast tilted back. Reference load charts before extending telehandler booms. Mandatory pre-start forms are required every shift.",
+    core_reminder: "AUTHORIZED & CERTIFIED OPERATORS ONLY: No employee may operate without active certification in their possession. Travel Low & Tilted Back: Carry all loads 4 to 6 inches off the ground with the mast/carriage tilted back. Telehandler Load Chart Supremacy: Always reference the cab load chart before extending any load. Mandatory Daily Pre-Start Forms must be completed every shift prior to operation.",
     intro: "Operating forklifts and variable-reach telehandlers requires specialized training, strict adherence to manufacturer load charts, and constant awareness of pedestrian traffic. An overturn, tip-over, or struck-by incident can be fatal.",
     sections: [
       {
         heading: "1. General Forklift & PIT Operational Rules",
         bullets: [
-          "Seatbelts Mandatory: Fasten seatbelt when the engine is running. In a rollover, hold on firmly and lean away from the impact—never jump.",
-          "Pedestrian Separation: Pedestrians have the right of way. Sound horn at blind intersections. Maintain eye contact.",
-          "Reverse Travel: If a bulky load blocks forward vision, drive in reverse. Never operate blind.",
-          "No Riders: Passengers are strictly prohibited unless the machine has an engineered second seat."
+          "Seatbelts Mandatory: Fasten your seatbelt whenever the lift is running. In the event of a rollover, hold on firmly and lean away from the point of impact—never jump from a tipping machine.",
+          "Pedestrian Separation & Blind Corners: Pedestrians always have the right of way. Slow down, stop, and sound your horn at all intersections, doorways, and plant aisle crossings. Maintain eye contact with pedestrians before proceeding.",
+          "Reverse Travel: If a bulky load blocks your forward field of vision, drive the machine in reverse. Never operate blind.",
+          "No Passengers / No Riders: Passengers are strictly prohibited unless the machine is specifically engineered with an approved manufacturer second seat and restraint system.",
+          "Never Place Body Parts in the Mast: Never reach through the uprights of the mast or place arms/legs outside the running lines of the cage while operating."
         ]
       },
       {
-        heading: "2. Telehandler Specific Rules",
+        heading: "2. Telehandler (Variable-Reach / Rough Terrain) Specific Rules",
         bullets: [
-          "Center of Gravity: As a boom extends, the center of gravity shifts forward. A load safe at 5 feet can cause a tip-over at 25 feet.",
-          "Frame Leveling: Must be completed before elevating or extending the boom. Never use tilt control while elevated.",
-          "Traveling: Always travel with the boom fully retracted and lowered. Drive straight up/down slopes—never diagonally."
+          "Center of Gravity: As a telehandler boom extends forward and up, the machine's center of gravity shifts drastically forward. A load that is safe at 5 feet can cause a tip-over at 25 feet.",
+          "Frame Leveling: Frame leveling must be completed before elevating or extending the boom. Never use the frame-leveling tilt control while the boom is elevated.",
+          "Outriggers & Stabilizers: If equipped with outriggers, deploy them on solid, level ground or cribbing before lifting loads near capacity or at high reach.",
+          "Traveling with a Telehandler: Always travel with the boom fully retracted and lowered to travel height. Travel directly straight up or down slopes—never turn or drive diagonally across an incline."
         ]
       },
       {
-        heading: "3. Material Rigging & Personnel Restrictions",
+        heading: "3. Material Rigging, Attachments & Personnel Restrictions",
         bullets: [
-          "Forks are Not Crane Hooks: Do not hang rigging from bare forks unless using a factory-approved lifting attachment.",
-          "Lifting Personnel: Only allowed using an approved, factory-manufactured work platform secured to the carriage with full guardrails and tie-off points."
+          "Forks are Not Crane Hooks: Do not hang slings, chains, or rigging from standard bare fork tines unless using an engineered, factory-approved lifting attachment secured to the carriage.",
+          "Lifting Personnel: Lifting workers on bare forks, wooden pallets, or unapproved platforms is strictly prohibited. Personnel may only be elevated using an approved, factory-manufactured work platform that is secured to the mast/carriage with full guardrails and harness tie-off points.",
+          "Parking & Shut-Down: When parking equipment: lower the forks/boom flat to the ground, set controls to neutral, engage the parking brake, and shut off the engine."
         ]
       }
     ],
@@ -953,34 +958,37 @@ export const SAFETY_BRIEFINGS: SafetyBriefing[] = [
       explanation: "Frame leveling must be completed before elevating or extending the boom. You should never use the frame-leveling tilt control while the boom is already elevated."
     }
   },
+
+
   {
     id: "briefing-022",
     title: "Chemical Safety: PSM Ammonia Compliance & Defensive Emergency Response",
     category: "Chemical Safety",
-    core_reminder: "LINE BREAKING PERMIT REQUIRED: Never open an ammonia line without an approved permit, LOTO, and zero pressure verification. Ammonia work must be overseen by designated leads. IMC field employees are trained for defensive evacuation only. If ammonia levels reach 25 ppm, evacuate crosswind then upwind.",
+    core_reminder: "HAZARDOUS LINE BREAKING PERMIT REQUIRED: Never open, unbolt, cut, or tap into an ammonia line or vessel without an approved permit, certified LOTO, and zero pressure verification. Trained Personnel Only: All work must be led or overseen by designated Ammonia Leads (TJ Beckstrom, Kelly Mower). Defensive Response Only: IMC field personnel are strictly prohibited from acting as emergency HazMat responders or entering an active release cloud. Evacuate immediately upwind/crosswind if levels reach 25 ppm or alarms activate.",
     intro: "Anhydrous Ammonia is a toxic, corrosive gas stored under high pressure in industrial refrigeration systems. Work on or near ammonia systems presents severe health, freeze-burn, and explosive hazards. IMC mandates strict Process Safety Management (PSM) protocols and a strictly defensive emergency response protocol.",
     sections: [
       {
         heading: "1. PSM Contractor Compliance",
         bullets: [
-          "Host Facility Coordination: IMC supervisors must review the host plant's Process Hazard Analysis (PHA) and specific safe work practices before performing mechanical work.",
-          "Training Documentation: Every IMC technician working near ammonia systems must maintain verified training on toxicity, PPE, and evacuation routes."
+          "Host Facility Coordination: Before performing mechanical work, hot work, or line breaking on host site ammonia systems, IMC supervisors must review the host plant's Process Hazard Analysis (PHA) and specific safe work practices.",
+          "Training Documentation: Every IMC pipefitter, welder, and technician working near ammonia systems must maintain verified training on ammonia toxicity, PPE requirements, and plant evacuation routes."
         ]
       },
       {
         heading: "2. Safe Line Breaking & Ammonia System Servicing",
         bullets: [
-          "Zero Energy & Pump-Down: Systems must be evacuated, pumped down below atmospheric pressure, isolated with lockouts/blanks, and purged.",
-          "Line-Breaking PPE: Technicians must wear a full-face shield, chemical gloves, and have an approved escape respirator accessible when opening an isolated line.",
-          "Controlled Flange Cracking: Crack flange bolts on the side facing away from you first to direct residual spray away from your body."
+          "Zero Energy & Pump-Down: Before loosening flanges or opening valves, the system must be evacuated, pumped down below atmospheric pressure, isolated with lockouts/blanks, and purged according to written standard operating procedures.",
+          "Line-Breaking PPE: When opening an isolated line for the first time, technicians must wear a full-face shield over safety glasses, chemical-resistant gloves, and have an approved escape respirator immediately accessible.",
+          "Controlled Flange Cracking: Always crack the flange bolts on the side facing away from you first to direct any residual liquid or vapor spray away from your body."
         ]
       },
       {
         heading: "3. Defensive Emergency Action & Evacuation",
         bullets: [
-          "Evacuation Route: Check wind direction. Always evacuate crosswind, then upwind—never run downwind into a vapor plume.",
-          "Assemble & Report: Proceed to the Emergency Assembly Station for headcount and alert the host facility's ERT.",
-          "Emergency Decontamination: Flush affected skin or eyes at an eyewash/shower for at least 15 minutes."
+          "Stop & Drop Tools: Immediately stop all mechanical work, shut off hot work torches/welders, and avoid operating electrical switches when an alarm sounds or a sudden leak occurs.",
+          "Check Wind Direction: Observe plant windsocks or flags. Always evacuate crosswind, then upwind—never run downwind into a vapor plume.",
+          "Assemble & Report: Proceed to the designated outdoor Emergency Assembly Station. Report directly to the IMC Foreman for a mandatory headcount and alert the host facility's Emergency Response Team (ERT).",
+          "Emergency Decontamination: If liquid ammonia contacts skin or eyes, immediately flush the affected area with clean water at an emergency eyewash/drench shower for at least 15 minutes while medical assistance is summoned."
         ]
       }
     ],
@@ -996,35 +1004,37 @@ export const SAFETY_BRIEFINGS: SafetyBriefing[] = [
       explanation: "If ambient ammonia levels reach 25 ppm or an ammonia plant horn/strobe activates, stop work immediately and evacuate."
     }
   },
+
   {
     id: "briefing-023",
     title: "Food Plant Operations, Sanitation & Tool Cleanliness Policy",
     category: "Site Compliance",
-    core_reminder: "TOOL WASHING, ZERO FOREIGN MATERIAL & GMP COMPLIANCE: All tools and equipment must be washed and degreased before entering a food production area. Strict accounting of all fasteners and blades is mandatory. Eating, drinking, and tobacco use are prohibited in processing zones.",
+    core_reminder: "TOOL WASHING, ZERO FOREIGN MATERIAL & GMP COMPLIANCE: Hand tools, power tools, and rigging must be washed and degreased with soap and water prior to entry. Loose fasteners, unclipped pens, and open utility blades are strictly controlled—all hardware must be accounted for. No eating, drinking, tobacco, or cosmetics in processing zones. Hairnets, beard nets, clean smocks, and metal-detectable earplugs are mandatory before crossing the sanitation line.",
     intro: "IMC employees must adhere to strict sanitation and contamination-control standards. Preventing biological, chemical, and physical foreign-material contamination of client food products and packaging lines is mandatory.",
     sections: [
       {
         heading: "1. Tool, Equipment & Rigging Cleanliness Protocol",
         bullets: [
-          "Pre-Entry Tool Wash: Wash all hand tools, power tool casings, and toolboxes with soap and water at the designated wash station before staging them in production zones.",
-          "Food-Grade Lubricants Only: Use only NSF H1 food-grade registered lubricants authorized by the host facility. Never use standard non-food greases where incidental contact is possible.",
-          "Dedicated Carts & Tool Trays: Never place dirty tools, grease rags, or hardware directly on plant conveyor belts or stainless steel food-contact surfaces."
+          "Pre-Entry Tool Wash: Grease, oil, metal shavings, and shop grit carry contaminants. Ensure all hand tools (wrenches, ratchets, pipe cutters), power tool casings, and toolboxes are clean of debris before using them in production zones.",
+          "Food-Grade Lubricants Only: If machinery or pipe components require lubrication in or around active lines, utilize only food-grade registered lubricants authorized by the host facility. Never use standard non-food industrial greases where incidental food contact is possible.",
+          "Dedicated Carts & Tool Trays: Keep tools organized on plastic or stainless steel tool trays/carts. Never place dirty tools, grease rags, or hardware directly on plant conveyor belts, processing tables, or stainless steel food-contact surfaces."
         ]
       },
       {
         heading: "2. Physical & Chemical Contamination Controls",
         bullets: [
-          "Work Area Enclosures: Shroud the work area with clean, non-shedding tarps or plastic curtains to capture metal shavings and dust.",
-          "Fastener & Scrap Accounting: Maintain a strict count of hardware and tool bits. If a piece of hardware is dropped into an open tank or hopper, stop work immediately and notify the host plant supervisor.",
-          "Metal-Detectable Equipment: Utilize metal-detectable earplugs, pens, and brightly colored, traceable bandages in high-risk zones."
+          "Work Area Enclosures & Tarps: When cutting, grinding, unbolting, or drilling near open packaging or food processing zones, the work area must be completely curtained with clean plastic to capture metal shavings and dust.",
+          "Fastener & Scrap Accounting: Maintain a strict count of nuts, bolts, washers, drill bits, and cutoff wheel segments. If a drill bit snaps or a piece of hardware is dropped into an open tank, hopper, or conveyor, stop work immediately and notify the host plant supervisor.",
+          "Metal-Detectable Equipment: When working in high-risk zones, utilize metal-detectable earplugs (with embedded ball bearings/cords) and metal-detectable pens."
         ]
       },
       {
         heading: "3. Personal Hygiene & Sanitation Boundaries",
         bullets: [
-          "Sanitation Line Protocol: Respect hand-washing sinks and boot-scrubbing stations. Wash hands for at least 20 seconds before putting on gloves.",
-          "Jewelry & Personal Items: Remove all exposed jewelry prior to entering food processing floors.",
-          "Clothing & Illness: Wear clean, tear-resistant clothing. Report active communicable illnesses or open wounds to the foreman immediately."
+          "Sanitation Line: Respect all sanitation hand-washing sinks and boot-scrubbing stations when entering production floors. Wash hands with warm water and soap for at least 20 seconds before putting on gloves or handling process equipment.",
+          "Jewelry & Personal Items: Remove all exposed jewelry (rings, watches, necklaces, earrings, facial piercings) prior to entering food processing floors.",
+          "Clothing & Outerwear: Wear clean, tear-resistant clothing. Remove soiled or contaminated coveralls, welding jackets, or work smocks before entering plant break rooms, cafeterias, or restrooms.",
+          "Illness & Open Wounds: Any employee suffering from an active communicable illness, stomach virus, or open, weeping skin wound must report the condition to the IMC foreman and is prohibited from working around open food-contact surfaces."
         ]
       }
     ],
@@ -1042,32 +1052,31 @@ export const SAFETY_BRIEFINGS: SafetyBriefing[] = [
   },
   {
     id: "briefing-024",
-    title: "Biological Safety: Bloodborne Pathogens (BBP) & Exposure Control Policy",
+    title: "Biological Safety: Bloodborne Pathogens (BBP) & First Aid Exposure Control Policy",
     category: "Occupational Health",
-    core_reminder: "UNIVERSAL PRECAUTIONS, PPE & IMMEDIATE EXPOSURE REPORTING: Treat all human blood and bodily fluids as infectious. Disposable gloves and eye protection are mandatory when administering first aid or cleaning spills. Report any cuts, needle sticks, or blood contact immediately.",
-    intro: "IMC is committed to eliminating or minimizing occupational exposure to bloodborne pathogens such as Hepatitis B, Hepatitis C, and HIV. Employees performing first aid, HAZMAT response, or custodial duties must follow universal precautions.",
+    core_reminder: "UNIVERSAL PRECAUTIONS, PPE & IMMEDIATE EXPOSURE REPORTING: Treat all human blood and bodily fluids as infectious. Disposable gloves and eye/face protection are mandatory when administering first aid or cleaning spills. Report any cuts, punctures, or bodily fluid contact immediately to the site supervisor and safety director for confidential medical evaluation.",
+    intro: "IMC is committed to eliminating or minimizing occupational exposure to bloodborne pathogens such as Hepatitis B, Hepatitis C, and Human Immunodeficiency Virus (HIV). Employees performing designated first aid, HAZMAT response, custodial duties, or handling sharp materials must follow universal precautions and exposure control protocols.",
     sections: [
       {
         heading: "1. Universal Precautions & Safe Work Practices",
         bullets: [
-          "First Aid & Injury Response: Always put on disposable gloves first before rendering first aid to an injured coworker with active bleeding.",
-          "Hygiene & Sanitation: Wash hands thoroughly with soap and running water immediately after providing first aid or removing protective gloves.",
-          "Prohibited Activities: Do not eat, drink, smoke, or handle contact lenses in work areas where infectious materials may be present."
+          "First Aid & Injury Response: When rendering first aid to an injured coworker with active bleeding, always put on disposable gloves first. Avoid direct skin contact with blood or bodily fluids.",
+          "Hygiene & Sanitation: Wash hands thoroughly with soap and running water immediately after providing first aid or removing protective gloves. If hand-washing facilities are unavailable, use antiseptic wipes/sanitizer and wash as soon as possible.",
+          "Prohibited Activities: Do not eat, drink, smoke, chew gum, apply cosmetics, or handle contact lenses where infectious materials may be present. Never store food or beverages in cabinets or refrigerators containing biological/chemical materials."
         ]
       },
       {
         heading: "2. PPE Selection, Use & Disposal",
         bullets: [
-          "Gloves & Splash Protection: Wear single-use latex or vinyl gloves, and use safety glasses/face shields if splashing is possible. Never wash or reuse disposable gloves.",
-          "Proper Disposal: Place contaminated dressings, rags, and gloves into dedicated red biohazard bags or marked disposal containers. Never discard biohazard waste into standard shop trash cans."
+          "Gloves: Wear single-use latex or vinyl gloves when handling blood, body secretions, contaminated rags, or open wounds. Never wash or reuse disposable gloves.",
+          "Proper Disposal: Place contaminated dressings, rags, towels, and disposable gloves into dedicated red biohazard bags or clearly marked, leak-proof disposal containers. Never discard biohazard waste into standard shop trash cans."
         ]
       },
       {
         heading: "3. Decontamination & Post-Exposure Medical Protocol",
         bullets: [
-          "Surface Disinfection: Clean and disinfect surfaces using an EPA-registered disinfectant or a 1:10 bleach-to-water mixture.",
-          "Needle Stick Protocol: If stuck by a sharp object or contaminated blade, wash the puncture site immediately with warm water and soap. Do not squeeze aggressively.",
-          "Medical Evaluation: IMC provides immediate, confidential medical evaluation and post-exposure prophylaxis at company expense."
+          "Surface Disinfection: Contaminated tools, equipment, floors, and workstations must be thoroughly cleaned and disinfected using an EPA-registered disinfectant solution or a 1:10 bleach-to-water mixture.",
+          "Needle Stick / Puncture Protocol: If stuck by a sharp object or contaminated needle/blade, wash the puncture site immediately with warm water and soap. Do not squeeze or scrub the wound aggressively."
         ]
       }
     ],
@@ -1087,31 +1096,31 @@ export const SAFETY_BRIEFINGS: SafetyBriefing[] = [
     id: "briefing-025",
     title: "Fire Prevention, Hot Work Isolation & Environmental Protection Policy",
     category: "Fire & Gas Safety",
-    core_reminder: "35 FT / 50 FT ISOLATION, POST-JOB FIRE WATCH & ZERO UNCONTROLLED SPILLS: Combustible materials must be relocated at least 35 feet away, and flammable liquids 50 feet away from hot work. A trained Fire Watch must monitor the area during work and for 30 mins to 2 hours post-completion. Never pour chemicals or oils into drains.",
+    core_reminder: "35 FT / 50 FT ISOLATION, POST-JOB FIRE WATCH & ZERO UNCONTROLLED SPILLS: Relocate combustibles at least 35 feet away and flammable liquids 50 feet away, or isolate with certified flameproof barriers. A dedicated Fire Watch must monitor during work and for 30 minutes up to 2 hours post-completion. Zero Drain Dumping: Never dispose of oils, solvents, glycol, or chemicals into any drains or sewers.",
     intro: "IMC is dedicated to preventing industrial fires and minimizing environmental impact across all fabrication shops and customer job locations. Cutting, welding, brazing, chemical use, and waste management require proactive isolation, containment, and strict adherence to environmental standards.",
     sections: [
       {
         heading: "1. Hot Work Area Preparation & Spark Isolation",
         bullets: [
-          "Combustible Dust Hazards: Hot work is strictly forbidden near combustible dust layers. The area must be swept and cleaned before striking an arc.",
-          "Ducts & Openings: Floor openings, wall penetrations, and conveyor chutes within 35 feet must be sealed with metal guards or fire-resistant blankets.",
-          "Exterior Hot Work: Dry grass and combustible landscaping must be wetted down thoroughly prior to initiating torching or welding."
+          "Combustible Dust Hazards: Hot work is strictly forbidden on or near equipment, ducts, or surfaces containing combustible dust layers. The work area must be thoroughly swept, cleaned, and inspected before hot work begins.",
+          "Ducts, Openings & Conveyors: All floor openings, wall penetrations, conveyor chutes, and open pipe sleeves within 35 feet of hot work must be sealed with metal guards or fire-resistant blankets to prevent sparks from traveling to lower levels or adjacent rooms.",
+          "Exterior & Outdoor Hot Work: Dry grass, brush, and combustible landscaping in outdoor work zones must be wetted down thoroughly prior to hot work."
         ]
       },
       {
         heading: "2. Fire Watch Responsibilities & Equipment",
         bullets: [
-          "Dedicated Role: The Fire Watch's sole responsibility is scanning for sparks. They cannot perform grinding or pipe fitting duties while on watch.",
-          "Suppression Equipment: A fully charged ABC dry chemical fire extinguisher (min 10 lb) or charged water hose must be within arm's reach.",
-          "Opposite-Side Monitoring: If welding on a metal partition or ceiling, a secondary fire watch must be positioned on the opposite side to guard against heat-transfer ignition."
+          "Dedicated Role: The Fire Watch person's sole responsibility is to monitor the hot work operation, scan for sparks or embers, and maintain line-of-sight. The watch cannot perform grinding, pipe fitting, or assisting duties while on fire watch duty.",
+          "Suppression Equipment: A fully charged, inspected ABC dry chemical fire extinguisher must be within arm's reach of the Fire Watch.",
+          "Opposite-Side Monitoring: If welding or cutting is conducted on a metal wall, partition, ceiling, or roof, a secondary fire watch must be positioned on the opposite side to guard against heat-transfer ignition."
         ]
       },
       {
         heading: "3. Environmental Management, Chemical Handling & Spill Control",
         bullets: [
-          "Spill Prevention: Use secondary containment pallets or drip pans under fuel tanks, hydraulic units, and chemical transfer pumps.",
-          "Waste Segregation: Segregate scrap metals, cardboard, and clean wood into designated recycling bins. Collect hazardous waste in labeled steel containers.",
-          "Spill Response: Stop the source, deploy spill kit absorbents to prevent drain entry, notify the foreman, and bag used absorbents in approved waste containers."
+          "Spill Prevention & Containment: Use secondary containment pallets or drip pans under all portable fuel tanks, hydraulic power units, oil storage drums, and chemical transfer pumps.",
+          "Active Recycling & Waste Segregation: Segregate scrap metals, copper, stainless steel, cardboard, and clean wood into designated recycling bins to minimize landfill impact. Keep scrap metal bins free of trash and food waste.",
+          "Hazardous Waste Disposal: Collect contaminated rags, used absorbents, and spent aerosol cans in dedicated, closed-lid, labeled steel containers. Dispose of chemical waste according to Safety Data Sheet (SDS) guidelines."
         ]
       }
     ],
@@ -1124,39 +1133,39 @@ export const SAFETY_BRIEFINGS: SafetyBriefing[] = [
         "50 feet"
       ],
       correct_index: 2,
-      explanation: "All general combustible materials must be relocated at least 35 feet away from hot work. (Flammable liquids require a 50-foot clearance)."
+      explanation: "All general combustible materials must be relocated at least 35 feet away from hot work. Flammable liquids and fuel storage require a 50-foot clearance."
     }
   },
   {
     id: "briefing-026",
     title: "Mobile Elevating Work Platforms (MEWPs): Scissor Lifts & Boom Lifts Policy",
     category: "Heavy Equipment",
-    core_reminder: "FALL PROTECTION, OVERHEAD CLEARANCE & ZERO CLIMBING: Boom lift occupants must wear a full-body harness tied off to the factory anchor point. Scissor lift users must keep both feet on the platform floor. Standing on rails or using ladders inside the basket is prohibited.",
-    intro: "Operating scissor lifts and articulating/telescopic boom lifts exposes workers to fall, tip-over, crushing, and electrocution hazards. Proper fall arrest equipment, rigorous daily pre-start checks, and strict adherence to operating limits are mandatory.",
+    core_reminder: "FALL PROTECTION, OVERHEAD CLEARANCE & ZERO CLIMBING: Boom lift occupants must wear a full-body harness tied off exclusively to the factory anchor point inside the basket—never to external structures. Scissor lift users must keep both feet on the platform floor. Climbing rails or using ladders/buckets inside the basket is prohibited. Mandatory Pre-Start Forms must be completed every shift.",
+    intro: "Standard Reference: OSHA 29 CFR 1910.67, 1926.453 & ANSI/SAIA A92.20 / A92.22 / A92.24. Operating scissor lifts and articulating/telescopic boom lifts exposes workers to fall, tip-over, crushing, and electrocution hazards. Proper fall arrest equipment, rigorous daily pre-start checks, and strict adherence to operating limits are mandatory.",
     sections: [
       {
         heading: "1. General MEWP Operational & Platform Rules",
         bullets: [
-          "Authorized Operators: Only employees with active MEWP certification and model-specific familiarization may operate lifts.",
-          "Gate Closure: Ensure access gates swing fully shut and latch before elevating the platform.",
-          "Slope Limits: Never elevate on slopes that exceed the manufacturer's rated limit. If the tilt alarm sounds, lower the platform completely before repositioning.",
-          "Crush Hazards: Keep hands inside the guardrails when maneuvering near overhead obstructions or door frames."
+          "Authorized & Trained Operators: Only employees with active, documented third-party MEWP certification may operate lifts. Certification cards must be on your person when operating a lift.",
+          "Gate & Chain Closure: Ensure access gates fully shut and latch, or safety chains are securely fastened, before elevating the platform.",
+          "Level Ground & Slope Limits: Never elevate on slopes, ramps, or uncompacted soils that exceed the manufacturer's rated slope limit. If the tilt alarm sounds, lower the platform completely before repositioning.",
+          "Crush & Pinch Hazards: Keep hands and fingers inside the guardrails when maneuvering near overhead steel, piping, refrigeration racks, or door frames."
         ]
       },
       {
-        heading: "2. Boom Lift Specific Rules",
+        heading: "2. Boom Lift Specific Rules (Articulating & Telescopic)",
         bullets: [
-          "The 'Catapult Effect': Driving elevated over uneven ground creates a sudden whip action. Always lower the boom when driving over uneven terrain.",
-          "Power Line Clearances: Maintain a minimum clearance of at least 10 feet from all energized power lines up to 50 kV.",
-          "Exiting at Height: Exiting an elevated MEWP is strictly prohibited unless authorized under a documented Site-Specific Fall Protection Plan with 100% continuous tie-off to an external anchor."
+          "The 'Catapult Effect': Driving a boom lift while elevated over curbs, potholes, or uneven ground creates a sudden whip action at the basket that can eject an unbelted worker. Always look in the direction of travel and lower the boom when driving on uneven terrain.",
+          "Overhead Power Line Clearances: Maintain a minimum clearance of at least 10 feet from all energized power lines up to 50 kV (greater distances for higher voltages). Treat all overhead lines as energized.",
+          "Exiting at Height: Exiting a boom lift or scissor lift while elevated is strictly prohibited unless authorized under a documented Site-Specific Fall Protection Plan with 100% continuous tie-off to an approved external structural anchor."
         ]
       },
       {
         heading: "3. Pre-Start Inspection & Work Area Assessment",
         bullets: [
-          "Daily Mechanical Check: Inspect hydraulics, test emergency lowering controls, check tires, and verify limit switches before each shift.",
-          "Workplace Survey: Check the travel path for floor holes, drop-offs, overhead obstructions, and structural load ratings.",
-          "Ground Control: Use safety cones, caution tape, or a ground spotter when operating in pedestrian corridors or forklift traffic zones."
+          "Daily Mechanical Check: Inspect hydraulics for leaks, test emergency lowering controls, check tires for gouges, and verify limit switches before the start of each shift.",
+          "Workplace Survey: Check the travel path for floor holes, drop-offs, trenches, and overhead obstructions.",
+          "Barricades & Ground Control: If operating in pedestrian areas or forklift traffic zones, set up safety cones, caution tape, or assign a ground spotter to prevent collisions."
         ]
       }
     ],
@@ -1169,9 +1178,9 @@ export const SAFETY_BRIEFINGS: SafetyBriefing[] = [
         "To the lifting eye located on the outside of the basket"
       ],
       correct_index: 2,
-      explanation: "Every occupant of a boom lift must wear a full-body harness attached exclusively to the factory-installed engineered anchor point inside the basket."
+      explanation: "Every occupant of a boom lift must wear a full-body harness attached exclusively to the factory-installed engineered anchor point inside the basket. Tying off to adjacent pipes, roof steel, or external structures is strictly prohibited."
     }
-  }
+  },
 ];
 
 export function getBriefingById(id: string): SafetyBriefing | undefined {
