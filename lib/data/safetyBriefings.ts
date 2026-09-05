@@ -1224,6 +1224,588 @@ export const SAFETY_BRIEFINGS: SafetyBriefing[] = [
       correct_index: 2,
       explanation: "Any worker on the jobsite is authorized to give an Emergency Stop signal, and the operator must halt all movement immediately regardless of who gives it."
     }
+  },
+  {
+    id: "tbt-002",
+    title: "Toolbox Talk 002: What To Do When An Injury Occurs",
+    category: "Toolbox Talks",
+    core_reminder: "Stop. Make the area safe. Get help. Notify your supervisor. Report what happened.",
+    intro: "When an injury occurs, the actions taken immediately afterward can make a significant difference. Employees need to know what to do, who to notify, and how to respond without creating additional hazards.",
+    sections: [
+      {
+        heading: "1. Main Hazards",
+        bullets: [
+          "Waiting to report an injury can delay appropriate treatment and make it harder to determine what happened.",
+          "Returning to an unsafe area or continuing the task can result in additional injuries.",
+          "Attempting to provide help without knowing what to do can make the situation worse."
+        ]
+      },
+      {
+        heading: "2. Immediate Action & Reporting",
+        bullets: [
+          "Stop work and make the area safe if it can be done without putting yourself or others at risk.",
+          "Notify your supervisor immediately when you are injured or become aware of someone else's injury.",
+          "Do not move an injured person unless there is an immediate danger requiring them to be moved.",
+          "Report near misses and minor injuries, even when medical treatment does not appear necessary at the time."
+        ]
+      }
+    ],
+    question: {
+      prompt: "When is it acceptable to move a severely injured person?",
+      options: [
+        "As soon as you find them so they are more comfortable",
+        "Only after notifying the safety manager over the radio",
+        "Do not move an injured person unless there is an immediate danger requiring them to be moved",
+        "If they are blocking a high-traffic walkway or production area"
+      ],
+      correct_index: 2,
+      explanation: "Do not move an injured person unless there is an immediate danger requiring them to be moved."
+    }
+  },
+  {
+    id: "tbt-003",
+    title: "Toolbox Talk 003: Slip, Trip & Fall Prevention",
+    category: "Toolbox Talks",
+    core_reminder: "Clean as you work. Keep walkways clear. Control cords and hoses. Clean up spills. If you see a hazard, correct it or report it before someone gets hurt.",
+    intro: "Slips, trips, and falls can happen during routine work and can result in serious injuries. In a fabrication shop, welding leads, extension cords, scrap metal, tools, materials, oil, water, and other debris can create hazards if they are not properly managed.",
+    sections: [
+      {
+        heading: "1. Walkway Management",
+        bullets: [
+          "Keep walkways and work areas clear of tools, scrap, cords, hoses, and other unnecessary materials.",
+          "Keep welding leads, extension cords, and hoses organized and routed out of travel paths whenever practical.",
+          "Pick up scrap and waste as you work. Don't wait until the end of the shift to clean your area."
+        ]
+      },
+      {
+        heading: "2. Environmental Hazards",
+        bullets: [
+          "Clean up oil, water, and other spills immediately or make sure the area is controlled until it can be cleaned.",
+          "Maintain adequate lighting and report burned-out lights or poorly illuminated areas.",
+          "Watch where you are walking, especially when carrying material or working around equipment."
+        ]
+      }
+    ],
+    question: {
+      prompt: "When is the required time to clean up scrap and waste at your workstation?",
+      options: [
+        "During the designated 15-minute cleanup period at the end of the shift",
+        "Pick up scrap and waste as you work; don't wait until the end of the shift",
+        "Only when the scrap pile begins to block access to your machinery",
+        "Whenever the safety manager conducts a site audit"
+      ],
+      correct_index: 1,
+      explanation: "Pick up scrap and waste as you work. Don't wait until the end of the shift to clean your area to prevent trip hazards from accumulating."
+    }
+  },
+  {
+    id: "tbt-004",
+    title: "Toolbox Talk 004: Pinch Points in Fabrication",
+    category: "Toolbox Talks",
+    core_reminder: "Think before you place your hands. Identify where material could move. Keep your body out of the line of fire and use tools or equipment whenever possible to keep your hands away from pinch points.",
+    intro: "Pinch points are locations where a body part can become caught between two objects, between moving equipment and a stationary object, or between pieces of material.",
+    sections: [
+      {
+        heading: "1. Safe Material Handling",
+        bullets: [
+          "Identify pinch points before starting the task. Think about where your hands, fingers, feet, or body could become trapped.",
+          "Use handles, clamps, tools, or other devices when available instead of placing your hands in a pinch point.",
+          "When moving material, establish a safe hand position before beginning the movement."
+        ]
+      },
+      {
+        heading: "2. Equipment & Loads",
+        bullets: [
+          "Never place your hands or feet underneath a suspended or unsupported load.",
+          "Do not place yourself between a moving object and a fixed surface or another object.",
+          "When operating equipment, keep hands away from moving parts and points where material enters or exits machinery."
+        ]
+      }
+    ],
+    question: {
+      prompt: "What should you use to position material instead of placing your bare hands in a pinch point?",
+      options: [
+        "Heavy-duty leather welding gloves",
+        "Handles, clamps, tools, or other devices",
+        "A piece of scrap wood to wedge the material",
+        "A coworker's assistance to manually lift the heavy side"
+      ],
+      correct_index: 1,
+      explanation: "Use handles, clamps, tools, or other devices when available instead of placing your hands in a pinch point."
+    }
+  },
+  {
+    id: "tbt-005",
+    title: "Toolbox Talk 005: Proper Use of Clamps & Fixtures",
+    category: "Toolbox Talks",
+    core_reminder: "Use the right clamp. Inspect it before use. Secure the material properly. Keep your hands out of pinch points and make sure the material is supported before releasing the clamp.",
+    intro: "Clamps and fixtures are used throughout fabrication to hold, position, and secure material during welding, cutting, drilling, and assembly. When they are damaged, improperly positioned, or overloaded, material can shift or release unexpectedly.",
+    sections: [
+      {
+        heading: "1. Safe Setup",
+        bullets: [
+          "Inspect clamps and fixtures before use. Do not use equipment that is cracked, bent, damaged, or otherwise defective.",
+          "Select the correct clamp or fixture for the size, weight, and type of material being secured.",
+          "Tighten clamps enough to securely hold the material, but do not over-tighten."
+        ]
+      },
+      {
+        heading: "2. Usage Limitations",
+        bullets: [
+          "Do not use makeshift methods to extend the handle or increase the clamping force unless the equipment is specifically designed for that use.",
+          "Do not use a clamp as a lifting device unless it is specifically designed and rated for lifting.",
+          "Before releasing a clamp, make sure the material is supported and will not shift or fall."
+        ]
+      }
+    ],
+    question: {
+      prompt: "Is it acceptable to use a standard clamp to rig and lift a piece of material?",
+      options: [
+        "Yes, as long as the clamp is fully tightened down with a wrench",
+        "Yes, if the material weighs less than 50 lbs",
+        "Do not use a clamp as a lifting device unless it is specifically designed and rated for lifting",
+        "Only if you use two clamps simultaneously for balance"
+      ],
+      correct_index: 2,
+      explanation: "Do not use a clamp as a lifting device unless it is specifically designed and rated for lifting."
+    }
+  },
+  {
+    id: "tbt-006",
+    title: "Toolbox Talk 006: Stop Work Authority",
+    category: "Toolbox Talks",
+    core_reminder: "Stop the work. Identify the hazard. Communicate the concern. Correct the problem. Then safely resume the job.",
+    intro: "Every employee has the responsibility to recognize unsafe conditions and take action before someone gets hurt. Stopping a job to address a hazard is not getting in the way of production. It is part of doing the job safely.",
+    sections: [
+      {
+        heading: "1. When To Stop Work",
+        bullets: [
+          "Stop the task and address the situation when you identify an immediate or serious hazard that could result in injury.",
+          "Stop if a task is being performed in a way that is different from the safe procedure.",
+          "Stop if you or another employee does not know how to safely perform the task."
+        ]
+      },
+      {
+        heading: "2. Resolution Practices",
+        bullets: [
+          "Secure the equipment or work area without putting yourself at risk.",
+          "Clearly communicate the hazard to the employee or employees involved and notify your supervisor.",
+          "Never pressure another employee to continue working when they have identified a legitimate safety concern."
+        ]
+      }
+    ],
+    question: {
+      prompt: "Does initiating a stop-work action mean you are refusing to do your job?",
+      options: [
+        "Yes, and it will be recorded as unexcused downtime",
+        "Yes, unless a manager formally signs off on the delay",
+        "No, it means you are taking responsibility for doing the work safely",
+        "No, but it should only be used if an injury has already occurred"
+      ],
+      correct_index: 2,
+      explanation: "Stopping work does not mean you are refusing to work. It means you are taking responsibility for doing the work safely."
+    }
+  },
+  {
+    id: "tbt-007",
+    title: "Toolbox Talk 007: PPE Inspection & Replacement",
+    category: "Toolbox Talks",
+    core_reminder: "Inspect it before use. Keep it clean. Replace it when necessary. If PPE is damaged or questionable, don't use it—get a replacement or ask your supervisor.",
+    intro: "Personal protective equipment only works when it is in good condition and appropriate for the job. Damaged, worn, contaminated, or improperly fitted PPE may not provide the protection you need when an incident occurs.",
+    sections: [
+      {
+        heading: "1. Inspection Guidelines",
+        bullets: [
+          "Inspect PPE before each use. Look for cracks, tears, burns, excessive wear, contamination, or other damage.",
+          "Check welding helmets, face shields, and safety glasses for cracks, damaged lenses, or excessive scratches.",
+          "Inspect safety footwear for damaged soles, exposed areas, or other conditions that reduce protection."
+        ]
+      },
+      {
+        heading: "2. Fit and Maintenance",
+        bullets: [
+          "Make sure PPE fits properly and is appropriate for the task.",
+          "Do not modify PPE in a way that could reduce its effectiveness.",
+          "Replace PPE when it is damaged, worn out, contaminated, or no longer provides the required protection."
+        ]
+      }
+    ],
+    question: {
+      prompt: "What should you do if you are unsure whether your personal protective equipment is still safe to use?",
+      options: [
+        "Continue using it until the next scheduled safety audit",
+        "Use duct tape to reinforce any weak or questionable spots",
+        "Ask your supervisor before using it",
+        "Throw it away without notifying management"
+      ],
+      correct_index: 2,
+      explanation: "If you are unsure whether PPE is still safe to use, ask your supervisor before using it."
+    }
+  },
+  {
+    id: "tbt-008",
+    title: "Toolbox Talk 008: Metal Cutting & Sharp Edges",
+    category: "Toolbox Talks",
+    core_reminder: "Assume cut metal is sharp. Protect your hands, maintain control of the material, remove sharp edges when appropriate, and dispose of scrap safely.",
+    intro: "Sheet metal, pipe, plate, and freshly cut material can have extremely sharp edges, burrs, and corners. Treating cut metal as sharp until it has been inspected can prevent serious hand injuries.",
+    sections: [
+      {
+        heading: "1. Safe Handling",
+        bullets: [
+          "Assume freshly cut metal is sharp until it has been inspected.",
+          "Wear appropriate cut-resistant gloves when handling material with sharp edges.",
+          "Do not slide your hands along the edge of sheet metal, plate, pipe, or freshly cut material."
+        ]
+      },
+      {
+        heading: "2. Material Control",
+        bullets: [
+          "Deburr or remove sharp edges when appropriate before the material is handled further.",
+          "Maintain control of material when moving it. Do not try to catch falling metal.",
+          "Never reach blindly into a scrap container or pile where sharp material may be present."
+        ]
+      }
+    ],
+    question: {
+      prompt: "What is the rule regarding sliding your hands along the edge of sheet metal or freshly cut pipes?",
+      options: [
+        "You may do so if checking for burrs with bare hands",
+        "It is acceptable only if you are wearing standard cotton gloves",
+        "Do not slide your hands along the edge of sheet metal, plate, pipe, or freshly cut material",
+        "Slide hands slowly to avoid deep lacerations"
+      ],
+      correct_index: 2,
+      explanation: "Do not slide your hands along the edge of sheet metal, plate, pipe, or freshly cut material."
+    }
+  },
+  {
+    id: "tbt-009",
+    title: "Toolbox Talk 009: Preventing Dropped Materials",
+    category: "Toolbox Talks",
+    core_reminder: "Store materials securely. Use the right equipment. Communicate before moving loads. Keep your hands and feet out of danger and never stand under a suspended load.",
+    intro: "Metal, tools, equipment, and fabricated parts can cause serious injuries when they fall or are dropped. Proper storage, handling, and communication can prevent dropped-material injuries.",
+    sections: [
+      {
+        heading: "1. Storage & Organization",
+        bullets: [
+          "Store materials securely so they cannot easily roll, slide, tip, or fall.",
+          "Keep heavier materials low and stable when stacking or storing.",
+          "Keep work areas and walkways clear of loose material, tools, and scrap."
+        ]
+      },
+      {
+        heading: "2. Movement & Lifting",
+        bullets: [
+          "Use carts, forklifts, cranes, hoists, or other equipment when appropriate rather than trying to move heavy material by hand.",
+          "Make sure loads are properly secured and balanced before moving them.",
+          "Never stand or walk underneath a suspended load.",
+          "Do not attempt to catch falling material. Move out of the way and allow it to fall when doing so is safer."
+        ]
+      }
+    ],
+    question: {
+      prompt: "If a heavy piece of material slips and begins to fall, what should you do?",
+      options: [
+        "Reach out immediately to catch it to prevent equipment damage",
+        "Use your foot to break the fall before it hits the floor",
+        "Do not attempt to catch falling material. Move out of the way and allow it to fall",
+        "Call for a coworker to help grab the other side quickly"
+      ],
+      correct_index: 2,
+      explanation: "Do not attempt to catch falling material. Move out of the way and allow it to fall when doing so is safer."
+    }
+  },
+  {
+    id: "tbt-010",
+    title: "Toolbox Talk 010: Recognizing Unsafe Conditions",
+    category: "Toolbox Talks",
+    core_reminder: "Look. Identify the hazard. Correct it when safe. Report it when you can't. A hazard that is identified and corrected today is an injury that may never happen.",
+    intro: "Unsafe conditions are often present before an incident occurs. Recognizing and addressing hazards early can prevent injuries. Everyone has a responsibility to identify hazards and take action.",
+    sections: [
+      {
+        heading: "1. Hazard Identification",
+        bullets: [
+          "Take a moment to look at your work area before starting a task. Ask yourself: 'What could hurt me or someone else here?'",
+          "Look for hazards such as sharp edges, pinch points, hot material, moving equipment, electrical hazards, and trip hazards.",
+          "Pay attention when conditions change. A safe work area at the beginning of a job can become unsafe as the job progresses."
+        ]
+      },
+      {
+        heading: "2. Corrective Action",
+        bullets: [
+          "Correct hazards when you can safely do so.",
+          "Report hazards that cannot be immediately corrected to your supervisor.",
+          "If a task cannot be performed safely, stop and ask for help before continuing."
+        ]
+      }
+    ],
+    question: {
+      prompt: "What should you do if you identify a hazard but cannot safely correct it yourself?",
+      options: [
+        "Continue working carefully around it",
+        "Place a piece of cardboard over it and move on",
+        "Report the hazard to your supervisor so it can be properly addressed",
+        "Wait for the safety inspector to notice it on their next rounds"
+      ],
+      correct_index: 2,
+      explanation: "Report hazards that cannot be immediately corrected to your supervisor."
+    }
+  },
+  {
+    id: "tbt-011",
+    title: "Toolbox Talk 011: Inspecting Tools Before Use",
+    category: "Toolbox Talks",
+    core_reminder: "Stop. Inspect. Use the right tool. If it is damaged, take it out of service and report it.",
+    intro: "Hand tools, power tools, welding equipment, and other shop equipment are used every day. Damaged or defective equipment can cause cuts, burns, electric shock, flying debris, or other serious injuries.",
+    sections: [
+      {
+        heading: "1. Inspection Protocol",
+        bullets: [
+          "Inspect tools before each use. Look for damage, excessive wear, loose parts, and other defects.",
+          "Check power cords, plugs, switches, and guards on electrical and powered equipment.",
+          "Verify that safety guards and protective devices are properly installed and functioning."
+        ]
+      },
+      {
+        heading: "2. Tool Integrity",
+        bullets: [
+          "Use tools only for their intended purpose. Do not modify tools or use makeshift repairs.",
+          "If a tool is damaged or defective, stop using it immediately and notify your supervisor.",
+          "Do not use a damaged tool just because the job will only take a minute."
+        ]
+      }
+    ],
+    question: {
+      prompt: "Is it acceptable to use a damaged or unguarded tool if the task will only take one minute?",
+      options: [
+        "Yes, if you hold it securely with both hands",
+        "Yes, as long as no other workers are in the immediate area",
+        "No, do not use a damaged tool just because the job will only take a minute",
+        "Only if you put on an extra pair of gloves first"
+      ],
+      correct_index: 2,
+      explanation: "Do not use a damaged tool just because the job will only take a minute."
+    }
+  },
+  {
+    id: "tbt-012",
+    title: "Toolbox Talk 012: Arc Flash & UV Radiation",
+    category: "Toolbox Talks",
+    core_reminder: "Know where welding is happening. Don't look at the arc. Protect your eyes and skin. Speak up when you see an unsafe exposure.",
+    intro: "Welding produces intense ultraviolet (UV), infrared (IR), and visible radiation. Looking directly at a welding arc can cause serious eye injuries, commonly known as arc eye or welder's flash, and UV radiation can burn exposed skin.",
+    sections: [
+      {
+        heading: "1. Bystander Exposure",
+        bullets: [
+          "Employees who are not welding can still be exposed if they look toward an active arc.",
+          "Never look directly at an active welding arc, even for a few seconds.",
+          "Be aware of where welding is taking place before starting work in an area and position yourself so you are not directly facing the welding arc."
+        ]
+      },
+      {
+        heading: "2. Welder Requirements",
+        bullets: [
+          "Welders must use a properly rated welding helmet and correct lens shade for the welding operation.",
+          "Keep exposed skin covered with appropriate welding clothing, gloves, and long pants.",
+          "When practical, communicate with nearby employees before striking an arc."
+        ]
+      }
+    ],
+    question: {
+      prompt: "Can you suffer eye damage from an arc flash even if you are not the person welding?",
+      options: [
+        "No, only the person holding the torch is at risk",
+        "No, ambient shop lighting cancels out the UV radiation",
+        "Yes, employees who are not welding can still be exposed if they look toward an active arc",
+        "Only if you are standing closer than 3 feet from the welder"
+      ],
+      correct_index: 2,
+      explanation: "Yes, employees who are not welding can still be exposed if they look toward an active arc."
+    }
+  },
+  {
+    id: "tbt-013",
+    title: "Toolbox Talk 013: Hearing Protection",
+    category: "Toolbox Talks",
+    core_reminder: "If the work area or equipment is loud, protect your hearing. Wear your hearing protection correctly, use it consistently, and don't take unnecessary chances with your hearing.",
+    intro: "Fabrication shops can be noisy environments. Grinders, saws, presses, impacts, air tools, and other equipment can produce noise levels that can damage hearing over time.",
+    sections: [
+      {
+        heading: "1. Protection Practices",
+        bullets: [
+          "Wear hearing protection when required and whenever you are working around loud equipment.",
+          "Make sure hearing protection fits properly. Poorly fitted protection can significantly reduce its effectiveness.",
+          "Keep hearing protection clean and replace disposable or damaged protection as needed."
+        ]
+      },
+      {
+        heading: "2. Exposure Limits",
+        bullets: [
+          "Whenever practical, increase your distance from loud equipment when you are not actively using it.",
+          "Do not remove hearing protection simply because a loud task is only going to take a minute.",
+          "If you notice ringing in your ears or changes in your hearing after working around loud noise, report it to your supervisor."
+        ]
+      }
+    ],
+    question: {
+      prompt: "Why is the physical fit of your earplugs or earmuffs critical?",
+      options: [
+        "It prevents them from getting dirty as quickly",
+        "Poorly fitted protection can significantly reduce its effectiveness in blocking hazardous noise",
+        "It is purely for personal comfort over an 8-hour shift",
+        "It helps OSHA inspectors see them from across the room"
+      ],
+      correct_index: 1,
+      explanation: "Make sure hearing protection fits properly. Poorly fitted protection can significantly reduce its effectiveness."
+    }
+  },
+  {
+    id: "tbt-014",
+    title: "Toolbox Talk 014: Drill Press Safety",
+    category: "Toolbox Talks",
+    core_reminder: "Secure the material. Keep yourself away from rotating parts. Stop the machine before making adjustments or clearing material.",
+    intro: "Drill presses are common in fabrication shops and can quickly cause serious injuries when material, clothing, gloves, or hands come into contact with the rotating drill bit.",
+    sections: [
+      {
+        heading: "1. Secure Setup",
+        bullets: [
+          "Secure the workpiece using a vise, clamp, or other appropriate holding device. Never hold material by hand while drilling.",
+          "Remove the chuck key immediately after adjusting the drill bit. Never leave it in the chuck.",
+          "Keep loose clothing, jewelry, long hair, and other items away from rotating parts."
+        ]
+      },
+      {
+        heading: "2. Operating Controls",
+        bullets: [
+          "Apply steady, controlled pressure. Do not force the drill bit through the material.",
+          "Stop the machine completely before making adjustments, removing material, or clearing chips.",
+          "Use a brush or appropriate tool to remove chips. Never use your hands.",
+          "Do not wear gloves when operating a drill press if they could become caught in the rotating equipment."
+        ]
+      }
+    ],
+    question: {
+      prompt: "What is the mandatory method for removing metal chips from the drill press table?",
+      options: [
+        "Sweep them away with a gloved hand",
+        "Blow them off using compressed air from a high-pressure nozzle",
+        "Use a brush or appropriate tool to remove chips; never use your hands",
+        "Wipe them off with a damp shop rag while the bit is spinning"
+      ],
+      correct_index: 2,
+      explanation: "Use a brush or appropriate tool to remove chips. Never use your hands."
+    }
+  },
+  {
+    id: "tbt-015",
+    title: "Toolbox Talk 015: Extension Cord Safety",
+    category: "Toolbox Talks",
+    core_reminder: "Inspect it before use. Use the right cord for the job. Protect it from damage. If a cord is damaged, take it out of service and report it.",
+    intro: "Extension cords are commonly used for portable tools and equipment, but damaged or improperly used cords can create shock, fire, and trip hazards.",
+    sections: [
+      {
+        heading: "1. Pre-Use Checks",
+        bullets: [
+          "Inspect extension cords before every use. Look for cuts, frayed insulation, exposed wires, damaged plugs, or loose connections.",
+          "Remove damaged cords from service immediately. Do not use tape or other temporary repairs as a substitute for proper repair or replacement.",
+          "Never remove the grounding pin from a three-prong plug."
+        ]
+      },
+      {
+        heading: "2. Routing and Use",
+        bullets: [
+          "Keep cords away from heat, oil, sharp edges, welding sparks, and hot metal.",
+          "Route cords so they do not create a trip hazard or become damaged by vehicles or equipment.",
+          "Keep electrical connections and cords away from water and wet areas.",
+          "When finished, disconnect the cord by pulling on the plug, not the cord itself."
+        ]
+      }
+    ],
+    question: {
+      prompt: "How should you properly disconnect an extension cord from the outlet?",
+      options: [
+        "Yank on the cord from a distance to pop it out",
+        "Disconnect the cord by pulling firmly on the plug, not the cord itself",
+        "Wiggle the cord side to side until it falls out of the socket",
+        "Leave it plugged in permanently so the socket doesn't wear out"
+      ],
+      correct_index: 1,
+      explanation: "When finished, disconnect the cord by pulling on the plug, not the cord itself."
+    }
+  },
+  {
+    id: "tbt-016",
+    title: "Toolbox Talk 016: Hot Metal & Burn Prevention",
+    category: "Toolbox Talks",
+    core_reminder: "Hot metal does not always look hot, and it can remain hot long after welding, cutting, or grinding has stopped. Think before you touch.",
+    intro: "Welding, cutting, grinding, and other fabrication processes can leave metal extremely hot long after the work has stopped. Hot metal may look exactly like cool metal, making burns an easy injury to prevent but also easy to overlook.",
+    sections: [
+      {
+        heading: "1. Hot Material Handling",
+        bullets: [
+          "Assume recently worked metal is hot until you know otherwise.",
+          "Clearly communicate when material is hot and should not be touched.",
+          "Use appropriate welding gloves or other heat-resistant gloves when handling hot material.",
+          "Use tongs, pliers, clamps, or other tools when practical instead of grabbing hot material by hand."
+        ]
+      },
+      {
+        heading: "2. Area Safety",
+        bullets: [
+          "Do not leave hot metal where someone could walk into it, step on it, or accidentally grab it.",
+          "Be cautious around fresh welds, cut edges, grinding areas, and recently heated material.",
+          "Never rely on appearance alone to determine whether metal is safe to touch."
+        ]
+      }
+    ],
+    question: {
+      prompt: "Can you rely on the color or appearance of a piece of metal to determine if it is cool enough to touch?",
+      options: [
+        "Yes, if it has stopped glowing red, it is safe to touch bare-handed",
+        "Yes, dull gray metal is always cool to the touch",
+        "No, never rely on appearance alone to determine whether metal is safe to touch",
+        "Only if you briefly tap it with your finger first"
+      ],
+      correct_index: 2,
+      explanation: "Never rely on appearance alone to determine whether metal is safe to touch."
+    }
+  },
+  {
+    id: "tbt-017",
+    title: "Toolbox Talk 017: Clothing For Welding & Hot Work",
+    category: "Toolbox Talks",
+    core_reminder: "Cover your skin. Wear appropriate materials. Keep clothing clean and free of flammable substances. Replace damaged clothing and PPE before it becomes a problem.",
+    intro: "Welding, cutting, grinding, and other hot work can expose employees to sparks, molten metal, slag, heat, and UV radiation. The right clothing helps protect against burns and prevents clothing from catching fire.",
+    sections: [
+      {
+        heading: "1. Proper Attire",
+        bullets: [
+          "Keep arms, legs, and other exposed skin covered when performing welding or hot work.",
+          "Wear long pants that cover the top of your work boots. Avoid cuffs that can catch sparks or slag.",
+          "Wear shirts or jackets made from flame-resistant or appropriate natural materials for welding operations.",
+          "Avoid clothing made from materials that can melt or ignite easily, especially synthetic fabrics."
+        ]
+      },
+      {
+        heading: "2. Clothing Maintenance",
+        bullets: [
+          "Keep clothing clean and free of oil, grease, solvents, and other flammable substances.",
+          "Replace clothing that becomes burned, heavily damaged, or contaminated.",
+          "Do not continue wearing damaged clothing simply because the damage appears minor."
+        ]
+      }
+    ],
+    question: {
+      prompt: "Why should you avoid wearing pants with cuffs when performing welding or hot work?",
+      options: [
+        "Cuffs restrict your mobility while kneeling",
+        "Cuffs can catch sparks or hot slag, creating a severe fire hazard",
+        "Cuffs interfere with grounding cables on the floor",
+        "Cuffs do not meet uniform appearance standards"
+      ],
+      correct_index: 1,
+      explanation: "Wear long pants that cover the top of your work boots. Avoid cuffs that can catch sparks or slag."
+    }
   }
 ];
 
