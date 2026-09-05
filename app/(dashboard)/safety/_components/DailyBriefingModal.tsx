@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
+import { createPortal } from "react-dom";
 import { SafetyBriefing, BriefingSection } from "@/lib/data/safetyBriefings";
 
 interface DailyBriefingModalProps {
@@ -13,11 +14,29 @@ interface DailyBriefingModalProps {
 const REQUIRED_READ_SECONDS = 60;
 
 export default function DailyBriefingModal({ briefing, isOpen, onComplete }: DailyBriefingModalProps) {
+  const [mounted, setMounted] = useState<boolean>(false);
   const [secondsRemaining, setSecondsRemaining] = useState<number>(REQUIRED_READ_SECONDS);
   const [isTabActive, setIsTabActive] = useState<boolean>(true);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [answerState, setAnswerState] = useState<"unanswered" | "correct" | "incorrect">("unanswered");
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Ensure Portal only renders on the client side
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // SCROLL LOCK: Freeze the background page when the modal opens
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
 
   useEffect(() => {
     const handleVisibilityChange = () => {
@@ -42,7 +61,7 @@ export default function DailyBriefingModal({ briefing, isOpen, onComplete }: Dai
     };
   }, [isOpen, isTabActive, secondsRemaining]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
   const isTimerComplete = secondsRemaining === 0;
 
@@ -83,8 +102,9 @@ export default function DailyBriefingModal({ briefing, isOpen, onComplete }: Dai
     return <span className="text-slate-300 font-sans text-xs sm:text-sm leading-relaxed">{cleanText}</span>;
   };
 
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/95 backdrop-blur-md select-none font-mono overscroll-contain touch-none">
+  // PORTAL: Teleport the modal directly to document.body so it breaks out of the z-10 layout wrapper
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/95 backdrop-blur-md select-none font-mono overscroll-contain touch-none">
       <motion.div 
         initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -286,6 +306,7 @@ export default function DailyBriefingModal({ briefing, isOpen, onComplete }: Dai
         </div>
 
       </motion.div>
-    </div>
+    </div>,
+    document.body
   );
 }
