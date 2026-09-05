@@ -822,7 +822,7 @@ export const SAFETY_BRIEFINGS: SafetyBriefing[] = [
       explanation: "A wire rope sling must be immediately removed from service if there are 10 randomly distributed broken wires in one lay, or 5 broken wires in one strand."
     }
   },
- {
+  {
     id: "briefing-019",
     title: "Stop Work Authority (SWA) & Safety Intervention Policy",
     category: "Company Policy",
@@ -909,8 +909,6 @@ export const SAFETY_BRIEFINGS: SafetyBriefing[] = [
       explanation: "Failing to report to work and failing to communicate with IMC management for five consecutive working days is considered a voluntary surrender of employment."
     }
   },
-
-
   {
     id: "briefing-021",
     title: "Powered Industrial Trucks: Forklifts & Telehandlers Policy",
@@ -958,8 +956,6 @@ export const SAFETY_BRIEFINGS: SafetyBriefing[] = [
       explanation: "Frame leveling must be completed before elevating or extending the boom. You should never use the frame-leveling tilt control while the boom is already elevated."
     }
   },
-
-
   {
     id: "briefing-022",
     title: "Chemical Safety: PSM Ammonia Compliance & Defensive Emergency Response",
@@ -1004,7 +1000,6 @@ export const SAFETY_BRIEFINGS: SafetyBriefing[] = [
       explanation: "If ambient ammonia levels reach 25 ppm or an ammonia plant horn/strobe activates, stop work immediately and evacuate."
     }
   },
-
   {
     id: "briefing-023",
     title: "Food Plant Operations, Sanitation & Tool Cleanliness Policy",
@@ -1181,7 +1176,7 @@ export const SAFETY_BRIEFINGS: SafetyBriefing[] = [
       explanation: "Every occupant of a boom lift must wear a full-body harness attached exclusively to the factory-installed engineered anchor point inside the basket. Tying off to adjacent pipes, roof steel, or external structures is strictly prohibited."
     }
   },
-    {
+  {
     id: "tbt-001",
     title: "Toolbox Talk 001: Hand Signals for Forklifts & Telehandlers",
     category: "Toolbox Talks",
@@ -1229,8 +1224,7 @@ export const SAFETY_BRIEFINGS: SafetyBriefing[] = [
       correct_index: 2,
       explanation: "Any worker on the jobsite is authorized to give an Emergency Stop signal, and the operator must halt all movement immediately regardless of who gives it."
     }
-  },
-
+  }
 ];
 
 export function getBriefingById(id: string): SafetyBriefing | undefined {
@@ -1238,9 +1232,6 @@ export function getBriefingById(id: string): SafetyBriefing | undefined {
 }
 
 export function getDailyBriefing(): SafetyBriefing {
-  const morningBriefing = getBriefingById("tbt-001");
-  if (morningBriefing) return morningBriefing;
-
   const startOfYear = new Date(new Date().getFullYear(), 0, 1);
   const diff = Date.now() - startOfYear.getTime();
   const dayOfYear = Math.floor(diff / (1000 * 60 * 60 * 24));

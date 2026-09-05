@@ -58,7 +58,9 @@ export default function SafetyMeetingPage() {
 
         // --- CHECK FOR MANAGER SITE OVERRIDE ---
         if (userProfile?.location) {
-          const overrideId = await getActiveSiteBriefingId(supabase, userProfile.location);
+          // Added .trim() to normalize the string and prevent whitespace match failures
+          const safeLocation = userProfile.location.trim();
+          const overrideId = await getActiveSiteBriefingId(supabase, safeLocation);
           if (overrideId) {
             const siteBriefing = getBriefingById(overrideId);
             if (siteBriefing) {
@@ -104,10 +106,10 @@ export default function SafetyMeetingPage() {
         return;
       }
 
-      // Explicit metadata payload with fallbacks
+      // Explicit metadata payload with fallbacks (dynamically handles both briefing-### and tbt-###)
       const activeBriefingId = dailyBriefing?.id || "briefing-001";
       const activeBriefingTitle = dailyBriefing?.title || "Daily Safety Briefing";
-      const userLocation = currentUserProfile?.location || "Springville Shop";
+      const userLocation = currentUserProfile?.location?.trim() || "Springville Shop";
 
       console.log("[SafetySign] Committing completion with meta:", {
         userId: user.id,

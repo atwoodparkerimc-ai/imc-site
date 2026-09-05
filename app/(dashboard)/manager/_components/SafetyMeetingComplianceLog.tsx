@@ -66,6 +66,10 @@ export default function SafetyMeetingComplianceLog({
   const [printDetailLevel, setPrintDetailLevel] = useState<"SUMMARY" | "FULL_AUDIT">("SUMMARY");
   const [currentDateString, setCurrentDateString] = useState("");
 
+  // Grouped lists for the dropdowns
+  const policies = briefings.filter(b => !b.id.startsWith("tbt-"));
+  const toolboxTalks = briefings.filter(b => b.id.startsWith("tbt-"));
+
   useEffect(() => {
     setCurrentDateString(new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }));
   }, []);
@@ -178,10 +182,22 @@ export default function SafetyMeetingComplianceLog({
   const handleExecutePrint = () => {
     setIsPrintModalOpen(false);
 
-    // Filter which topics to print
-    const topicsToPrint = printScope === "ALL" 
-      ? meetingSummaries 
-      : meetingSummaries.filter((m) => m.topic.id === printScope);
+    // Filter which topics to print based on the new broad scopes
+    let topicsToPrint: typeof meetingSummaries = [];
+    let scopeLabel = `Topic ${printScope}`;
+
+    if (printScope === "ALL") {
+      topicsToPrint = meetingSummaries;
+      scopeLabel = `Master Catalog (${topicsToPrint.length} Topics)`;
+    } else if (printScope === "POLICIES_ONLY") {
+      topicsToPrint = meetingSummaries.filter((m) => !m.topic.id.startsWith("tbt-"));
+      scopeLabel = `Formal Policies Only (${topicsToPrint.length} Topics)`;
+    } else if (printScope === "TBT_ONLY") {
+      topicsToPrint = meetingSummaries.filter((m) => m.topic.id.startsWith("tbt-"));
+      scopeLabel = `Toolbox Talks Only (${topicsToPrint.length} Topics)`;
+    } else {
+      topicsToPrint = meetingSummaries.filter((m) => m.topic.id === printScope);
+    }
 
     // Build the clean HTML document
     const printDocHTML = `
@@ -415,7 +431,7 @@ export default function SafetyMeetingComplianceLog({
             <td class="meta-box" style="vertical-align: top;">
               <div><strong>AUDIT DATE:</strong> ${currentDateString}</div>
               <div><strong>PROJECT SITE:</strong> ${activeSite === "ALL" ? "COMPANY-WIDE MASTER" : activeSite.toUpperCase()}</div>
-              <div><strong>RECORD SCOPE:</strong> ${printScope === "ALL" ? `Master Catalog (${briefings.length} Topics)` : `Topic ${printScope}`}</div>
+              <div><strong>RECORD SCOPE:</strong> ${scopeLabel}</div>
               <div><strong>AUDIT PERIOD:</strong> ${printTimeframe === "1Y" ? "365-Day Compliance" : printTimeframe === "1M" ? "Past 30 Days" : "Complete History"}</div>
             </td>
           </tr>
@@ -951,14 +967,27 @@ export default function SafetyMeetingComplianceLog({
                       onChange={(e) => setPrintScope(e.target.value)}
                       className="w-full min-h-[48px] p-2.5 bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] text-slate-100 uppercase rounded-sm outline-none text-xs cursor-pointer"
                     >
-                      <option value="ALL">All Safety Topics (Master {briefings.length})</option>
-                      <optgroup label="Single Topic (Select Below...)">
-                        {briefings.map((b) => (
-                          <option key={b.id} value={b.id}>
+                      <option value="ALL" className="font-black text-white bg-[var(--color-brand-card)]">All Safety Topics (Policies & TBTs)</option>
+                      <option value="POLICIES_ONLY" className="font-black text-white bg-[var(--color-brand-card)]">Company Policies Only (001–026)</option>
+                      <option value="TBT_ONLY" className="font-black text-white bg-[var(--color-brand-card)]">Toolbox Talks Only</option>
+                      
+                      <optgroup label="Single Company Policy" className="bg-[var(--color-brand-bg)] text-[var(--color-brand-blue)] mt-2">
+                        {policies.map((b) => (
+                          <option key={b.id} value={b.id} className="text-white bg-[var(--color-brand-card)] font-normal">
                             {b.id} — {b.title}
                           </option>
                         ))}
                       </optgroup>
+
+                      {toolboxTalks.length > 0 && (
+                        <optgroup label="Single Toolbox Talk" className="bg-[var(--color-brand-bg)] text-[#eab308] mt-2">
+                          {toolboxTalks.map((b) => (
+                            <option key={b.id} value={b.id} className="text-white bg-[var(--color-brand-card)] font-normal">
+                              {b.id} — {b.title}
+                            </option>
+                          ))}
+                        </optgroup>
+                      )}
                     </select>
                   </div>
 

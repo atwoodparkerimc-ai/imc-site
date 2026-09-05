@@ -17,6 +17,10 @@ export default function ManagerBriefingSelector({ locations }: ManagerBriefingSe
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [savedStatus, setSavedStatus] = useState(false);
 
+  // Split the briefings into two categorized arrays for clean dropdown grouping
+  const policies = SAFETY_BRIEFINGS.filter(b => !b.id.startsWith("tbt-"));
+  const toolboxTalks = SAFETY_BRIEFINGS.filter(b => b.id.startsWith("tbt-"));
+
   useEffect(() => {
     if (locations && locations.length > 0 && !selectedLoc) {
       setSelectedLoc(locations[0]);
@@ -85,11 +89,23 @@ export default function ManagerBriefingSelector({ locations }: ManagerBriefingSe
               onChange={(e) => setSelectedId(e.target.value)}
               className="w-full min-h-[44px] bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] rounded-sm px-4 py-2.5 text-xs text-white font-mono uppercase tracking-wide focus:outline-none transition-all cursor-pointer touch-manipulation"
             >
-              {SAFETY_BRIEFINGS.map((briefing) => (
-                <option key={briefing.id} value={briefing.id} className="bg-[var(--color-brand-card)] text-white">
-                  {briefing.id.toUpperCase()} — {briefing.title}
-                </option>
-              ))}
+              <optgroup label="Company Safety Policies" className="bg-[var(--color-brand-bg)] text-[var(--color-brand-blue)] font-black uppercase">
+                {policies.map((briefing) => (
+                  <option key={briefing.id} value={briefing.id} className="bg-[var(--color-brand-card)] text-white font-normal">
+                    {briefing.id.toUpperCase()} — {briefing.title}
+                  </option>
+                ))}
+              </optgroup>
+
+              {toolboxTalks.length > 0 && (
+                <optgroup label="Toolbox Talks" className="bg-[var(--color-brand-bg)] text-[#eab308] font-black uppercase mt-2">
+                  {toolboxTalks.map((briefing) => (
+                    <option key={briefing.id} value={briefing.id} className="bg-[var(--color-brand-card)] text-white font-normal">
+                      {briefing.id.toUpperCase()} — {briefing.title}
+                    </option>
+                  ))}
+                </optgroup>
+              )}
             </select>
           </div>
         </div>

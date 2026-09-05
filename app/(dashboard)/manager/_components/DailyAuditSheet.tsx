@@ -190,7 +190,7 @@ export default function DailyAuditSheet({ employees = [], itemVariants }: DailyA
               : 'bg-[var(--color-brand-green,#00ff9d)]/10 border-[var(--color-brand-green,#00ff9d)]/50 text-[var(--color-brand-green,#00ff9d)]'
           }`}>
             [{terminalNotification.isError ? 'SYSTEM ERROR' : 'ARCHIVE SUCCESS'}] {terminalNotification.message}
-          </div>
+          </div> 
         )}
       </div>
 
