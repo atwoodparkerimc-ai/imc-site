@@ -1181,6 +1181,56 @@ export const SAFETY_BRIEFINGS: SafetyBriefing[] = [
       explanation: "Every occupant of a boom lift must wear a full-body harness attached exclusively to the factory-installed engineered anchor point inside the basket. Tying off to adjacent pipes, roof steel, or external structures is strictly prohibited."
     }
   },
+    {
+    id: "tbt-001",
+    title: "Toolbox Talk 001: Hand Signals for Forklifts & Telehandlers",
+    category: "Toolbox Talks",
+    core_reminder: "MAINTAIN EYE CONTACT & OBEY ALL STOPS: Forklift and telehandler operators must obey an Emergency Stop signal immediately, regardless of who gives it. If line of sight with the designated ground spotter is lost at any point, the operator must stop all machine and load movement immediately.",
+    intro: "When operating industrial forklifts or variable-reach telehandlers, standardized manual hand signals are critical for directing blind spots, tight rack picks, building penetrations, and elevated placements. Clear communication between the ground spotter and operator prevents struck-by incidents, dropped loads, and tip-overs.",
+    sections: [
+      {
+        heading: "1. Stop & General Safety Signals",
+        bullets: [
+          "Emergency Stop: Both arms extended laterally, hands open downward, moving arms rapidly back and forth. Mandatory stop for any worker who signals it.",
+          "Standard Stop: Either arm extended laterally, hand open downward, moving arm back and forth.",
+          "Stop Engine / Cut Power: Draw thumb or forefinger across the throat in a horizontal cutting motion.",
+          "Move Slowly (Creep / Inch): Place one hand motionless directly in front of the hand giving the motion signal to indicate slow, controlled movement."
+        ]
+      },
+      {
+        heading: "2. Vertical & Horizontal Movement (Forks, Mast & Boom)",
+        bullets: [
+          "Raise Forks / Boom Up: Either forearm vertical, forefinger pointing up, moving hand in a small horizontal circle.",
+          "Lower Forks / Boom Down: Either arm extended downward, forefinger pointing down, moving hand in a small horizontal circle.",
+          "Tilt Mast / Carriage Back (Up): With one arm held at side, extend the other arm upward at approximately 45°.",
+          "Tilt Mast / Carriage Forward (Down): With one arm held at side, extend the other arm downward at approximately 45°.",
+          "Move Load Horizontally (Travel / Traverse): Either arm extended, hand raised and open toward direction of travel, pushing hand in direction of required movement.",
+          "This Far To Go: Hands raised and open facing inward, moving palms closer together to show the operator the exact remaining clearance."
+        ]
+      },
+      {
+        heading: "3. Telehandler Boom & Hydraulic Attachment Controls",
+        bullets: [
+          "Extend Telescopic Boom: Both hands clenched into fists in front of body, pointing thumbs outward.",
+          "Retract Telescopic Boom: Both hands clenched into fists in front of body, pointing thumbs inward toward each other.",
+          "Close Bucket / Clamps: Hold one hand closed and stationary. Rotate other hand in small vertical circle with forefinger pointing horizontally at closed hand.",
+          "Open Bucket / Clamps: Hold one hand open and stationary. Rotate other hand in small vertical circle with forefinger pointing horizontally at open hand."
+        ]
+      }
+    ],
+    question: {
+      prompt: "Who on the jobsite is authorized to give an Emergency Stop signal to a forklift or telehandler operator?",
+      options: [
+        "Only certified rigging spotters and foremen",
+        "Only the safety director or project manager",
+        "Any worker on site who spots an immediate hazard",
+        "Only the person holding the written equipment pre-start form"
+      ],
+      correct_index: 2,
+      explanation: "Any worker on the jobsite is authorized to give an Emergency Stop signal, and the operator must halt all movement immediately regardless of who gives it."
+    }
+  },
+
 ];
 
 export function getBriefingById(id: string): SafetyBriefing | undefined {
@@ -1188,6 +1238,9 @@ export function getBriefingById(id: string): SafetyBriefing | undefined {
 }
 
 export function getDailyBriefing(): SafetyBriefing {
+  const morningBriefing = getBriefingById("tbt-001");
+  if (morningBriefing) return morningBriefing;
+
   const startOfYear = new Date(new Date().getFullYear(), 0, 1);
   const diff = Date.now() - startOfYear.getTime();
   const dayOfYear = Math.floor(diff / (1000 * 60 * 60 * 24));
