@@ -2,7 +2,7 @@ import type { Viewport } from "next";
 import "./globals.css";
 
 export const metadata = {
-  title: "IMC | Industrial Medical Contracting",
+  title: "IMC | Interwest Mechanical Contractors",
   description: "Precision Infrastructure for Medicine",
 };
 

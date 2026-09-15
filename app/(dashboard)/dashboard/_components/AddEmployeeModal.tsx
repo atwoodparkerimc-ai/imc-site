@@ -1,27 +1,79 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
 
 interface AddEmployeeModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: () => void;
+  locations?: string[];
 }
 
-export default function AddEmployeeModal({ isOpen, onClose, onSuccess }: AddEmployeeModalProps) {
+export default function AddEmployeeModal({ 
+  isOpen, 
+  onClose, 
+  onSuccess,
+  locations: initialLocations 
+}: AddEmployeeModalProps) {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [nickname, setNickname] = useState("");
   const [email, setEmail] = useState("");
-  const [location, setLocation] = useState("Springville Shop");
+  const [location, setLocation] = useState("");
   const [role, setRole] = useState("employee");
+
+  const [availableLocations, setAvailableLocations] = useState<string[]>(initialLocations || []);
+  const [loadingLocations, setLoadingLocations] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   const [supabase] = useState(() => createClient());
+
+  // Fetch locations from Supabase database when modal opens
+  useEffect(() => {
+    if (!isOpen) return;
+
+    if (initialLocations && initialLocations.length > 0) {
+      setAvailableLocations(initialLocations);
+      if (!location) setLocation(initialLocations[0]);
+      return;
+    }
+
+    async function fetchLocations() {
+      setLoadingLocations(true);
+      try {
+        const { data, error } = await supabase
+          .from("locations")
+          .select("name")
+          .order("name", { ascending: true });
+
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+          const names = data.map((loc) => loc.name);
+          setAvailableLocations(names);
+          setLocation((prev) => (prev ? prev : names[0]));
+        } else {
+          // Fallback if table returned no rows
+          const fallback = ["Springville Shop", "Nestle Gaffney", "Nestle Springville"];
+          setAvailableLocations(fallback);
+          setLocation((prev) => (prev ? prev : fallback[0]));
+        }
+      } catch (err) {
+        console.error("Failed to load locations from database:", err);
+        const fallback = ["Springville Shop", "Nestle Gaffney", "Nestle Springville"];
+        setAvailableLocations(fallback);
+        setLocation((prev) => (prev ? prev : fallback[0]));
+      } finally {
+        setLoadingLocations(false);
+      }
+    }
+
+    fetchLocations();
+  }, [isOpen, initialLocations, supabase]);
 
   if (!isOpen) return null;
 
@@ -163,15 +215,20 @@ export default function AddEmployeeModal({ isOpen, onClose, onSuccess }: AddEmpl
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="text-[10px] uppercase font-black text-slate-400 block mb-1">Location</label>
+              <label className="text-[10px] uppercase font-black text-slate-400 block mb-1">
+                Location {loadingLocations && <span className="lowercase text-slate-500 font-normal">(loading...)</span>}
+              </label>
               <select
                 value={location}
+                disabled={loadingLocations || availableLocations.length === 0}
                 onChange={(e) => setLocation(e.target.value)}
-                className="w-full bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] focus:ring-1 focus:ring-[var(--color-brand-blue)] p-3 text-[16px] sm:text-xs text-slate-100 outline-none cursor-pointer rounded-sm transition-all touch-manipulation"
+                className="w-full bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] focus:ring-1 focus:ring-[var(--color-brand-blue)] p-3 text-[16px] sm:text-xs text-slate-100 outline-none cursor-pointer rounded-sm transition-all touch-manipulation disabled:opacity-50"
               >
-                <option value="Springville Shop" className="bg-[var(--color-brand-card)] text-white">Springville Shop</option>
-                <option value="Nestle Springville" className="bg-[var(--color-brand-card)] text-white">Nestle Springville</option>
-                <option value="Nestle Jonesboro" className="bg-[var(--color-brand-card)] text-white">Nestle Jonesboro</option>
+                {availableLocations.map((loc) => (
+                  <option key={loc} value={loc} className="bg-[var(--color-brand-card)] text-white">
+                    {loc}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -191,7 +248,7 @@ export default function AddEmployeeModal({ isOpen, onClose, onSuccess }: AddEmpl
           <div className="pt-2 flex flex-col sm:flex-row gap-2">
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || loadingLocations}
               className="flex-1 min-h-[44px] py-3 px-4 bg-[var(--color-brand-blue)] hover:bg-white hover:text-black active:bg-slate-200 text-white font-black text-xs uppercase tracking-widest transition-all duration-200 disabled:opacity-50 cursor-pointer rounded-sm shadow-md active:scale-[0.98] touch-manipulation focus:outline-none"
             >
               {loading ? "Creating..." : "Create Account"}

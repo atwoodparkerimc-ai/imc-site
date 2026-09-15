@@ -9,7 +9,7 @@ import {
   updateDailyHazardScore 
 } from "@/lib/db/operations";
 
-const DEFAULT_LOCATIONS = ["Springville Shop", "Nestle Springville", "Nestle Jonesboro"];
+const FALLBACK_LOCATIONS = ["Springville Shop", "Nestle Gaffney", "Nestle Springville"];
 
 interface HazardControlPanelProps {
   selectedLocation?: string;
@@ -27,14 +27,15 @@ const HAZARD_LEVELS = [
 
 export default function HazardControlPanel({ 
   selectedLocation = "Springville Shop",
-  locations = DEFAULT_LOCATIONS
+  locations: initialLocations
 }: HazardControlPanelProps) {
   const [supabase] = useState(() => createClient());
 
-  const activeLocationsList = locations && locations.length > 0 ? locations : DEFAULT_LOCATIONS;
-
+  const [availableLocations, setAvailableLocations] = useState<string[]>(
+    initialLocations && initialLocations.length > 0 ? initialLocations : FALLBACK_LOCATIONS
+  );
   const [targetSite, setTargetSite] = useState<string>(
-    selectedLocation !== "ALL" ? selectedLocation : DEFAULT_LOCATIONS[0]
+    selectedLocation !== "ALL" ? selectedLocation : availableLocations[0]
   );
   const [hazardCount, setHazardCount] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -44,6 +45,37 @@ export default function HazardControlPanel({
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
   const yesterdayStr = yesterday.toISOString().split("T")[0];
+
+  // Fetch locations from database if not passed as prop
+  useEffect(() => {
+    if (initialLocations && initialLocations.length > 0) {
+      setAvailableLocations(initialLocations);
+      return;
+    }
+
+    async function fetchLocations() {
+      try {
+        const { data, error } = await supabase
+          .from("locations")
+          .select("name")
+          .order("name", { ascending: true });
+
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+          const names = data.map((l) => l.name);
+          setAvailableLocations(names);
+          if (selectedLocation === "ALL" || !selectedLocation) {
+            setTargetSite((prev) => (names.includes(prev) ? prev : names[0]));
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load locations from database for HazardControlPanel:", err);
+      }
+    }
+
+    fetchLocations();
+  }, [supabase, initialLocations, selectedLocation]);
 
   useEffect(() => {
     if (selectedLocation && selectedLocation !== "ALL") {
@@ -59,7 +91,9 @@ export default function HazardControlPanel({
       setIsLoading(false);
     }
 
-    loadCurrentHazard();
+    if (targetSite) {
+      loadCurrentHazard();
+    }
   }, [supabase, targetSite]);
 
   const handleSave = async (selectedLevel: number) => {
@@ -121,7 +155,7 @@ export default function HazardControlPanel({
               onChange={(e) => setTargetSite(e.target.value)}
               className="w-full sm:w-auto min-h-[44px] text-xs text-slate-200 font-bold uppercase py-2 px-3 outline-none transition-all cursor-pointer rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] touch-manipulation"
             >
-              {(activeLocationsList || []).map((loc) => (
+              {(availableLocations || []).map((loc) => (
                 <option key={loc} value={loc} className="bg-[var(--color-brand-card)] text-white">
                   {loc}
                 </option>

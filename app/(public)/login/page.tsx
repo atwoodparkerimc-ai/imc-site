@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import Footer from "@/components/footer";
+
+const FALLBACK_LOCATIONS = ["Nestle Springville", "Nestle Gaffney", "Springville Shop"];
 
 export default function EmployeeLogin() {
   const router = useRouter();
@@ -24,6 +26,7 @@ export default function EmployeeLogin() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [location, setLocation] = useState("Nestle Springville");
+  const [availableLocations, setAvailableLocations] = useState<string[]>(FALLBACK_LOCATIONS);
 
   // Password Visibility States
   const [showLoginPassword, setShowLoginPassword] = useState(false);
@@ -34,6 +37,30 @@ export default function EmployeeLogin() {
   // Status & Feedback States
   const [isLoading, setIsLoading] = useState(false);
   const [feedback, setFeedback] = useState<{ message: string; isError: boolean } | null>(null);
+
+  // Load dynamic locations from Supabase database
+  useEffect(() => {
+    async function fetchLocations() {
+      try {
+        const { data, error } = await supabase
+          .from("locations")
+          .select("name")
+          .order("name", { ascending: true });
+
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+          const names = data.map((loc) => loc.name);
+          setAvailableLocations(names);
+          setLocation((prev) => (names.includes(prev) ? prev : names[0]));
+        }
+      } catch (err) {
+        console.error("Failed to load locations for registration form:", err);
+      }
+    }
+
+    fetchLocations();
+  }, [supabase]);
 
   // Handle User Login
   const handleLogin = async (e: React.FormEvent) => {
@@ -412,9 +439,11 @@ export default function EmployeeLogin() {
                       onChange={(e) => setLocation(e.target.value)}
                       className="w-full bg-[#0F1115] border border-slate-800 text-slate-100 p-3 text-xs outline-none focus:border-[#117AE0] transition-colors rounded-sm cursor-pointer font-mono"
                     >
-                      <option value="Nestle Springville">Nestle Springville</option>
-                      <option value="Nestle Jonesboro">Nestle Jonesboro</option>
-                      <option value="Springville Shop">Springville Shop</option>
+                      {availableLocations.map((loc) => (
+                        <option key={loc} value={loc} className="bg-[#131720] text-white">
+                          {loc}
+                        </option>
+                      ))}
                     </select>
                   </div>
 
