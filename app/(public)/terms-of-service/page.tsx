@@ -127,10 +127,10 @@ export default function TermsOfServicePage() {
                 <div>
                   <strong className="text-white block uppercase mb-1">Direct Line</strong>
                   <a 
-                    href="tel:8013605735" 
+                    href="tel:8013605733" 
                     className="text-slate-300 hover:text-white active:text-[#ea1f27] py-1 inline-block transition-colors touch-manipulation"
                   >
-                    (801) 360-5735
+                    (801) 360-5733
                   </a>
                 </div>
               </div>

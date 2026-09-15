@@ -200,10 +200,10 @@ export default function CapabilitiesLandingPage() {
                 Phone
               </span>
               <a 
-                href="tel:8013605735" 
+                href="tel:8013605733" 
                 className="font-mono text-lg sm:text-2xl font-black text-white hover:text-[#ea1f27] active:text-[#ea1f27] py-1 inline-block transition-all active:scale-[0.98] touch-manipulation"
               >
-                (801) 360-5735
+                (801) 360-5733
               </a>
               <p className="text-slate-300 text-xs sm:text-sm mt-1">Connect directly with project managers and field operations leads.</p>
             </div>

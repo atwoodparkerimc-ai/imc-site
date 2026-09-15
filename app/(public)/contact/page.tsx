@@ -47,7 +47,7 @@ export default function ContactPage() {
 
   // Decoupled contact variables to prevent automated spam bot scraping
   const phoneDisplay = ["(801)", "360-5735"].join(" ");
-  const phoneHref = ["tel:8013605735"].join("");
+  const phoneHref = ["tel:8013605733"].join("");
   
   const domain = "interwestmechanical.com";
   const estimatingEmail = `estimating@${domain}`;

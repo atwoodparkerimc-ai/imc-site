@@ -44,7 +44,7 @@ export default function Home() {
   const [isInteractive, setIsInteractive] = useState<boolean>(false);
 
   const phoneDisplay = ["(801)", "360-5735"].join(" ");
-  const phoneHref = ["tel:8013605735"].join("");
+  const phoneHref = ["tel:8013605733"].join("");
 
   return (
     <div className="w-full flex-1 flex flex-col relative bg-[#0b0f19] text-slate-100 font-sans selection:bg-[#0088ff] selection:text-white">
