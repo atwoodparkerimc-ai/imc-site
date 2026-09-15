@@ -397,7 +397,6 @@ export default function DashboardPage() {
           <DashboardGauge 
             value={displayPoints} 
             label="Active Balance" 
-            subLabel={`Next Tier: ${DEFAULT_NEXT_GOAL}`}
             primaryColor="var(--color-brand-blue)" 
             shadowColor="rgba(0, 136, 255, 0.6)" 
             rgb={[0, 136, 255]} 
@@ -528,7 +527,7 @@ export default function DashboardPage() {
                   ? "text-[var(--color-brand-green,#00ff9d)]" 
                   : "text-[var(--color-brand-blue)]"
               }`}>
-                Report Act
+                Report Safe Act
               </h3>
               <p className={`text-[10px] uppercase tracking-wider font-black mt-1 ${
                 isReportingComplete 
@@ -564,7 +563,7 @@ export default function DashboardPage() {
               <div className="flex items-center gap-2 min-w-0">
                 <span className="w-2 h-2 bg-[var(--color-brand-blue)] animate-pulse flex-shrink-0" />
                 <h3 className="text-[var(--color-brand-blue)] text-xs uppercase font-black tracking-widest truncate">
-                  Daily Safety Module
+                  Daily Safety Meeting
                 </h3>
               </div>
               {isSafetyComplete ? (

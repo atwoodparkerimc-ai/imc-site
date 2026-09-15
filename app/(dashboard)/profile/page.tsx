@@ -146,9 +146,11 @@ export default function ProfilePage() {
 
   const assignedLocationDisplay = (profile?.location || "Main Yard").toUpperCase();
   
-  const primaryName = profile?.nickname?.trim() || profile?.first_name?.trim() || "Employee";
+  const rawFirst = profile?.nickname?.trim() || profile?.first_name?.trim() || "Employee";
   const lastName = profile?.last_name?.trim() || "";
-  const fullDisplayName = lastName ? `${primaryName} ${lastName}` : primaryName;
+  const fullDisplayName = lastName && !rawFirst.toLowerCase().includes(lastName.toLowerCase())
+    ? `${rawFirst} ${lastName}`
+    : rawFirst;
   
   const avatarInitials = profile?.last_name
     ? `${(profile.first_name || 'E')[0]}${profile.last_name[0]}`.toUpperCase()
@@ -161,13 +163,13 @@ export default function ProfilePage() {
       <div className="w-full border p-3.5 sm:p-6 shadow-2xl relative overflow-hidden rounded-sm bg-[var(--color-brand-card)] border-[var(--color-brand-border)]">
         <div className="absolute top-0 left-0 w-full h-[3px] bg-[var(--color-brand-blue,#0088ff)]" />
         
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+          <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
             <div className="w-12 h-12 sm:w-14 sm:h-14 border flex items-center justify-center text-base sm:text-xl font-black uppercase rounded-sm shrink-0 bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] text-[var(--color-brand-blue,#0088ff)]">
               {avatarInitials}
             </div>
             <div className="min-w-0 flex-1">
-              <h1 className="text-lg sm:text-3xl font-black text-slate-100 uppercase tracking-tighter truncate">
+              <h1 className="text-lg sm:text-2xl font-black text-slate-100 uppercase tracking-tighter truncate">
                 {fullDisplayName}
               </h1>
               <p className="text-[10px] sm:text-[11px] text-slate-400 font-bold uppercase tracking-wider mt-0.5 truncate">
@@ -176,25 +178,37 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* METRIC PILLS */}
-          <div className="w-full sm:w-auto grid grid-cols-2 sm:flex sm:items-center gap-2 sm:gap-3">
-            <div className="border p-2 sm:px-4 sm:py-2 text-center sm:text-right rounded-sm bg-[var(--color-brand-bg)] border-[var(--color-brand-border)]">
-              <span className="text-[10px] sm:text-[11px] uppercase tracking-wider text-slate-400 font-bold block truncate">REDEEMABLE</span>
-              <span className="text-xs sm:text-lg font-black tabular-nums block text-[var(--color-brand-green,#00ff9d)]">
+          {/* STANDARDIZED UNIFORM METRIC PILLS */}
+          <div className="w-full lg:w-auto grid grid-cols-3 gap-2 sm:gap-2.5 items-stretch">
+            {/* CARD 1: REDEEMABLE */}
+            <div className="border px-2.5 py-2 sm:px-4 sm:py-2.5 rounded-sm bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] flex flex-col justify-center text-center min-w-[95px] sm:min-w-[120px]">
+              <span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-slate-400 font-bold block truncate">
+                REDEEMABLE
+              </span>
+              <span className="text-xs sm:text-base font-black tabular-nums tracking-tight block text-[var(--color-brand-green,#00ff9d)] mt-0.5 whitespace-nowrap">
                 {profile?.points_balance || 0} PTS
               </span>
             </div>
 
-            <div className="border p-2 sm:px-4 sm:py-2 text-center sm:text-right rounded-sm bg-[var(--color-brand-bg)] border-[var(--color-brand-border)]">
-              <span className="text-[10px] sm:text-[11px] uppercase tracking-wider text-slate-400 font-bold block truncate">CAREER TOTAL</span>
-              <span className="text-xs sm:text-lg font-black tabular-nums block text-[var(--color-brand-blue,#0088ff)]">
+            {/* CARD 2: CAREER TOTAL */}
+            <div className="border px-2.5 py-2 sm:px-4 sm:py-2.5 rounded-sm bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] flex flex-col justify-center text-center min-w-[95px] sm:min-w-[120px]">
+              <span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-slate-400 font-bold block truncate">
+                CAREER TOTAL
+              </span>
+              <span className="text-xs sm:text-base font-black tabular-nums tracking-tight block text-[var(--color-brand-blue,#0088ff)] mt-0.5 whitespace-nowrap">
                 {profile?.lifetime_points || 0} PTS
               </span>
             </div>
 
-            <div className="col-span-2 sm:col-auto border p-2 sm:px-4 sm:py-2 text-center sm:text-right rounded-sm bg-[var(--color-brand-bg)] border-[var(--color-brand-border)]">
-              <span className="text-[10px] sm:text-[11px] uppercase tracking-wider text-slate-400 font-bold block truncate">ASSIGNED SITE</span>
-              <span className="text-xs font-black uppercase truncate block text-[var(--color-brand-blue,#0088ff)]">
+            {/* CARD 3: ASSIGNED SITE */}
+            <div className="border px-2.5 py-2 sm:px-4 sm:py-2.5 rounded-sm bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] flex flex-col justify-center text-center min-w-[110px] sm:min-w-[140px]">
+              <span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-slate-400 font-bold block truncate">
+                ASSIGNED SITE
+              </span>
+              <span 
+                className="text-[10px] sm:text-xs font-black uppercase truncate block text-[var(--color-brand-blue,#0088ff)] mt-0.5" 
+                title={assignedLocationDisplay}
+              >
                 {assignedLocationDisplay}
               </span>
             </div>
@@ -440,4 +454,3 @@ export default function ProfilePage() {
     </div>
   );
 }
-

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
@@ -22,6 +22,8 @@ export default function ReportingPage() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [users, setUsers] = useState<MinimalUserRecord[]>([]);
   const [selectedUser, setSelectedUser] = useState<string>("");
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
   const [report, setReport] = useState<string>("");
   const [hasCompletedToday, setHasCompletedToday] = useState<boolean>(false);
   const [isLoadingStatus, setIsLoadingStatus] = useState<boolean>(true);
@@ -29,6 +31,8 @@ export default function ReportingPage() {
   const [showCelebration, setShowCelebration] = useState<boolean>(false);
   const [recipientBonusGranted, setRecipientBonusGranted] = useState<boolean>(false);
   const [formFeedback, setFormFeedback] = useState<{ message: string; isError: boolean } | null>(null);
+
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     async function fetchUserData() {
@@ -56,6 +60,65 @@ export default function ReportingPage() {
     }
     fetchUserData();
   }, [supabase]);
+
+  // Close suggestions overlay when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Instant prefix & fuzzy filter as letters are typed
+  const filteredUsers = useMemo(() => {
+    if (!searchQuery.trim()) return users;
+
+    const query = searchQuery.trim().toLowerCase();
+    return users.filter((u) => {
+      const primary = (u.nickname?.trim() || u.first_name?.trim() || "").toLowerCase();
+      const last = (u.last_name?.trim() || "").toLowerCase();
+      const full = `${primary} ${last}`.trim();
+      
+      return (
+        primary.startsWith(query) ||
+        last.startsWith(query) ||
+        full.includes(query)
+      );
+    });
+  }, [users, searchQuery]);
+
+  const handleSelectCoworker = (userRecord: MinimalUserRecord) => {
+    setSelectedUser(userRecord.id);
+    const fullName = `${userRecord.nickname || userRecord.first_name} ${userRecord.last_name || ''}`.trim();
+    setSearchQuery(fullName);
+    setIsDropdownOpen(false);
+  };
+
+  const handleSearchChange = (val: string) => {
+    setSearchQuery(val);
+    setIsDropdownOpen(true);
+
+    const trimmed = val.trim().toLowerCase();
+    const exact = users.find(u => {
+      const full = `${u.nickname || u.first_name} ${u.last_name || ''}`.trim().toLowerCase();
+      return full === trimmed;
+    });
+
+    if (exact) {
+      setSelectedUser(exact.id);
+    } else {
+      setSelectedUser("");
+    }
+  };
+
+  const handleClear = () => {
+    setSearchQuery("");
+    setSelectedUser("");
+    setIsDropdownOpen(false);
+  };
 
   const handleSubmit = async () => {
     if (!selectedUser || !report || isSubmitting || hasCompletedToday) return;
@@ -98,12 +161,11 @@ export default function ReportingPage() {
 
   return (
     <div className="w-full relative flex-1 flex flex-col justify-start sm:justify-center py-4 sm:py-8 pb-12 sm:pb-16 font-mono text-slate-100 select-none">
-      {/* Blueprint Grid Background Overlay */}
       <div className="absolute inset-0 pointer-events-none opacity-5 bg-[linear-gradient(to_right,var(--color-brand-border)_1px,transparent_1px),linear-gradient(to_bottom,var(--color-brand-border)_1px,transparent_1px)] bg-[size:32px_32px] z-0" />
 
       <div className="flex-1 p-3.5 sm:p-6 max-w-6xl mx-auto w-full relative z-10 flex flex-col justify-center">
         
-        {/* PAGE HEADER BANNER */}
+        {/* HEADER */}
         <motion.header 
           initial={{ opacity: 0, y: -10 }} 
           animate={{ opacity: 1, y: 0 }}
@@ -129,7 +191,6 @@ export default function ReportingPage() {
               </p>
             </div>
 
-            {/* DYNAMIC STATUS BADGE */}
             {isLoadingStatus ? (
               <div className="inline-block self-start sm:self-auto px-2.5 py-1 bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider rounded-sm animate-pulse">
                 Checking...
@@ -146,10 +207,10 @@ export default function ReportingPage() {
           </div>
         </motion.header>
 
-        {/* MAIN SPLIT CONTENT GRID */}
+        {/* CONTENT GRID */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           
-          {/* RECOGNITION RULES & TELEMETRY */}
+          {/* RULES / TELEMETRY */}
           <motion.div 
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
@@ -195,7 +256,7 @@ export default function ReportingPage() {
             </div>
           </motion.div>
 
-          {/* SAFE ACT FORM */}
+          {/* REPORT FORM */}
           <motion.div 
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
@@ -226,35 +287,102 @@ export default function ReportingPage() {
               )}
 
               <div className="space-y-4 sm:space-y-6">
-                <div>
-                  <label className="text-slate-300 text-xs font-bold uppercase tracking-wider block mb-2">
-                    Select Coworker <span className="text-slate-500 text-[10px] sm:text-[11px] font-normal">(Assigned to your location)</span>
-                  </label>
+                
+                {/* SELECTOR */}
+                <div ref={dropdownRef} className="relative">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-2">
+                    <label className="text-slate-300 text-xs font-bold uppercase tracking-wider">
+                      Select Coworker <span className="text-slate-500 text-[10px] sm:text-[11px] font-normal">(Assigned to your location)</span>
+                    </label>
+                    <span className="text-[10px] text-slate-400 font-bold uppercase">
+                      Site Crew: <span className="text-[var(--color-brand-blue,#0088ff)]">{users.length}</span>
+                    </span>
+                  </div>
+
+                  {/* SEARCH / INPUT */}
                   <div className="relative">
-                    <select 
+                    <input
+                      type="text"
                       disabled={hasCompletedToday}
-                      className="w-full min-h-[48px] border p-3 text-slate-100 uppercase font-bold text-[16px] sm:text-sm outline-none cursor-pointer appearance-none rounded-sm transition-all bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue,#0088ff)] disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
-                      onChange={(e) => setSelectedUser(e.target.value)}
-                      value={selectedUser}
-                    >
-                      <option value="" className="bg-[var(--color-brand-card)] text-slate-400">
-                        {hasCompletedToday ? "Safe Act Logged for Today" : "Choose a team member..."}
-                      </option>
-                      {users.map(u => {
-                        const fullName = `${u.first_name} ${u.last_name || ''}`.trim();
-                        return (
-                          <option key={u.id} value={u.id} className="bg-[var(--color-brand-card)] text-white">
-                            {fullName}
-                          </option>
-                        );
-                      })}
-                    </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400">
-                      <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
-                        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-                      </svg>
+                      value={searchQuery}
+                      onFocus={() => {
+                        if (!hasCompletedToday) setIsDropdownOpen(true);
+                      }}
+                      onChange={(e) => handleSearchChange(e.target.value)}
+                      placeholder={hasCompletedToday ? "Safe Act Logged for Today" : "Search or choose coworker..."}
+                      className="w-full min-h-[48px] bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue,#0088ff)] px-3.5 pr-16 text-[16px] sm:text-sm text-slate-100 uppercase font-bold outline-none rounded-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    />
+
+                    <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                      {searchQuery && !hasCompletedToday && (
+                        <button
+                          type="button"
+                          onClick={handleClear}
+                          className="text-slate-400 hover:text-white text-xs font-bold p-1.5 cursor-pointer"
+                          aria-label="Clear selection"
+                        >
+                          ✕
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        disabled={hasCompletedToday}
+                        onClick={() => setIsDropdownOpen((prev) => !prev)}
+                        className="text-slate-400 hover:text-slate-200 p-1.5 cursor-pointer"
+                        aria-label="Toggle full list"
+                      >
+                        <svg className={`w-4 h-4 fill-current transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} viewBox="0 0 20 20">
+                          <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                        </svg>
+                      </button>
                     </div>
                   </div>
+
+                  {/* AUTOCOMPLETE DRAWER */}
+                  {isDropdownOpen && !hasCompletedToday && (
+                    <div className="absolute top-full left-0 right-0 mt-1 max-h-56 overflow-y-auto z-50 bg-[var(--color-brand-card)] border border-[var(--color-brand-border)] rounded-sm shadow-2xl divide-y divide-[var(--color-brand-border)]/40 no-scrollbar">
+                      {filteredUsers.length === 0 ? (
+                        <div className="p-3 text-center text-xs text-slate-400 font-bold uppercase">
+                          No coworkers matching "{searchQuery}"
+                        </div>
+                      ) : (
+                        filteredUsers.map((u) => {
+                          const fullName = `${u.nickname || u.first_name} ${u.last_name || ''}`.trim();
+                          const isSelected = selectedUser === u.id;
+
+                          return (
+                            <button
+                              key={u.id}
+                              type="button"
+                              onClick={() => handleSelectCoworker(u)}
+                              className={`w-full text-left px-3.5 py-2.5 text-xs sm:text-sm font-bold uppercase transition-colors flex items-center justify-between cursor-pointer ${
+                                isSelected 
+                                  ? "bg-[var(--color-brand-blue,#0088ff)] text-white" 
+                                  : "text-slate-200 hover:bg-[var(--color-brand-bg)] hover:text-white"
+                              }`}
+                            >
+                              <span>{fullName}</span>
+                              {isSelected && (
+                                <span className="text-[10px] font-black tracking-widest uppercase">
+                                  ✓ Selected
+                                </span>
+                              )}
+                            </button>
+                          );
+                        })
+                      )}
+                    </div>
+                  )}
+
+                  {/* SELECTED INDICATOR */}
+                  {selectedUser && (
+                    <div className="mt-1.5 flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-brand-green,#00ff9d)] animate-pulse" />
+                      <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                        Recipient Selected: <strong className="text-slate-200">{searchQuery}</strong>
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 <div>

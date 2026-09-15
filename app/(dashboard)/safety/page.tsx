@@ -275,7 +275,7 @@ export default function SafetyMeetingPage() {
             <div>
               <div className="mb-4 sm:mb-6 border-b pb-3 sm:pb-4 border-[var(--color-brand-border)] flex flex-row justify-between items-center gap-2">
                 <h2 className="text-slate-200 font-bold uppercase tracking-widest text-xs">
-                  Protocol Verification
+                  Daily Verification
                 </h2>
                 <div className="flex items-center gap-3">
                   <span className="text-[10px] sm:text-xs text-slate-400 tabular-nums font-bold">

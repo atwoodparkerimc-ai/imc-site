@@ -329,6 +329,16 @@ export default function ManagerDashboard() {
     return rawSafeActs.filter(a => locationUserIds.has(a.reporter_id) || (a.recipient_id && locationUserIds.has(a.recipient_id)));
   }, [rawSafeActs, locationUserIds, selectedLocation]);
 
+  // Update default selected compliance user if current one is filtered out
+  useEffect(() => {
+    if (locationFilteredUsers.length > 0) {
+      const exists = locationFilteredUsers.some(u => u.id === compUser);
+      if (!exists) {
+        setCompUser(locationFilteredUsers[0].id);
+      }
+    }
+  }, [locationFilteredUsers, compUser]);
+
   // --- RUNTIME MEMOIZED CALCULATIONS ---
   const velocityData = useMemo(() => {
     const buckets = getBuckets(tfVelocity);
@@ -664,10 +674,15 @@ export default function ManagerDashboard() {
 
         {/* TAB 1: SAFETY & HAZARDS CONTROL CENTER */}
         <div className={activeTab === 'safety' ? 'block print:hidden space-y-4 sm:space-y-6' : 'hidden'}>
-          <HazardControlPanel selectedLocation={selectedLocation} />
-          <ManagerBriefingSelector locations={locations} />
+          <HazardControlPanel 
+            selectedLocation={selectedLocation} 
+            locations={locations}
+          />
+          <ManagerBriefingSelector 
+            locations={locations} 
+          />
           <RecognitionForm 
-            employees={allUsers} 
+            employees={locationFilteredUsers} 
             onAwardSuccess={async () => {
               const { data: { user } } = await supabase.auth.getUser();
               if (user) await fetchMasterData(user.id);
@@ -675,11 +690,10 @@ export default function ManagerDashboard() {
             itemVariants={itemVariants} 
           />
           
-          {/* NEW MODULE: SAFETY MEETING COMPLIANCE & HISTORICAL LEDGER */}
           <SafetyMeetingComplianceLog 
             briefings={briefingTopics}
             completions={briefingCompletions}
-            allUsers={allUsers as unknown as UserProfileSubset[]}
+            allUsers={locationFilteredUsers as unknown as UserProfileSubset[]}
             activeSite={selectedLocation}
             formatEmployeeName={formatEmployeeName}
             itemVariants={itemVariants}
@@ -691,7 +705,7 @@ export default function ManagerDashboard() {
           <div className="order-2 md:order-1">
             <EmployeeCertManager 
               supabase={supabase} 
-              allUsers={allUsers} 
+              allUsers={locationFilteredUsers} 
             />
           </div>
 
@@ -753,7 +767,7 @@ export default function ManagerDashboard() {
 
           <ComplianceTracker 
             complianceData={complianceData} 
-            allUsers={allUsers} 
+            allUsers={locationFilteredUsers} 
             compUser={compUser} 
             setCompUser={setCompUser} 
             tfComp={tfComp} 
@@ -783,22 +797,23 @@ export default function ManagerDashboard() {
         {/* TAB 5: ORDER FULFILLMENT BOARD */}
         <div className={activeTab === 'fulfillment' ? 'block print:hidden' : 'hidden'}>
           <FulfillmentBoard 
-            managers={allUsers.filter(u => u.role === 'manager')}
+            managers={locationFilteredUsers.filter(u => u.role === 'manager')}
             itemVariants={itemVariants} 
           />
         </div>
 
         {/* TAB 6: CLIPBOARD AUDIT LOG SHEET */}
-<div className={activeTab === 'audit' ? 'block' : 'hidden'}>
-  <DailyAuditSheet 
-    employees={employees} 
-    itemVariants={itemVariants} 
-  />
-</div>
+        <div className={activeTab === 'audit' ? 'block' : 'hidden'}>
+          <DailyAuditSheet 
+            employees={locationFilteredUsers} 
+            itemVariants={itemVariants} 
+          />
+        </div>
 
         {/* PROVISION EMPLOYEE MODAL */}
         <AddEmployeeModal
           isOpen={isAddEmployeeOpen}
+          locations={locations}
           onClose={() => setIsAddEmployeeOpen(false)}
           onSuccess={async () => {
             const { data: { user } } = await supabase.auth.getUser();
