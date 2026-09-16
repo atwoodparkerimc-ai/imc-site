@@ -7,32 +7,33 @@ export async function POST(req: Request) {
     if (!apiKey) {
       console.error("Missing RESEND_API_KEY in environment variables.");
       return NextResponse.json(
-        { error: "Email service unconfigured. Please verify RESEND_API_KEY in .env.local." },
+        { error: "Email service unconfigured. Please verify RESEND_API_KEY." },
         { status: 500 }
       );
     }
 
     const resend = new Resend(apiKey);
-    const data = await req.json();
+
+    // Read payload as multipart FormData to capture both text and binary files
+    const formData = await req.formData();
 
     // 1. HONEYPOT BOT INTERCEPTION
-    // Silently drop spam without triggering alerts or errors
-    if (data.website_verify_lead || data.website_lead_verify) {
+    const botField1 = formData.get("website_verify_lead");
+    const botField2 = formData.get("website_lead_verify");
+    if (botField1 || botField2) {
       return NextResponse.json({ success: true, message: "Inquiry processed." });
     }
 
     // 2. EXTRACT INQUIRY DATA
-    const { 
-      fullName, 
-      firstName, 
-      lastName, 
-      company, 
-      phone, 
-      email, 
-      projectType, 
-      timeline, 
-      message 
-    } = data;
+    const fullName = formData.get("fullName") as string | null;
+    const firstName = formData.get("firstName") as string | null;
+    const lastName = formData.get("lastName") as string | null;
+    const company = formData.get("company") as string | null;
+    const phone = formData.get("phone") as string | null;
+    const email = formData.get("email") as string | null;
+    const projectType = formData.get("projectType") as string | null;
+    const timeline = formData.get("timeline") as string | null;
+    const message = formData.get("message") as string | null;
 
     const parsedName = fullName?.trim() || `${firstName || ""} ${lastName || ""}`.trim() || "Unspecified Contact";
     const sanitizedEmail = email?.trim().toLowerCase() || "";
@@ -46,12 +47,26 @@ export async function POST(req: Request) {
       );
     }
 
-    // 4. DISPATCH LEAD DIRECTLY TO YOUR GMAIL VIA RESEND
+    // 4. EXTRACT FILE ATTACHMENTS (PDF, PLANS, SPECS)
+    const attachments: { filename: string; content: Buffer }[] = [];
+    const file = formData.get("file") || formData.get("attachment") || formData.get("pdf");
+
+    if (file && file instanceof File && file.size > 0) {
+      const arrayBuffer = await file.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      attachments.push({
+        filename: file.name,
+        content: buffer,
+      });
+    }
+
+    // 5. DISPATCH LEAD WITH ATTACHMENT VIA RESEND
     const emailResult = await resend.emails.send({
       from: "IMC Web Portal <noreply@interwestmechanical.com>",
       to: ["atwoodparkerimc@gmail.com"],
       replyTo: sanitizedEmail || undefined,
       subject: `[New Bid Lead] ${parsedName} - ${projectType || "General Mechanical"}`,
+      attachments: attachments.length > 0 ? attachments : undefined,
       html: `
         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #0b0f19; color: #f1f5f9; padding: 24px; border-radius: 6px; border: 1px solid #1e293b; max-width: 600px;">
           <div style="border-bottom: 2px solid #ea1f27; padding-bottom: 12px; margin-bottom: 20px;">
@@ -83,6 +98,12 @@ export async function POST(req: Request) {
             <tr>
               <td style="padding: 6px 0; color: #94a3b8;"><strong>Target Timeline:</strong></td>
               <td style="padding: 6px 0; color: #ffffff;">${timeline || "Standard"}</td>
+            </tr>
+            <tr>
+              <td style="padding: 6px 0; color: #94a3b8;"><strong>Attachment:</strong></td>
+              <td style="padding: 6px 0; color: ${attachments.length > 0 ? "#10b981" : "#64748b"}; font-weight: 600;">
+                ${attachments.length > 0 ? `Attached (${attachments[0].filename})` : "None"}
+              </td>
             </tr>
           </table>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import OperationalMap from "@/components/operational-map";
@@ -43,6 +43,9 @@ export default function ContactPage() {
   // Tactical pill state
   const [selectedProjectType, setSelectedProjectType] = useState(PROJECT_TYPES[0]);
   const [selectedTimeline, setSelectedTimeline] = useState(TIMELINES[0]);
+  
+  // File state & ref
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [attachedFileName, setAttachedFileName] = useState<string | null>(null);
 
   // Decoupled contact variables to prevent automated spam bot scraping
@@ -59,6 +62,13 @@ export default function ContactPage() {
     }
   };
 
+  const handleRemoveFile = () => {
+    setAttachedFileName(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -68,17 +78,22 @@ export default function ContactPage() {
     formData.set("projectType", selectedProjectType);
     formData.set("timeline", selectedTimeline);
 
-    const payload = Object.fromEntries(formData.entries());
+    // If user cleared the file, make sure empty file isn't submitted
+    if (!attachedFileName) {
+      formData.delete("file");
+    }
 
     try {
+      // Send raw FormData so the browser automatically handles multipart boundary headers
       const res = await fetch("/api/contact", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: formData,
       });
 
+      const result = await res.json();
+
       if (!res.ok) {
-        throw new Error("Failed to submit inquiry. Please call our direct line.");
+        throw new Error(result.error || "Failed to submit inquiry. Please call our direct line.");
       }
 
       setSubmitted(true);
@@ -341,7 +356,7 @@ export default function ContactPage() {
                   </div>
                 </div>
 
-                {/* 1-Tap Pill Chips: Project Type (Enhanced Touch Targets) */}
+                {/* 1-Tap Pill Chips: Project Type */}
                 <div>
                   <span className="block text-[11px] font-mono font-bold uppercase tracking-wider text-slate-300 mb-2">
                     Project Discipline <span className="text-[#ea1f27]">*</span>
@@ -367,7 +382,7 @@ export default function ContactPage() {
                   </div>
                 </div>
 
-                {/* 1-Tap Pill Chips: Estimated Timeline (Enhanced Touch Targets) */}
+                {/* 1-Tap Pill Chips: Estimated Timeline */}
                 <div>
                   <span className="block text-[11px] font-mono font-bold uppercase tracking-wider text-slate-300 mb-2">
                     Target Timeline
@@ -417,9 +432,11 @@ export default function ContactPage() {
                       <Paperclip className="w-3.5 h-3.5 text-[#0088ff]" />
                       <span>{attachedFileName ? "Change File" : "Attach Blueprints / Specs"}</span>
                       <input 
+                        ref={fileInputRef}
                         id="file-upload" 
-                        name="file-upload" 
+                        name="file" 
                         type="file" 
+                        accept=".pdf,.dwg,.dxf,.png,.jpg,.jpeg"
                         className="sr-only" 
                         onChange={handleFileChange}
                       />
@@ -430,7 +447,7 @@ export default function ContactPage() {
                         <span className="truncate max-w-[150px]">{attachedFileName}</span>
                         <button 
                           type="button" 
-                          onClick={() => setAttachedFileName(null)}
+                          onClick={handleRemoveFile}
                           className="text-slate-400 hover:text-white active:text-white p-1 min-w-[32px] min-h-[32px] flex items-center justify-center active:scale-90 touch-manipulation cursor-pointer ml-1"
                           aria-label="Remove attached file"
                         >
@@ -439,7 +456,7 @@ export default function ContactPage() {
                       </div>
                     ) : (
                       <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider">
-                        PDF, DWG up to 50MB
+                        PDF, DWG, PNG up to 25MB
                       </span>
                     )}
                   </div>
