@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import Footer from "@/components/footer";
@@ -16,13 +16,16 @@ import {
   Minimize2 
 } from "lucide-react";
 
+// Dynamically import 3D CAD engine with SSR disabled
 const AhuBlueprintAnimation = dynamic(
   () => import("../../components/ahu-blueprint-animation"),
   { 
     ssr: false, 
     loading: () => (
-      <div className="h-full w-full animate-pulse flex items-center justify-center">
-        <span className="font-mono text-[10px] uppercase tracking-widest text-slate-500">Initializing CAD Engine...</span>
+      <div className="h-full w-full animate-pulse flex items-center justify-center bg-[#070a10]/40">
+        <span className="font-mono text-[10px] uppercase tracking-widest text-slate-500">
+          Initializing CAD Engine...
+        </span>
       </div>
     ) 
   }
@@ -42,6 +45,17 @@ const CERTIFICATIONS = [
 
 export default function Home() {
   const [isInteractive, setIsInteractive] = useState<boolean>(false);
+  const [isDesktop, setIsDesktop] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    setIsDesktop(window.innerWidth >= 1024);
+
+    const handleResize = () => {
+      setIsDesktop(window.innerWidth >= 1024);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const phoneDisplay = ["(801)", "360-5735"].join(" ");
   const phoneHref = ["tel:8013605733"].join("");
@@ -64,139 +78,145 @@ export default function Home() {
         </div>
 
         {/* ========================================= */}
-        {/* MOBILE LAYOUT                             */}
+        {/* MOBILE LAYOUT (<1024px)                  */}
         {/* ========================================= */}
-        
-        {/* 1. Top Area: Dedicated 3D Stage (Expanded height to fill top screen area) */}
-        <div className="block lg:hidden relative flex-1 h-[60vh] min-h-[420px] w-full z-10 overflow-hidden">
-          <div className={`absolute inset-0 w-full h-full ${isInteractive ? "pointer-events-auto" : "pointer-events-none"}`}>
-            {/* @ts-ignore - Prop forwarded to internal Three.js canvas */}
-            <AhuBlueprintAnimation interactive={isInteractive} />
-          </div>
+        {isDesktop === false && (
+          <div className="flex flex-col justify-between h-full w-full lg:hidden">
+            {/* 1. Top Area: Dedicated 3D Stage (Mounts immediately) */}
+            <div className="relative flex-1 h-[60vh] min-h-[400px] w-full z-10 overflow-hidden bg-[#040812]">
+              <div className={`absolute inset-0 w-full h-full ${isInteractive ? "pointer-events-auto" : "pointer-events-none"}`}>
+                {/* @ts-ignore */}
+                <AhuBlueprintAnimation interactive={isInteractive} />
+              </div>
 
-          {/* Interactive Mode Mobile Toggle Button */}
-          <div className="absolute bottom-3 right-3 z-40 pointer-events-auto">
-            <button
-              type="button"
-              onClick={() => setIsInteractive(!isInteractive)}
-              aria-label={isInteractive ? "Lock camera rotation" : "Inspect 3D model controls"}
-              className={`inline-flex items-center justify-center px-3.5 py-2 bg-[#040812]/90 border border-slate-700/80 rounded-sm font-mono text-[10px] font-bold uppercase tracking-widest transition-all active:scale-95 cursor-pointer touch-manipulation select-none shadow-lg ${
-                isInteractive 
-                  ? "text-[#ea1f27] border-[#ea1f27]/50 active:text-white" 
-                  : "text-slate-300 active:text-white"
-              }`}
-            >
-              {isInteractive ? (
-                <span className="inline-flex items-center gap-1.5">
-                  [ <Minimize2 className="w-3.5 h-3.5 text-[#ea1f27] shrink-0" /> Lock Camera ]
-                </span>
-              ) : (
-                <span className="inline-flex items-center gap-1.5">
-                  [ <Maximize2 className="w-3.5 h-3.5 text-[#0088ff] shrink-0" /> Inspect 3D Model ]
-                </span>
-              )}
-            </button>
-          </div>
+              {/* Interactive Camera Lock Toggle */}
+              <div className="absolute bottom-3 right-3 z-40 pointer-events-auto">
+                <button
+                  type="button"
+                  onClick={() => setIsInteractive(!isInteractive)}
+                  aria-label={isInteractive ? "Lock camera rotation" : "Inspect 3D model controls"}
+                  className={`inline-flex items-center justify-center px-3.5 py-2 bg-[#040812]/90 border border-slate-700/80 rounded-sm font-mono text-[10px] font-bold uppercase tracking-widest transition-all active:scale-95 cursor-pointer touch-manipulation select-none shadow-lg ${
+                    isInteractive 
+                      ? "text-[#ea1f27] border-[#ea1f27]/50 active:text-white" 
+                      : "text-slate-300 active:text-white"
+                  }`}
+                >
+                  {isInteractive ? (
+                    <span className="inline-flex items-center gap-1.5">
+                      [ <Minimize2 className="w-3.5 h-3.5 text-[#ea1f27] shrink-0" /> Lock Camera ]
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5">
+                      [ <Maximize2 className="w-3.5 h-3.5 text-[#0088ff] shrink-0" /> Inspect 3D Model ]
+                    </span>
+                  )}
+                </button>
+              </div>
 
-          {/* Blend edge into the bottom HUD */}
-          <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-[#040812] to-transparent pointer-events-none" />
-        </div>
-
-        {/* 2. Bottom Area: Full-Width Docked HUD */}
-        <div className="block lg:hidden relative z-30 w-full bg-[#040812]/95 backdrop-blur-2xl border-t border-slate-700/60 px-5 py-6 shadow-[0_-20px_50px_rgba(0,0,0,0.8)]">
-          <h1 className="text-[2.2rem] xs:text-[2.5rem] font-black tracking-tighter uppercase leading-[0.93] text-white drop-shadow-md mb-3">
-            The <span className="inline-block bg-gradient-to-r from-[#ea1f27] from-0% via-[#ea1f27] via-[28%] to-[#64748b]/80 to-[80%] bg-clip-text text-transparent">NERVOUS</span> <br />
-            <span className="inline-block bg-gradient-to-r from-[#64748b]/80 from-[20%] to-[#0088ff] to-[72%] to-[#0088ff] to-100% bg-clip-text text-transparent">SYSTEM</span> <br />
-            Of Heavy Industry.
-          </h1>
-
-          <p className="text-[12px] xs:text-[13px] text-slate-300 font-normal leading-snug line-clamp-3 mb-5">
-            We build the infrastructure that keeps the world running. From massive commercial air handling systems to high-purity process piping and complete production line conveyance.
-          </p>
-
-          <div className="flex flex-row items-center gap-3 w-full">
-            <Link 
-              href="/contact" 
-              className="flex-1 min-h-[44px] px-3 py-3 bg-[#ea1f27] hover:bg-[#d41920] active:bg-[#b5181e] text-white font-mono text-[11px] font-bold uppercase tracking-wider rounded-sm transition-all text-center flex items-center justify-center whitespace-nowrap shadow-md active:scale-[0.97] touch-manipulation"
-            >
-              Initiate Bid
-            </Link>
-            <Link 
-              href="/what-we-do" 
-              className="flex-1 min-h-[44px] px-3 py-3 bg-slate-900/80 hover:bg-slate-800 active:bg-slate-700 text-slate-100 border border-slate-700 hover:border-slate-500 font-mono text-[11px] font-bold uppercase tracking-wider rounded-sm transition-all text-center flex items-center justify-center whitespace-nowrap shadow-md active:scale-[0.97] touch-manipulation"
-            >
-              Capabilities
-            </Link>
-          </div>
-        </div>
-
-        {/* ========================================= */}
-        {/* DESKTOP LAYOUT (Side-by-Side)             */}
-        {/* ========================================= */}
-        <div className="hidden lg:flex absolute inset-0 z-10 w-[60%] h-full items-center justify-center">
-          
-          {/* Desktop Interactive Toggle */}
-          <div className="absolute top-8 left-8 z-40 pointer-events-auto">
-            <button
-              type="button"
-              onClick={() => setIsInteractive(!isInteractive)}
-              aria-label={isInteractive ? "Lock camera rotation" : "Inspect 3D model controls"}
-              className={`inline-flex items-center font-mono text-xs font-bold uppercase tracking-widest transition-all active:scale-95 cursor-pointer ${
-                isInteractive 
-                  ? "text-[#ea1f27] hover:text-white" 
-                  : "text-slate-400 hover:text-white"
-              }`}
-            >
-              {isInteractive ? (
-                <span className="inline-flex items-center gap-2">
-                  [ <Minimize2 className="w-4 h-4 text-[#ea1f27] shrink-0" /> Lock Camera ]
-                </span>
-              ) : (
-                <span className="inline-flex items-center gap-2">
-                  [ <Maximize2 className="w-4 h-4 text-[#0088ff] shrink-0" /> Inspect 3D Model ]
-                </span>
-              )}
-            </button>
-          </div>
-
-          <div className={`absolute inset-0 w-full h-full ${isInteractive ? "pointer-events-auto" : "pointer-events-none"}`}>
-            {/* @ts-ignore - Prop forwarded to internal Three.js canvas */}
-            <AhuBlueprintAnimation interactive={isInteractive} />
-          </div>
-        </div>
-
-        <div className="hidden lg:flex relative z-20 w-full h-full lg:h-[calc(100svh-5rem)] max-w-[1800px] mx-auto flex-col justify-center items-end pointer-events-none lg:px-16 lg:py-0">
-          <div className="w-[45%] xl:w-[35%] pointer-events-auto flex flex-col">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#ea1f27]/10 border border-[#ea1f27]/30 text-[#ea1f27] font-mono text-[10px] font-bold tracking-[0.2em] uppercase rounded-xs mb-8 w-fit">
-              Interwest Mechanical Contractors
+              {/* Blend edge into the bottom HUD */}
+              <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-[#040812] to-transparent pointer-events-none" />
             </div>
 
-            <h1 className="text-[clamp(2.4rem,7.5vw,4.5rem)] font-black tracking-tighter uppercase leading-[0.93] text-white drop-shadow-md mb-6">
-              The <span className="inline-block bg-gradient-to-r from-[#ea1f27] from-0% via-[#ea1f27] via-[28%] to-[#64748b]/80 to-[80%] bg-clip-text text-transparent">NERVOUS</span> <br />
-              <span className="inline-block bg-gradient-to-r from-[#64748b]/80 from-[20%] to-[#0088ff] to-[72%] to-[#0088ff] to-100% bg-clip-text text-transparent">SYSTEM</span> <br />
-              Of Heavy Industry.
-            </h1>
+            {/* 2. Bottom Area: Full-Width Docked HUD */}
+            <div className="relative z-30 w-full bg-[#040812]/95 backdrop-blur-2xl border-t border-slate-700/60 px-5 py-6 shadow-[0_-20px_50px_rgba(0,0,0,0.8)]">
+              <h1 className="text-[2.2rem] xs:text-[2.5rem] font-black tracking-tighter uppercase leading-[0.93] text-white drop-shadow-md mb-3">
+                The <span className="inline-block bg-gradient-to-r from-[#ea1f27] from-0% via-[#ea1f27] via-[28%] to-[#64748b]/80 to-[80%] bg-clip-text text-transparent">NERVOUS</span> <br />
+                <span className="inline-block bg-gradient-to-r from-[#64748b]/80 from-[20%] to-[#0088ff] to-[72%] to-[#0088ff] to-100% bg-clip-text text-transparent">SYSTEM</span> <br />
+                Of Heavy Industry.
+              </h1>
 
-            <p className="text-xl text-slate-300 font-normal leading-relaxed max-w-xl drop-shadow-md mb-10">
-              We build the infrastructure that keeps the world running. From massive commercial air handling systems and high-purity process piping to complete production line conveyers and fillers.
-            </p>
+              <p className="text-[12px] xs:text-[13px] text-slate-300 font-normal leading-snug line-clamp-3 mb-5">
+                We build the infrastructure that keeps the world running. From massive commercial air handling systems to high-purity process piping and complete production line conveyance.
+              </p>
 
-            <div className="flex flex-row items-center gap-4 w-full pt-1">
-              <Link 
-                href="/contact" 
-                className="w-auto px-8 py-4 bg-[#0b0f19]/80 hover:bg-white hover:text-[#0b0f19] text-white backdrop-blur-md border border-slate-600 hover:border-white font-mono text-xs font-bold uppercase tracking-widest rounded-xs transition-all text-center whitespace-nowrap shadow-sm active:scale-[0.97]"
-              >
-                Initiate Bid
-              </Link>
-              <Link 
-                href="/what-we-do" 
-                className="w-auto px-8 py-4 bg-[#0b0f19]/80 hover:bg-[#ea1f27]/10 text-slate-200 hover:text-[#ea1f27] backdrop-blur-md border border-slate-700 hover:border-[#ea1f27] font-mono text-xs font-bold uppercase tracking-widest rounded-xs transition-all text-center whitespace-nowrap shadow-sm active:scale-[0.97]"
-              >
-                Capabilities
-              </Link>
+              <div className="flex flex-row items-center gap-3 w-full">
+                <Link 
+                  href="/contact" 
+                  className="flex-1 min-h-[44px] px-3 py-3 bg-[#ea1f27] hover:bg-[#d41920] active:bg-[#b5181e] text-white font-mono text-[11px] font-bold uppercase tracking-wider rounded-sm transition-all text-center flex items-center justify-center whitespace-nowrap shadow-md active:scale-[0.97] touch-manipulation"
+                >
+                  Initiate Bid
+                </Link>
+                <Link 
+                  href="/what-we-do" 
+                  className="flex-1 min-h-[44px] px-3 py-3 bg-slate-900/80 hover:bg-slate-800 active:bg-slate-700 text-slate-100 border border-slate-700 hover:border-slate-500 font-mono text-[11px] font-bold uppercase tracking-wider rounded-sm transition-all text-center flex items-center justify-center whitespace-nowrap shadow-md active:scale-[0.97] touch-manipulation"
+                >
+                  Capabilities
+                </Link>
+              </div>
             </div>
           </div>
-        </div>
+        )}
+
+        {/* ========================================= */}
+        {/* DESKTOP LAYOUT (>=1024px)                 */}
+        {/* ========================================= */}
+        {isDesktop !== false && (
+          <div className="hidden lg:block w-full h-full">
+            <div className="absolute inset-0 z-10 w-[60%] h-full flex items-center justify-center">
+              {/* Desktop Interactive Toggle */}
+              <div className="absolute top-8 left-8 z-40 pointer-events-auto">
+                <button
+                  type="button"
+                  onClick={() => setIsInteractive(!isInteractive)}
+                  aria-label={isInteractive ? "Lock camera rotation" : "Inspect 3D model controls"}
+                  className={`inline-flex items-center font-mono text-xs font-bold uppercase tracking-widest transition-all active:scale-95 cursor-pointer ${
+                    isInteractive 
+                      ? "text-[#ea1f27] hover:text-white" 
+                      : "text-slate-400 hover:text-white"
+                  }`}
+                >
+                  {isInteractive ? (
+                    <span className="inline-flex items-center gap-2">
+                      [ <Minimize2 className="w-4 h-4 text-[#ea1f27] shrink-0" /> Lock Camera ]
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-2">
+                      [ <Maximize2 className="w-4 h-4 text-[#0088ff] shrink-0" /> Inspect 3D Model ]
+                    </span>
+                  )}
+                </button>
+              </div>
+
+              <div className={`absolute inset-0 w-full h-full ${isInteractive ? "pointer-events-auto" : "pointer-events-none"}`}>
+                {/* @ts-ignore */}
+                <AhuBlueprintAnimation interactive={isInteractive} />
+              </div>
+            </div>
+
+            <div className="relative z-20 w-full h-full lg:h-[calc(100svh-5rem)] max-w-[1800px] mx-auto flex flex-col justify-center items-end pointer-events-none lg:px-16 lg:py-0">
+              <div className="w-[45%] xl:w-[35%] pointer-events-auto flex flex-col">
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#ea1f27]/10 border border-[#ea1f27]/30 text-[#ea1f27] font-mono text-[10px] font-bold tracking-[0.2em] uppercase rounded-xs mb-8 w-fit">
+                  Interwest Mechanical Contractors
+                </div>
+
+                <h1 className="text-[clamp(2.4rem,7.5vw,4.5rem)] font-black tracking-tighter uppercase leading-[0.93] text-white drop-shadow-md mb-6">
+                  The <span className="inline-block bg-gradient-to-r from-[#ea1f27] from-0% via-[#ea1f27] via-[28%] to-[#64748b]/80 to-[80%] bg-clip-text text-transparent">NERVOUS</span> <br />
+                  <span className="inline-block bg-gradient-to-r from-[#64748b]/80 from-[20%] to-[#0088ff] to-[72%] to-[#0088ff] to-100% bg-clip-text text-transparent">SYSTEM</span> <br />
+                  Of Heavy Industry.
+                </h1>
+
+                <p className="text-xl text-slate-300 font-normal leading-relaxed max-w-xl drop-shadow-md mb-10">
+                  We build the infrastructure that keeps the world running. From massive commercial air handling systems and high-purity process piping to complete production line conveyers and fillers.
+                </p>
+
+                <div className="flex flex-row items-center gap-4 w-full pt-1">
+                  <Link 
+                    href="/contact" 
+                    className="w-auto px-8 py-4 bg-[#0b0f19]/80 hover:bg-white hover:text-[#0b0f19] text-white backdrop-blur-md border border-slate-600 hover:border-white font-mono text-xs font-bold uppercase tracking-widest rounded-xs transition-all text-center whitespace-nowrap shadow-sm active:scale-[0.97]"
+                  >
+                    Initiate Bid
+                  </Link>
+                  <Link 
+                    href="/what-we-do" 
+                    className="w-auto px-8 py-4 bg-[#0b0f19]/80 hover:bg-[#ea1f27]/10 text-slate-200 hover:text-[#ea1f27] backdrop-blur-md border border-slate-700 hover:border-[#ea1f27] font-mono text-xs font-bold uppercase tracking-widest rounded-xs transition-all text-center whitespace-nowrap shadow-sm active:scale-[0.97]"
+                  >
+                    Capabilities
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
       </section>
 
@@ -421,15 +441,15 @@ export default function Home() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6 lg:gap-8">
             <div className="bg-[#070a10] border border-slate-800 p-6 sm:p-8 rounded-lg shadow-inner">
-              <h4 className="text-white font-black text-lg sm:text-xl uppercase tracking-tight mb-2 sm:mb-3">Ammonia Lines & Headers</h4>
+              <h3 className="text-white font-black text-lg sm:text-xl uppercase tracking-tight mb-2 sm:mb-3">Ammonia Lines & Headers</h3>
               <p className="text-slate-300 text-xs sm:text-sm lg:text-base leading-relaxed font-normal">Certified carbon steel and low-temp alloy piping fabricated and field-welded for high-pressure suction, liquid, and hot-gas defrost lines.</p>
             </div>
             <div className="bg-[#070a10] border border-slate-800 p-6 sm:p-8 rounded-lg shadow-inner">
-              <h4 className="text-white font-black text-lg sm:text-xl uppercase tracking-tight mb-2 sm:mb-3">Plate Freezers & Chillers</h4>
+              <h3 className="text-white font-black text-lg sm:text-xl uppercase tracking-tight mb-2 sm:mb-3">Plate Freezers & Chillers</h3>
               <p className="text-slate-300 text-xs sm:text-sm lg:text-base leading-relaxed font-normal">New unit installs, mechanical tie-ins, valve manifold packages, and custom hookups for horizontal/vertical plate freezers and secondary glycol circuits.</p>
             </div>
             <div className="bg-[#070a10] border border-slate-800 p-6 sm:p-8 rounded-lg shadow-inner">
-              <h4 className="text-white font-black text-lg sm:text-xl uppercase tracking-tight mb-2 sm:mb-3">Compressor & Skid Piping</h4>
+              <h3 className="text-white font-black text-lg sm:text-xl uppercase tracking-tight mb-2 sm:mb-3">Compressor & Skid Piping</h3>
               <p className="text-slate-300 text-xs sm:text-sm lg:text-base leading-relaxed font-normal">Pre-piped equipment bases, oil separator integration, and receiver connections built in our Springville facility for rapid jobsite positioning.</p>
             </div>
           </div>
@@ -456,22 +476,22 @@ export default function Home() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 text-left">
             <div className="bg-[#030914] border border-slate-800 p-6 sm:p-8 rounded-lg shadow-inner">
-              <h4 className="text-white font-black text-lg sm:text-xl uppercase tracking-tight mb-2 sm:mb-3">Line Fillers & Cappers</h4>
+              <h3 className="text-white font-black text-lg sm:text-xl uppercase tracking-tight mb-2 sm:mb-3">Line Fillers & Cappers</h3>
               <p className="text-slate-300 text-xs sm:text-sm lg:text-base leading-relaxed font-normal">Rigging and mechanical mounting for liquid, powder, and automated packaging equipment.</p>
             </div>
 
             <div className="bg-[#030914] border border-slate-800 p-6 sm:p-8 rounded-lg shadow-inner">
-              <h4 className="text-white font-black text-lg sm:text-xl uppercase tracking-tight mb-2 sm:mb-3">Conveyor Grids</h4>
+              <h3 className="text-white font-black text-lg sm:text-xl uppercase tracking-tight mb-2 sm:mb-3">Conveyor Grids</h3>
               <p className="text-slate-300 text-xs sm:text-sm lg:text-base leading-relaxed font-normal">Installation and mechanical leveling of belt, roller, and sanitary food-grade conveyor layouts.</p>
             </div>
 
             <div className="bg-[#030914] border border-slate-800 p-6 sm:p-8 rounded-lg shadow-inner">
-              <h4 className="text-white font-black text-lg sm:text-xl uppercase tracking-tight mb-2 sm:mb-3">Air Handling & Duct</h4>
+              <h3 className="text-white font-black text-lg sm:text-xl uppercase tracking-tight mb-2 sm:mb-3">Air Handling & Duct</h3>
               <p className="text-slate-300 text-xs sm:text-sm lg:text-base leading-relaxed font-normal">Custom AHU duct routing, makeup air units, and dust extraction drops for production lines.</p>
             </div>
 
             <div className="bg-[#030914] border border-slate-800 p-6 sm:p-8 rounded-lg shadow-inner">
-              <h4 className="text-white font-black text-lg sm:text-xl uppercase tracking-tight mb-2 sm:mb-3">Utility Drops</h4>
+              <h3 className="text-white font-black text-lg sm:text-xl uppercase tracking-tight mb-2 sm:mb-3">Utility Drops</h3>
               <p className="text-slate-300 text-xs sm:text-sm lg:text-base leading-relaxed font-normal">Compressed air, steam, chilled water, and CIP manifolds routed directly to machine hookups.</p>
             </div>
           </div>

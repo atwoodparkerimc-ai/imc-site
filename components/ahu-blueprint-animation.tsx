@@ -124,7 +124,15 @@ function RectangularDuctReducer({ position, length, w1, h1, w2, h2 }: { position
 // --- U-SHAPE PRODUCTION LINE MASTER ASSEMBLY ---
 // ============================================================================
 function UShapeProductionLine({ position = [-0.5, -8.5, 0] }: { position?: [number, number, number] }) {
-  const trayCount = 120; 
+  // Use fewer trays on mobile to reduce per-frame CPU matrix math
+  const [trayCount, setTrayCount] = useState(120);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.innerWidth < 1024) {
+      setTrayCount(60);
+    }
+  }, []);
+
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const dummy = useMemo(() => new THREE.Object3D(), []);
 
@@ -273,13 +281,43 @@ interface BlueprintAnimationProps {
 }
 
 export default function BlueprintAnimation({ interactive = false }: BlueprintAnimationProps) {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    setIsMobile(window.innerWidth < 1024);
+
+    const originalWarn = console.warn;
+    console.warn = (...args: any[]) => {
+      if (
+        typeof args[0] === 'string' &&
+        args[0].includes('THREE.Clock: This module has been deprecated')
+      ) {
+        return;
+      }
+      originalWarn(...args);
+    };
+
+    return () => {
+      console.warn = originalWarn;
+    };
+  }, []);
+
   return (
     <div 
       className={`w-full h-full flex items-center justify-center relative overflow-visible bg-transparent ${
         interactive ? "cursor-grab active:cursor-grabbing" : "cursor-default"
       }`}
     >
-      <Canvas camera={{ position: [0, 8, 30], fov: 25 }} gl={{ antialias: true, alpha: true }}>
+      <Canvas 
+        camera={{ position: [0, 8, 30], fov: 25 }} 
+        dpr={isMobile ? 1 : [1, 1.5]}
+        gl={{ 
+          antialias: !isMobile, 
+          alpha: true,
+          powerPreference: "high-performance",
+          precision: isMobile ? "mediump" : "highp",
+        }}
+      >
         <directionalLight position={[10, 20, 15]} intensity={1.5} color="#ffffff" />
         <ambientLight intensity={1.0} />
         <pointLight position={[-2, 0, 2]} intensity={2.0} color={COLOR_GLOW} distance={10} />
@@ -298,5 +336,4 @@ export default function BlueprintAnimation({ interactive = false }: BlueprintAni
       </Canvas>
     </div>
   );
-} 
-
+}

@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
 
@@ -88,13 +87,12 @@ const drawerItemVariants: Variants = {
   }
 };
 
-const MotionLink = motion(Link);
+const MotionLink = motion.create(Link);
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
 
-  // Preserves CSS overflow-x and overscroll rules when unlocking
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflowY = "hidden";
@@ -125,12 +123,9 @@ export default function Navbar() {
               className="block focus:outline-none group touch-manipulation" 
               aria-label="IMC Home"
             >
-              <Image 
+              <img 
                 src="/imclogo.svg" 
                 alt="Interwest Mechanical Contractors Logo" 
-                width={180} 
-                height={50} 
-                priority
                 className="h-10 md:h-12 w-auto object-contain transition-all duration-200 group-hover:scale-[1.03] group-active:scale-[0.98]"
               />
             </Link>
@@ -169,7 +164,7 @@ export default function Navbar() {
             </Link>
           </div>
 
-          {/* Mobile Toggle Button (Expanded 48x48px Touch Area & Feedback) */}
+          {/* Mobile Toggle Button */}
           <div className="md:hidden flex items-center">
             <button
               onClick={() => setIsOpen(true)}
@@ -188,12 +183,10 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* INDUSTRIAL SLIDE-OVER DRAWER WITH STATIC VIEWPORT HEIGHT */}
+      {/* Slide-over Drawer */}
       <AnimatePresence>
         {isOpen && (
           <div className="fixed inset-0 h-[100svh] z-50 md:hidden flex overscroll-none touch-none">
-            
-            {/* Backdrop */}
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -203,7 +196,6 @@ export default function Navbar() {
               className="fixed inset-0 bg-black/80 backdrop-blur-sm" 
             />
 
-            {/* Slide-in Drawer Container */}
             <motion.aside
               variants={drawerPanelVariants}
               initial="hidden"
@@ -211,17 +203,13 @@ export default function Navbar() {
               exit="exit"
               className="relative w-64 h-[100svh] bg-[#070b13] border-r border-slate-800/80 shadow-2xl flex flex-col justify-between p-0 z-10 overflow-hidden will-change-transform"
             >
-              {/* Header Bar */}
               <div>
                 <div className="h-16 flex items-center px-4 justify-between border-b border-slate-800/80">
                   <Link href="/" onClick={() => setIsOpen(false)} className="flex items-center touch-manipulation">
-                    <Image 
+                    <img 
                       src="/imclogo.svg" 
                       alt="IMC Logo" 
-                      width={110} 
-                      height={30} 
                       className="h-7 w-auto object-contain"
-                      priority
                     />
                   </Link>
                   <button 
@@ -236,7 +224,6 @@ export default function Navbar() {
                   </button>
                 </div>
 
-                {/* Staggered Navigation Link Items */}
                 <div className="flex flex-col py-6 gap-2 px-3 overflow-y-auto overscroll-contain">
                   {NAV_LINKS.map((item) => {
                     const isActive = pathname === item.href;
@@ -262,7 +249,6 @@ export default function Navbar() {
                 </div>
               </div>
 
-              {/* Bottom CTA Dock */}
               <div className="p-3 border-t border-slate-800/80 flex flex-col gap-2 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
                 <MotionLink 
                   href="/login"

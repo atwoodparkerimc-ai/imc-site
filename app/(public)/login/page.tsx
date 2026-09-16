@@ -1,15 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import Footer from "@/components/footer";
 
 const FALLBACK_LOCATIONS = ["Nestle Springville", "Nestle Gaffney", "Springville Shop"];
 
-export default function EmployeeLogin() {
+function LoginContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [supabase] = useState(() => createClient());
 
   // Navigation Modes: "login" | "gate" | "signup" | "forgot"
@@ -62,27 +63,49 @@ export default function EmployeeLogin() {
     fetchLocations();
   }, [supabase]);
 
+  // Safely resolve the redirect path to avoid circular loops
+  const getSafeRedirectUrl = () => {
+    const rawRedirect = searchParams.get("redirect");
+    if (!rawRedirect || rawRedirect.startsWith("/login")) {
+      return "/dashboard";
+    }
+    return rawRedirect;
+  };
+
   // Handle User Login
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setFeedback(null);
 
-    const { error: authError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const { data, error: authError } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
 
-    if (authError) {
-      setFeedback({ message: authError.message.toUpperCase(), isError: true });
+      if (authError) {
+        setFeedback({ message: authError.message.toUpperCase(), isError: true });
+        setIsLoading(false);
+        return;
+      }
+
+      if (data?.session) {
+        const targetUrl = getSafeRedirectUrl();
+        router.refresh();
+        setTimeout(() => {
+          window.location.replace(targetUrl);
+        }, 150);
+      } else {
+        setIsLoading(false);
+      }
+    } catch {
+      setFeedback({ message: "AUTHENTICATION SERVICE UNREACHABLE", isError: true });
       setIsLoading(false);
-      return;
     }
-
-    router.push("/dashboard");
   };
 
-  // Handle Gate Verification Passcode (Reads from NEXT_PUBLIC_REGISTRATION_PASSCODE)
+  // Handle Gate Verification Passcode
   const handleVerifyGate = (e: React.FormEvent) => {
     e.preventDefault();
     setGateError(false);
@@ -113,23 +136,21 @@ export default function EmployeeLogin() {
       return;
     }
 
-    // Check if passwords match before attempting sign-up
     if (password !== confirmPassword) {
       setFeedback({ message: "PASSWORDS DO NOT MATCH. PLEASE RE-ENTER.", isError: true });
       setIsLoading(false);
       return;
     }
 
-    // Sign up user with metadata & explicitly set must_change_password to false
     const { error: signUpError } = await supabase.auth.signUp({
-      email,
+      email: email.trim(),
       password,
       options: {
         data: {
           first_name: firstName,
           last_name: lastName,
           location: location,
-          must_change_password: false, // Bypasses the password change modal
+          must_change_password: false,
         },
       },
     });
@@ -145,16 +166,17 @@ export default function EmployeeLogin() {
       isError: false,
     });
 
-    // Auto-login newly registered employee
-    const { error: loginError } = await supabase.auth.signInWithPassword({
-      email,
+    const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
       password,
     });
 
-    if (!loginError) {
+    if (!loginError && loginData?.session) {
+      const targetUrl = getSafeRedirectUrl();
+      router.refresh();
       setTimeout(() => {
-        router.push("/dashboard");
-      }, 1000);
+        window.location.replace(targetUrl);
+      }, 500);
     } else {
       setIsLoading(false);
     }
@@ -167,7 +189,7 @@ export default function EmployeeLogin() {
     setFeedback(null);
 
     const siteOrigin = typeof window !== "undefined" ? window.location.origin : "";
-    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
       redirectTo: `${siteOrigin}/reset-password`,
     });
 
@@ -185,7 +207,6 @@ export default function EmployeeLogin() {
 
   return (
     <div className="min-h-screen bg-[#0A0C10] flex flex-col justify-between relative font-mono text-slate-100 selection:bg-[#117AE0] selection:text-white overflow-hidden">
-      
       {/* TACTICAL BLUEPRINT GRID BACKGROUND */}
       <div className="absolute inset-0 pointer-events-none opacity-[0.035] bg-[linear-gradient(to_right,#334155_1px,transparent_1px),linear-gradient(to_bottom,#334155_1px,transparent_1px)] bg-[size:32px_32px] z-0" />
       {/* Radial Vignette */}
@@ -193,7 +214,7 @@ export default function EmployeeLogin() {
 
       {/* PORTAL FORM WRAPPER */}
       <div className="flex-1 flex flex-col justify-center items-center px-4 py-12 sm:py-16 relative z-10 w-full">
-        {/* MAIN CONTAINER CARD (RESIZED & ELEVATED) */}
+        {/* MAIN CONTAINER CARD */}
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
@@ -590,5 +611,19 @@ export default function EmployeeLogin() {
       {/* FULL SITE FOOTER */}
       <Footer />
     </div>
+  );
+}
+
+export default function EmployeeLogin() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#0A0C10] flex items-center justify-center font-mono text-slate-400 text-xs">
+          INITIALIZING SECURE PORTAL...
+        </div>
+      }
+    >
+      <LoginContent />
+    </Suspense>
   );
 }

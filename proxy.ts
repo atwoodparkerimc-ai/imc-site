@@ -1,9 +1,13 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+const SUPER_ADMIN_EMAIL = 'atwoodparkerimc@gmail.com'
+
 export default async function proxy(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({
-    request,
+  let response = NextResponse.next({
+    request: {
+      headers: request.headers,
+    },
   })
 
   const supabase = createServerClient(
@@ -15,32 +19,86 @@ export default async function proxy(request: NextRequest) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
-          supabaseResponse = NextResponse.next({
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value)
+          )
+          response = NextResponse.next({
             request,
           })
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
+            response.cookies.set(name, value, options)
           )
         },
       },
     }
   )
 
-  // This refreshes the session if it's expired
-  await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
-  return supabaseResponse
+  const pathname = request.nextUrl.pathname
+
+  const protectedRoutes = [
+    '/dashboard',
+    '/manager',
+    '/safety',
+    '/reporting',
+    '/catalog',
+    '/profile',
+  ]
+
+  const isProtectedRoute = protectedRoutes.some((route) =>
+    pathname.startsWith(route)
+  )
+
+  // 1. Unauthenticated -> Redirect to /login
+  if (isProtectedRoute && !user) {
+    const redirectUrl = request.nextUrl.clone()
+    redirectUrl.pathname = '/login'
+    redirectUrl.searchParams.set('redirect', pathname)
+    return NextResponse.redirect(redirectUrl)
+  }
+
+  // 2. Already authenticated and visiting /login -> Bounce to /dashboard
+  if (pathname === '/login' && user) {
+    const redirectTarget = request.nextUrl.searchParams.get('redirect') || '/dashboard'
+    const redirectUrl = request.nextUrl.clone()
+    redirectUrl.pathname = redirectTarget
+    redirectUrl.searchParams.delete('redirect')
+    return NextResponse.redirect(redirectUrl)
+  }
+
+  // 3. Manager Route Protection -> Instant Edge Redirect (No UI Flash)
+  if (pathname.startsWith('/manager') && user) {
+    const isSuperAdmin = user.email?.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase()
+
+    let hasManagerPrivileges = isSuperAdmin
+
+    if (!hasManagerPrivileges) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .maybeSingle()
+
+      const role = profile?.role?.toLowerCase()
+      hasManagerPrivileges =
+        role === 'manager' || role === 'admin' || role === 'superadmin'
+    }
+
+    if (!hasManagerPrivileges) {
+      const redirectUrl = request.nextUrl.clone()
+      redirectUrl.pathname = '/dashboard'
+      return NextResponse.redirect(redirectUrl)
+    }
+  }
+
+  return response
 }
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     */
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }

@@ -115,7 +115,8 @@ const drawerItemVariants: Variants = {
   }
 };
 
-const MotionLink = motion(Link);
+// Uses modern Framer Motion factory
+const MotionLink = motion.create(Link);
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();

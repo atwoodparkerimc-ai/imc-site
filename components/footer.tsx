@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { Send, MapPin, CheckCircle2, Loader2 } from "lucide-react";
 
 export default function Footer() {
@@ -61,13 +60,10 @@ export default function Footer() {
               <div className="flex flex-row items-center justify-between gap-4 mb-6 lg:mb-0 lg:block">
                 {/* Scaled Official IMC Logo */}
                 <Link href="/" className="inline-block lg:mb-10 shrink-0 active:scale-95 transition-transform touch-manipulation">
-                  <Image
+                  <img
                     src="/imclogo.svg"
                     alt="Interwest Mechanical Contractors Logo"
-                    width={280}
-                    height={80}
                     className="h-12 sm:h-16 lg:h-20 w-auto object-contain"
-                    priority
                   />
                 </Link>
 

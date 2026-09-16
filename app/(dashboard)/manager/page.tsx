@@ -723,67 +723,69 @@ export default function ManagerDashboard() {
         </div>
 
         {/* TAB 3: TELEMETRY ENGINE & ANALYTICS */}
-        <div className={activeTab === 'telemetry' ? 'block print:hidden space-y-4 sm:space-y-6' : 'hidden'}>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4">
-            {[
-              { label: "Total Points Awarded", value: globalStats.totalAwarded.toLocaleString(), color: "text-[var(--color-metric-safe-acts)]" },
-              { label: "Total Requisitions", value: globalStats.requisitions.toString(), color: "text-[var(--color-brand-blue)]" },
-              { label: "Daily Safe Acts", value: globalStats.safeActsToday.toString(), color: "text-[var(--color-metric-meetings)]" },
-              { label: "Active Team Members", value: globalStats.activeMembers.toString(), color: "text-slate-100" }
-            ].map((stat, i) => (
-              <div key={`stat-card-${i}`} className="border p-3 sm:p-5 shadow-xl relative overflow-hidden group rounded-sm bg-[var(--color-brand-card)] border-[var(--color-brand-border)]">
-                <div className="absolute top-0 left-0 w-full h-[2px] bg-[var(--color-brand-border)] group-hover:bg-[var(--color-brand-blue)] transition-colors duration-300" />
-                <p className="text-slate-400 text-[10px] sm:text-xs font-bold uppercase tracking-wider sm:tracking-widest mb-1 sm:mb-2">{stat.label}</p>
-                <p className={`text-xl sm:text-3xl font-black tabular-nums tracking-tighter ${stat.color}`}>{stat.value}</p>
-              </div>
-            ))}
-          </div>
+        {activeTab === 'telemetry' && (
+          <div className="block print:hidden space-y-4 sm:space-y-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4">
+              {[
+                { label: "Total Points Awarded", value: globalStats.totalAwarded.toLocaleString(), color: "text-[var(--color-metric-safe-acts)]" },
+                { label: "Total Requisitions", value: globalStats.requisitions.toString(), color: "text-[var(--color-brand-blue)]" },
+                { label: "Daily Safe Acts", value: globalStats.safeActsToday.toString(), color: "text-[var(--color-metric-meetings)]" },
+                { label: "Active Team Members", value: globalStats.activeMembers.toString(), color: "text-slate-100" }
+              ].map((stat, i) => (
+                <div key={`stat-card-${i}`} className="border p-3 sm:p-5 shadow-xl relative overflow-hidden group rounded-sm bg-[var(--color-brand-card)] border-[var(--color-brand-border)]">
+                  <div className="absolute top-0 left-0 w-full h-[2px] bg-[var(--color-brand-border)] group-hover:bg-[var(--color-brand-blue)] transition-colors duration-300" />
+                  <p className="text-slate-400 text-[10px] sm:text-xs font-bold uppercase tracking-wider sm:tracking-widest mb-1 sm:mb-2">{stat.label}</p>
+                  <p className={`text-xl sm:text-3xl font-black tabular-nums tracking-tighter ${stat.color}`}>{stat.value}</p>
+                </div>
+              ))}
+            </div>
 
-          <div>
-            <VelocityChart 
-              velocityData={velocityData} 
-              tfVelocity={tfVelocity} 
-              setTfVelocity={setTfVelocity} 
+            <div>
+              <VelocityChart 
+                velocityData={velocityData} 
+                tfVelocity={tfVelocity} 
+                setTfVelocity={setTfVelocity} 
+                CustomTooltip={CustomTooltip} 
+                itemVariants={itemVariants} 
+              />
+            </div>
+
+            <TelemetryBreakdown 
+              categoryData={categoryData} 
+              tfCategory={tfCategory} 
+              setTfCategory={setTfCategory} 
+              rhythmData={rhythmData} 
+              tfRhythm={tfRhythm} 
+              setTfRhythm={setTfRhythm} 
+              topGeneralContributors={topGeneralContributors}
+              topSafeActReceivedContributors={topSafeActReceivedContributors}
+              topSafeActGiftedContributors={topSafeActGiftedContributors}
+              tfTop={tfTop} 
+              setTfTop={setTfTop} 
               CustomTooltip={CustomTooltip} 
               itemVariants={itemVariants} 
             />
+
+            <ComplianceTracker 
+              complianceData={complianceData} 
+              allUsers={locationFilteredUsers} 
+              compUser={compUser} 
+              setCompUser={setCompUser} 
+              tfComp={tfComp} 
+              setTfComp={setTfComp} 
+              CustomTooltip={CustomTooltip} 
+              itemVariants={itemVariants} 
+            />
+
+            <SafeActTracker 
+              rawSafeActs={locationFilteredSafeActs}
+              rawAwards={locationFilteredAwards}
+              allUsers={locationFilteredUsers}
+              CustomTooltip={CustomTooltip}
+              itemVariants={itemVariants}
+            />
           </div>
-
-          <TelemetryBreakdown 
-            categoryData={categoryData} 
-            tfCategory={tfCategory} 
-            setTfCategory={setTfCategory} 
-            rhythmData={rhythmData} 
-            tfRhythm={tfRhythm} 
-            setTfRhythm={setTfRhythm} 
-            topGeneralContributors={topGeneralContributors}
-            topSafeActReceivedContributors={topSafeActReceivedContributors}
-            topSafeActGiftedContributors={topSafeActGiftedContributors}
-            tfTop={tfTop} 
-            setTfTop={setTfTop} 
-            CustomTooltip={CustomTooltip} 
-            itemVariants={itemVariants} 
-          />
-
-          <ComplianceTracker 
-            complianceData={complianceData} 
-            allUsers={locationFilteredUsers} 
-            compUser={compUser} 
-            setCompUser={setCompUser} 
-            tfComp={tfComp} 
-            setTfComp={setTfComp} 
-            CustomTooltip={CustomTooltip} 
-            itemVariants={itemVariants} 
-          />
-
-          <SafeActTracker 
-            rawSafeActs={locationFilteredSafeActs}
-            rawAwards={locationFilteredAwards}
-            allUsers={locationFilteredUsers}
-            CustomTooltip={CustomTooltip}
-            itemVariants={itemVariants}
-          />
-        </div>
+        )}
 
         {/* TAB 4: INVENTORY LOGISTICS HUB */}
         <div className={activeTab === 'inventory' ? 'block print:hidden' : 'hidden'}>
