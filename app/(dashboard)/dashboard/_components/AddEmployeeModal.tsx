@@ -240,6 +240,7 @@ export default function AddEmployeeModal({
                 className="w-full bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] focus:ring-1 focus:ring-[var(--color-brand-blue)] p-3 text-[16px] sm:text-xs text-slate-100 outline-none cursor-pointer rounded-sm transition-all touch-manipulation"
               >
                 <option value="employee" className="bg-[var(--color-brand-card)] text-white">Employee</option>
+                <option value="foreman" className="bg-[var(--color-brand-card)] text-white">Foreman</option>
                 <option value="manager" className="bg-[var(--color-brand-card)] text-white">Manager</option>
               </select>
             </div>

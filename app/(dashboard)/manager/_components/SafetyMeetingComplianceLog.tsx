@@ -16,6 +16,9 @@ export interface MeetingCompletionLogEntry {
   briefing_title?: string;
   location?: string;
   completed_at: string;
+  is_subcontractor?: boolean;
+  company_name?: string;
+  attendee_names?: string[];
 }
 
 interface UserProfileSubset {
@@ -25,6 +28,7 @@ interface UserProfileSubset {
   nickname?: string;
   location?: string;
   role?: string;
+  is_active?: boolean;
 }
 
 interface SafetyMeetingComplianceLogProps {
@@ -48,6 +52,24 @@ interface EmployeeMeetingStat {
   history: MeetingCompletionLogEntry[];
 }
 
+// Normalized matcher: bridges "briefing-001" and "001"
+const matchesTopic = (log: MeetingCompletionLogEntry, topic: SafetyBriefingTopic): boolean => {
+  if (!log) return false;
+  const logBId = (log.briefing_id || "").toLowerCase().trim();
+  const topId = (topic.id || "").toLowerCase().trim();
+
+  if (logBId === topId) return true;
+  if (logBId.replace(/^briefing-/, "") === topId.replace(/^briefing-/, "")) return true;
+
+  if (log.briefing_title && topic.title) {
+    if (log.briefing_title.trim().toLowerCase() === topic.title.trim().toLowerCase()) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
 export default function SafetyMeetingComplianceLog({
   briefings = [],
   completions = [],
@@ -59,23 +81,26 @@ export default function SafetyMeetingComplianceLog({
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedMeetingId, setSelectedMeetingId] = useState<string | null>(null);
   const [expandedUserIds, setExpandedUserIds] = useState<Record<string, boolean>>({});
-  
+
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
   const [printScope, setPrintScope] = useState<string>("ALL");
   const [printTimeframe, setPrintTimeframe] = useState<"1M" | "1Y" | "ALL">("1Y");
   const [printDetailLevel, setPrintDetailLevel] = useState<"SUMMARY" | "FULL_AUDIT">("SUMMARY");
   const [currentDateString, setCurrentDateString] = useState("");
 
-  // Grouped lists for the dropdowns
-  const policies = briefings.filter(b => !b.id.startsWith("tbt-"));
-  const toolboxTalks = briefings.filter(b => b.id.startsWith("tbt-"));
+  const policies = briefings.filter((b) => !b.id.startsWith("tbt-"));
+  const toolboxTalks = briefings.filter((b) => b.id.startsWith("tbt-"));
 
   useEffect(() => {
-    setCurrentDateString(new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }));
+    setCurrentDateString(
+      new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })
+    );
   }, []);
 
+  // Exclude archived staff AND subcontractor profiles from the active IMC crew denominator
   const siteUsers = useMemo(() => {
     return (allUsers || []).filter((u) => {
+      if (u.is_active === false || u.role === "subcontractor") return false;
       if (activeSite === "ALL") return true;
       return (u.location || "").trim().toLowerCase() === activeSite.trim().toLowerCase();
     });
@@ -89,16 +114,19 @@ export default function SafetyMeetingComplianceLog({
 
   const meetingSummaries = useMemo(() => {
     return briefings.map((topic) => {
-      const topicLogs = completions.filter(
-        (c) => c.briefing_id === topic.id || c.briefing_title === topic.title
-      );
+      // 1. All topic logs matching either directly or normalized
+      const topicLogs = completions.filter((c) => matchesTopic(c, topic));
 
+      // 2. Filter by site with fallback inspection
       const siteFilteredLogs = topicLogs.filter((log) => {
         if (activeSite === "ALL") return true;
         const matchingUser = allUsers.find((u) => u.id === log.user_id);
         const logLoc = log.location || matchingUser?.location || "";
         return logLoc.trim().toLowerCase() === activeSite.trim().toLowerCase();
       });
+
+      // 3. Subcontractor-specific sessions
+      const subcontractorLogs = siteFilteredLogs.filter((l) => l.is_subcontractor === true);
 
       let latestDateOverall: string | null = null;
       let latestOverallTimestamp = 0;
@@ -111,37 +139,40 @@ export default function SafetyMeetingComplianceLog({
         }
       });
 
-      const employeeBreakdown: EmployeeMeetingStat[] = siteUsers.map((user) => {
-        const userLogs = topicLogs.filter((l) => l.user_id === user.id);
-        const sortedUserLogs = [...userLogs].sort(
-          (a, b) => new Date(b.completed_at).getTime() - new Date(a.completed_at).getTime()
-        );
+      // 4. Employee breakdown strictly for regular IMC crew
+      const employeeBreakdown: EmployeeMeetingStat[] = siteUsers
+        .map((user) => {
+          const userLogs = topicLogs.filter((l) => l.user_id === user.id && !l.is_subcontractor);
+          const sortedUserLogs = [...userLogs].sort(
+            (a, b) => new Date(b.completed_at).getTime() - new Date(a.completed_at).getTime()
+          );
 
-        const latest = sortedUserLogs[0];
-        const latestTime = latest ? new Date(latest.completed_at).getTime() : 0;
-        const total = sortedUserLogs.length;
+          const latest = sortedUserLogs[0];
+          const latestTime = latest ? new Date(latest.completed_at).getTime() : 0;
+          const total = sortedUserLogs.length;
 
-        let status: ComplianceStatus = "NOT_TRAINED";
-        if (latest) {
-          status = latestTime >= oneYearAgoMs ? "CURRENT" : "REFRESHER_DUE";
-        }
+          let status: ComplianceStatus = "NOT_TRAINED";
+          if (latest) {
+            status = latestTime >= oneYearAgoMs ? "CURRENT" : "REFRESHER_DUE";
+          }
 
-        return {
-          user,
-          fullName: formatEmployeeName(user),
-          status,
-          latestDate: latest?.completed_at || null,
-          latestTimestamp: latestTime,
-          totalCompletions: total,
-          history: sortedUserLogs,
-        };
-      }).sort((a, b) => {
-        const statusWeight = { CURRENT: 1, REFRESHER_DUE: 2, NOT_TRAINED: 3 };
-        if (statusWeight[a.status] !== statusWeight[b.status]) {
-          return statusWeight[a.status] - statusWeight[b.status];
-        }
-        return a.fullName.localeCompare(b.fullName);
-      });
+          return {
+            user,
+            fullName: formatEmployeeName(user),
+            status,
+            latestDate: latest?.completed_at || null,
+            latestTimestamp: latestTime,
+            totalCompletions: total,
+            history: sortedUserLogs,
+          };
+        })
+        .sort((a, b) => {
+          const statusWeight = { CURRENT: 1, REFRESHER_DUE: 2, NOT_TRAINED: 3 };
+          if (statusWeight[a.status] !== statusWeight[b.status]) {
+            return statusWeight[a.status] - statusWeight[b.status];
+          }
+          return a.fullName.localeCompare(b.fullName);
+        });
 
       const currentCount = employeeBreakdown.filter((e) => e.status === "CURRENT").length;
       const totalCrew = siteUsers.length;
@@ -151,6 +182,7 @@ export default function SafetyMeetingComplianceLog({
         topic,
         latestDateOverall,
         employeeBreakdown,
+        subcontractorLogs,
         currentCount,
         totalCrew,
         complianceRate,
@@ -178,11 +210,10 @@ export default function SafetyMeetingComplianceLog({
     setExpandedUserIds((prev) => ({ ...prev, [userId]: !prev[userId] }));
   };
 
-  // --- PROFESSIONAL EXECUTIVE DOCUMENT PRINT ENGINE ---
+  // --- EXECUTIVE AUDIT PRINT ENGINE ---
   const handleExecutePrint = () => {
     setIsPrintModalOpen(false);
 
-    // Filter which topics to print based on the new broad scopes
     let topicsToPrint: typeof meetingSummaries = [];
     let scopeLabel = `Topic ${printScope}`;
 
@@ -199,7 +230,6 @@ export default function SafetyMeetingComplianceLog({
       topicsToPrint = meetingSummaries.filter((m) => m.topic.id === printScope);
     }
 
-    // Build the clean HTML document
     const printDocHTML = `
       <!DOCTYPE html>
       <html lang="en">
@@ -375,6 +405,18 @@ export default function SafetyMeetingComplianceLog({
             border-left: 2px solid #0f172a;
             margin: 2px 0;
           }
+          .sub-section-title {
+            font-family: monospace;
+            font-size: 8pt;
+            font-weight: 900;
+            text-transform: uppercase;
+            color: #0f172a;
+            margin: 14px 0 6px 0;
+            padding-bottom: 3px;
+            border-bottom: 1.5px solid #0f172a;
+            display: flex;
+            justify-content: space-between;
+          }
           .signoff-section {
             margin-top: 24px;
             padding-top: 12px;
@@ -438,7 +480,9 @@ export default function SafetyMeetingComplianceLog({
         </table>
 
         <!-- TOPIC CONTENT BLOCKS -->
-        ${topicsToPrint.map((m, idx) => `
+        ${topicsToPrint
+          .map(
+            (m, idx) => `
           <div class="topic-block ${idx > 0 && printDetailLevel === "SUMMARY" ? "page-break" : ""}">
             <div class="topic-header">
               <table style="width: 100%; border-collapse: collapse;">
@@ -450,7 +494,7 @@ export default function SafetyMeetingComplianceLog({
                   </td>
                   <td class="topic-stats" style="width: 120px;">
                     <div class="pct">${m.complianceRate}%</div>
-                    <div class="lbl">${m.currentCount} / ${m.totalCrew} Compliant</div>
+                    <div class="lbl">${m.currentCount} /${m.totalCrew} Compliant</div>
                   </td>
                 </tr>
               </table>
@@ -460,10 +504,11 @@ export default function SafetyMeetingComplianceLog({
               </div>
             </div>
 
+            <!-- PRIMARY IMC EMPLOYEE ROSTER -->
             <table class="audit-table">
               <thead>
                 <tr>
-                  <th style="width: 32%;">Employee Legal Name</th>
+                  <th style="width: 32%;">IMC Employee Legal Name</th>
                   <th style="width: 22%;">Assigned Site</th>
                   <th style="width: 22%; text-align: center;">Compliance Status</th>
                   <th style="width: 14%; text-align: right;">Latest Session</th>
@@ -471,18 +516,19 @@ export default function SafetyMeetingComplianceLog({
                 </tr>
               </thead>
               <tbody>
-                ${m.employeeBreakdown.map((emp) => {
-                  const historyLogs = emp.history.filter((h) => {
-                    if (printTimeframe === "ALL") return true;
-                    const hTime = new Date(h.completed_at).getTime();
-                    const now = new Date().getTime();
-                    const diffDays = (now - hTime) / (1000 * 3600 * 24);
-                    if (printTimeframe === "1M") return diffDays <= 30;
-                    if (printTimeframe === "1Y") return diffDays <= 365;
-                    return true;
-                  });
+                ${m.employeeBreakdown
+                  .map((emp) => {
+                    const historyLogs = emp.history.filter((h) => {
+                      if (printTimeframe === "ALL") return true;
+                      const hTime = new Date(h.completed_at).getTime();
+                      const now = new Date().getTime();
+                      const diffDays = (now - hTime) / (1000 * 3600 * 24);
+                      if (printTimeframe === "1M") return diffDays <= 30;
+                      if (printTimeframe === "1Y") return diffDays <= 365;
+                      return true;
+                    });
 
-                  return `
+                    return `
                     <tr>
                       <td style="font-weight: 700; text-transform: uppercase;">${emp.fullName}</td>
                       <td style="font-family: monospace; font-size: 7.5pt; text-transform: uppercase;">${emp.user.location || activeSite.toUpperCase()}</td>
@@ -492,30 +538,82 @@ export default function SafetyMeetingComplianceLog({
                         ${emp.status === "NOT_TRAINED" ? `<span class="status-tag status-not">✕ NOT COMPLETED</span>` : ""}
                       </td>
                       <td style="text-align: right; font-family: monospace;">
-                        ${emp.latestDate ? new Date(emp.latestDate).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' }) : "--"}
+                        ${emp.latestDate ? new Date(emp.latestDate).toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric" }) : "--"}
                       </td>
                       <td style="text-align: right; font-family: monospace; font-weight: 700;">${emp.totalCompletions}x</td>
                     </tr>
-                    ${printDetailLevel === "FULL_AUDIT" && historyLogs.length > 0 ? `
+                    ${
+                      printDetailLevel === "FULL_AUDIT" && historyLogs.length > 0
+                        ? `
                       <tr class="history-row">
                         <td colspan="5">
                           <div class="history-list">
                             <strong>Itemized Log:</strong>
-                            ${historyLogs.map(h => `
+                            ${historyLogs
+                              .map(
+                                (h) => `
                               <span style="margin-right: 14px; display: inline-block;">
                                 ${new Date(h.completed_at).toLocaleString()} (${h.location || "Site"})
                               </span>
-                            `).join('')}
+                            `
+                              )
+                              .join("")}
                           </div>
                         </td>
                       </tr>
-                    ` : ""}
+                    `
+                        : ""
+                    }
                   `;
-                }).join('')}
+                  })
+                  .join("")}
               </tbody>
             </table>
+
+            <!-- SUBCONTRACTOR PARTNER ENTRIES -->
+            ${
+              m.subcontractorLogs && m.subcontractorLogs.length > 0
+                ? `
+              <div class="sub-section-title">
+                <span>Verified Subcontractor & Third-Party On-Site Attendance</span>
+                <span>${m.subcontractorLogs.length} Verified Sign-Offs</span>
+              </div>
+              <table class="audit-table">
+                <thead>
+                  <tr>
+                    <th style="width: 28%;">Subcontractor Entity</th>
+                    <th style="width: 20%;">Date & Time</th>
+                    <th style="width: 52%;">Workers Present On-Site</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${m.subcontractorLogs
+                    .map(
+                      (sub) => `
+                    <tr>
+                      <td style="font-weight: 800; text-transform: uppercase;">
+                        ${sub.company_name || "Subcontractor Vendor"}
+                      </td>
+                      <td style="font-family: monospace; font-size: 7.5pt;">
+                        ${new Date(sub.completed_at).toLocaleString()}
+                      </td>
+                      <td style="font-family: monospace; font-size: 8pt; font-weight: 700; color: #0f172a;">
+                        ${sub.attendee_names && sub.attendee_names.length > 0 ? sub.attendee_names.join(", ") : "[ No worker roster attached ]"}
+                      </td>
+                    </tr>
+                  `
+                    )
+                    .join("")}
+                </tbody>
+              </table>
+            `
+                : ""
+            }
+
           </div>
-        `).join('')}
+        `
+          )
+          .join("")}
 
         <!-- LEGAL SIGN-OFF SECTION -->
         <div class="signoff-section">
@@ -545,7 +643,6 @@ export default function SafetyMeetingComplianceLog({
       </html>
     `;
 
-    // Create an invisible iframe to print the document cleanly
     const iframe = document.createElement("iframe");
     iframe.style.position = "fixed";
     iframe.style.right = "0";
@@ -562,7 +659,6 @@ export default function SafetyMeetingComplianceLog({
     doc.write(printDocHTML);
     doc.close();
 
-    // Trigger print after rendering
     iframe.contentWindow?.focus();
     setTimeout(() => {
       iframe.contentWindow?.print();
@@ -574,11 +670,6 @@ export default function SafetyMeetingComplianceLog({
 
   return (
     <>
-      {/* 
-        ========================================================
-        INTERACTIVE DIGITAL DASHBOARD (Screen View)
-        ========================================================
-      */}
       <motion.div variants={itemVariants} className="space-y-4 sm:space-y-6 font-mono text-slate-100 select-none">
         <div className="border p-3.5 sm:p-6 shadow-2xl relative overflow-hidden group rounded-sm bg-[var(--color-brand-card)] border-[var(--color-brand-border)]">
           <div className="absolute top-0 left-0 w-full h-[2px] bg-[var(--color-brand-border)] group-hover:bg-[var(--color-brand-blue)] transition-colors duration-300" />
@@ -677,11 +768,10 @@ export default function SafetyMeetingComplianceLog({
                     </div>
 
                     <div>
-                      <h3 className="text-xs font-black uppercase text-white leading-snug">
-                        {m.topic.title}
-                      </h3>
+                      <h3 className="text-xs font-black uppercase text-white leading-snug">{m.topic.title}</h3>
                       <p className="text-[10px] text-slate-400 font-mono mt-1">
-                        Last Session: {m.latestDateOverall ? new Date(m.latestDateOverall).toLocaleDateString() : "No Activity"}
+                        Last Session:{" "}
+                        {m.latestDateOverall ? new Date(m.latestDateOverall).toLocaleDateString() : "No Activity"}
                       </p>
                     </div>
 
@@ -822,98 +912,151 @@ export default function SafetyMeetingComplianceLog({
                   </button>
                 </div>
 
-                <div className="p-3.5 sm:p-5 overflow-y-auto space-y-2.5 flex-1 bg-[var(--color-brand-card)] custom-scrollbar">
-                  <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-[var(--color-brand-border)] pb-2 mb-2 px-1">
-                    <span>Crew Member Status</span>
-                    <span>Total Logs</span>
+                <div className="p-3.5 sm:p-5 overflow-y-auto space-y-4 flex-1 bg-[var(--color-brand-card)] custom-scrollbar">
+                  {/* IMC PRIMARY CREW ROSTER */}
+                  <div>
+                    <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-[var(--color-brand-border)] pb-2 mb-2 px-1">
+                      <span>IMC Full-Time Crew Member Status</span>
+                      <span>Total Logs</span>
+                    </div>
+
+                    <div className="space-y-2">
+                      {activeMeetingDetail.employeeBreakdown.map((emp) => {
+                        const isExpanded = !!expandedUserIds[emp.user.id];
+
+                        return (
+                          <div
+                            key={emp.user.id}
+                            className="border rounded-sm bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] overflow-hidden"
+                          >
+                            <div
+                              onClick={() => toggleUserExpanded(emp.user.id)}
+                              className="min-h-[48px] p-2.5 sm:p-3 flex items-center justify-between cursor-pointer active:bg-[var(--color-brand-card)]/50 transition-colors touch-manipulation"
+                            >
+                              <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                                <span
+                                  className={`w-2.5 h-2.5 rounded-none flex-shrink-0 ${
+                                    emp.status === "CURRENT"
+                                      ? "bg-[var(--color-brand-green,#00ff9d)]"
+                                      : emp.status === "REFRESHER_DUE"
+                                      ? "bg-[#eab308]"
+                                      : "bg-[var(--color-brand-red,#ff3b5c)]"
+                                  }`}
+                                />
+                                <div className="min-w-0">
+                                  <p className="text-xs sm:text-sm font-black text-slate-100 uppercase truncate">
+                                    {emp.fullName}
+                                  </p>
+                                  <p className="text-[9px] sm:text-[10px] uppercase font-bold mt-0.5 tracking-wider truncate">
+                                    {emp.status === "CURRENT" && (
+                                      <span className="text-[var(--color-brand-green,#00ff9d)]">
+                                        CURRENT: {new Date(emp.latestDate!).toLocaleDateString()}
+                                      </span>
+                                    )}
+                                    {emp.status === "REFRESHER_DUE" && (
+                                      <span className="text-[#eab308]">
+                                        EXPIRED ({new Date(emp.latestDate!).toLocaleDateString()})
+                                      </span>
+                                    )}
+                                    {emp.status === "NOT_TRAINED" && (
+                                      <span className="text-[var(--color-brand-red,#ff3b5c)]">NOT TRAINED</span>
+                                    )}
+                                  </p>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-2.5 shrink-0">
+                                <span className="text-xs sm:text-sm font-black tabular-nums text-slate-300">
+                                  {emp.totalCompletions}x
+                                </span>
+                                <span className={`text-[10px] text-slate-500 transition-transform ${isExpanded ? "rotate-180" : ""}`}>
+                                  ▼
+                                </span>
+                              </div>
+                            </div>
+
+                            <AnimatePresence>
+                              {isExpanded && (
+                                <motion.div
+                                  initial={{ height: 0, opacity: 0 }}
+                                  animate={{ height: "auto", opacity: 1 }}
+                                  exit={{ height: 0, opacity: 0 }}
+                                  className="border-t border-[var(--color-brand-border)] bg-[var(--color-brand-card)] p-2.5 text-xs space-y-1"
+                                >
+                                  <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 block mb-1">
+                                    Complete Audit History
+                                  </span>
+                                  {emp.history.length > 0 ? (
+                                    emp.history.map((h, idx) => (
+                                      <div
+                                        key={h.id || idx}
+                                        className="flex justify-between items-center text-[10px] font-mono text-slate-300 py-1.5 px-2 border-b border-[var(--color-brand-border)]/40 last:border-0"
+                                      >
+                                        <span>{new Date(h.completed_at).toLocaleString()}</span>
+                                        <span className="text-slate-500 uppercase">{h.location || "On-Site"}</span>
+                                      </div>
+                                    ))
+                                  ) : (
+                                    <p className="text-[10px] text-slate-500 uppercase font-bold py-1">
+                                      [ No Historic Sign-offs ]
+                                    </p>
+                                  )}
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
 
-                  {activeMeetingDetail.employeeBreakdown.map((emp) => {
-                    const isExpanded = !!expandedUserIds[emp.user.id];
+                  {/* SUBCONTRACTOR PARTNER LOGS */}
+                  {activeMeetingDetail.subcontractorLogs && activeMeetingDetail.subcontractorLogs.length > 0 && (
+                    <div className="pt-3 border-t border-[var(--color-brand-border)]">
+                      <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-[var(--color-brand-blue)] border-b border-[var(--color-brand-border)] pb-2 mb-2 px-1">
+                        <span>Verified Subcontractor Sign-Offs & Crew Rosters</span>
+                        <span>{activeMeetingDetail.subcontractorLogs.length} Verified Sessions</span>
+                      </div>
 
-                    return (
-                      <div
-                        key={emp.user.id}
-                        className="border rounded-sm bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] overflow-hidden"
-                      >
-                        <div
-                          onClick={() => toggleUserExpanded(emp.user.id)}
-                          className="min-h-[48px] p-2.5 sm:p-3 flex items-center justify-between cursor-pointer active:bg-[var(--color-brand-card)]/50 transition-colors touch-manipulation"
-                        >
-                          <div className="flex items-center gap-2.5 min-w-0 pr-2">
-                            <span
-                              className={`w-2.5 h-2.5 rounded-none flex-shrink-0 ${
-                                emp.status === "CURRENT"
-                                  ? "bg-[var(--color-brand-green,#00ff9d)]"
-                                  : emp.status === "REFRESHER_DUE"
-                                  ? "bg-[#eab308]"
-                                  : "bg-[var(--color-brand-red,#ff3b5c)]"
-                              }`}
-                            />
-                            <div className="min-w-0">
-                              <p className="text-xs sm:text-sm font-black text-slate-100 uppercase truncate">
-                                {emp.fullName}
-                              </p>
-                              <p className="text-[9px] sm:text-[10px] uppercase font-bold mt-0.5 tracking-wider truncate">
-                                {emp.status === "CURRENT" && (
-                                  <span className="text-[var(--color-brand-green,#00ff9d)]">
-                                    CURRENT: {new Date(emp.latestDate!).toLocaleDateString()}
-                                  </span>
-                                )}
-                                {emp.status === "REFRESHER_DUE" && (
-                                  <span className="text-[#eab308]">
-                                    EXPIRED ({new Date(emp.latestDate!).toLocaleDateString()})
-                                  </span>
-                                )}
-                                {emp.status === "NOT_TRAINED" && (
-                                  <span className="text-[var(--color-brand-red,#ff3b5c)]">
-                                    NOT TRAINED
-                                  </span>
-                                )}
-                              </p>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-2.5 shrink-0">
-                            <span className="text-xs sm:text-sm font-black tabular-nums text-slate-300">
-                              {emp.totalCompletions}x
-                            </span>
-                            <span className={`text-[10px] text-slate-500 transition-transform ${isExpanded ? "rotate-180" : ""}`}>
-                              ▼
-                            </span>
-                          </div>
-                        </div>
-
-                        <AnimatePresence>
-                          {isExpanded && (
-                            <motion.div
-                              initial={{ height: 0, opacity: 0 }}
-                              animate={{ height: "auto", opacity: 1 }}
-                              exit={{ height: 0, opacity: 0 }}
-                              className="border-t border-[var(--color-brand-border)] bg-[var(--color-brand-card)] p-2.5 text-xs space-y-1"
-                            >
-                              <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 block mb-1">
-                                Complete Audit History
+                      <div className="space-y-2">
+                        {activeMeetingDetail.subcontractorLogs.map((sub) => (
+                          <div
+                            key={sub.id}
+                            className="p-3 rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)]"
+                          >
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-2">
+                              <span className="text-xs font-black uppercase text-white">
+                                {sub.company_name || "Subcontractor Vendor"}
                               </span>
-                              {emp.history.length > 0 ? (
-                                emp.history.map((h, idx) => (
-                                  <div
-                                    key={h.id || idx}
-                                    className="flex justify-between items-center text-[10px] font-mono text-slate-300 py-1.5 px-2 border-b border-[var(--color-brand-border)]/40 last:border-0"
+                              <span className="text-[10px] font-mono text-slate-400">
+                                {new Date(sub.completed_at).toLocaleString()} ({sub.location || activeSite})
+                              </span>
+                            </div>
+
+                            <div className="flex flex-wrap gap-1.5 items-center mt-1">
+                              <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 mr-1">
+                                Crew Present:
+                              </span>
+                              {sub.attendee_names && sub.attendee_names.length > 0 ? (
+                                sub.attendee_names.map((name, nIdx) => (
+                                  <span
+                                    key={nIdx}
+                                    className="px-2 py-0.5 text-[10px] font-bold uppercase bg-[var(--color-brand-card)] border border-[var(--color-brand-border)] text-emerald-400 rounded-sm"
                                   >
-                                    <span>{new Date(h.completed_at).toLocaleString()}</span>
-                                    <span className="text-slate-500 uppercase">{h.location || "On-Site"}</span>
-                                  </div>
+                                    {name}
+                                  </span>
                                 ))
                               ) : (
-                                <p className="text-[10px] text-slate-500 uppercase font-bold py-1">[ No Historic Sign-offs ]</p>
+                                <span className="text-[10px] text-slate-500 font-mono">
+                                  [ No worker names attached ]
+                                </span>
                               )}
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                    );
-                  })}
+                    </div>
+                  )}
                 </div>
 
                 <div className="p-3.5 sm:p-4 border-t border-[var(--color-brand-border)] bg-[var(--color-brand-bg)] flex justify-end gap-2">
@@ -967,10 +1110,16 @@ export default function SafetyMeetingComplianceLog({
                       onChange={(e) => setPrintScope(e.target.value)}
                       className="w-full min-h-[48px] p-2.5 bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] text-slate-100 uppercase rounded-sm outline-none text-xs cursor-pointer"
                     >
-                      <option value="ALL" className="font-black text-white bg-[var(--color-brand-card)]">All Safety Topics (Policies & TBTs)</option>
-                      <option value="POLICIES_ONLY" className="font-black text-white bg-[var(--color-brand-card)]">Company Policies Only (001–026)</option>
-                      <option value="TBT_ONLY" className="font-black text-white bg-[var(--color-brand-card)]">Toolbox Talks Only</option>
-                      
+                      <option value="ALL" className="font-black text-white bg-[var(--color-brand-card)]">
+                        All Safety Topics (Policies & TBTs)
+                      </option>
+                      <option value="POLICIES_ONLY" className="font-black text-white bg-[var(--color-brand-card)]">
+                        Company Policies Only (001–026)
+                      </option>
+                      <option value="TBT_ONLY" className="font-black text-white bg-[var(--color-brand-card)]">
+                        Toolbox Talks Only
+                      </option>
+
                       <optgroup label="Single Company Policy" className="bg-[var(--color-brand-bg)] text-[var(--color-brand-blue)] mt-2">
                         {policies.map((b) => (
                           <option key={b.id} value={b.id} className="text-white bg-[var(--color-brand-card)] font-normal">

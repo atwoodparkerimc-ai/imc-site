@@ -17,6 +17,7 @@ export interface UserProfile {
   last_safety_check?: string;
   last_safe_act_date?: string;
   terms_accepted_at?: string | null;
+  is_active?: boolean; // Active Employment Status Flag
 }
 
 export interface InventoryItem {
@@ -73,12 +74,32 @@ export async function getEmployeeProfile(
 ): Promise<UserProfile | null> {
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, first_name, last_name, nickname, role, points_balance, location, must_change_password, last_safety_check, last_safe_act_date, terms_accepted_at')
+    .select('id, first_name, last_name, nickname, role, points_balance, location, must_change_password, last_safety_check, last_safe_act_date, terms_accepted_at, is_active')
     .eq('id', userId)
     .single();
 
   if (error || !data) return null;
   return data as UserProfile;
+}
+
+/** Toggle employee active employment status (Manager Only) */
+export async function setEmployeeActiveStatus(
+  supabase: SupabaseClient,
+  userId: string,
+  isActive: boolean
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { error } = await supabase
+      .from('profiles')
+      .update({ is_active: isActive })
+      .eq('id', userId);
+
+    if (error) throw error;
+    return { success: true };
+  } catch (err: any) {
+    console.error("Failed to update employee active status:", err);
+    return { success: false, error: err.message };
+  }
 }
 
 /** Record user acceptance of the Employee Incentive Program Terms */
@@ -165,7 +186,7 @@ export async function initializeBackdatedPoints(
   return { success: true };
 }
 
-/** Fetch list of team members at the SAME LOCATION, excluding the current active user */
+/** Fetch list of team members at the SAME LOCATION, excluding the current active user and inactive staff */
 export async function getPeerProfiles(
   supabase: SupabaseClient, 
   userId: string,
@@ -174,7 +195,8 @@ export async function getPeerProfiles(
   let query = supabase
     .from('profiles')
     .select('id, first_name, last_name, nickname, location')
-    .neq('id', userId);
+    .neq('id', userId)
+    .neq('is_active', false);
 
   // Strictly filter peers matching active site location if provided
   if (userLocation) {
@@ -236,7 +258,6 @@ export async function getJobLocations(
     .select('name')
     .order('name', { ascending: true });
 
-  // Updated fallback array to include Nestle Gaffney
   if (error || !data || data.length === 0) {
     return ['Nestle Springville', 'Nestle Gaffney', 'Springville Shop'];
   }
@@ -258,6 +279,26 @@ export async function updateUserLocation(
     return { success: false, error: error.message };
   }
   return { success: true };
+}
+
+/** Update an employee's role (Manager / Admin Only) */
+export async function updateUserRole(
+  supabase: SupabaseClient,
+  userId: string,
+  role: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { error } = await supabase
+      .from('profiles')
+      .update({ role })
+      .eq('id', userId);
+
+    if (error) throw error;
+    return { success: true };
+  } catch (err: any) {
+    console.error("Failed to update user role:", err);
+    return { success: false, error: err.message };
+  }
 }
 
 // ==========================================
@@ -460,12 +501,7 @@ export async function completeDailySafetyBriefing(
   return { success: true };
 }
 
-/** * Submit a peer Safe Act report:
- * - Reporter always gets +5 PTS.
- * - Recipient 1st report today = +10 PTS.
- * - Recipient 2nd report today = +5 PTS (hits 15 PTS daily cap).
- * - Recipient 3+ reports today = +0 PTS (capped), but observation is still recorded.
- */
+/** Submit a peer Safe Act report */
 export async function submitSafeActReport(
   supabase: SupabaseClient, 
   payload: { reporterId: string; recipientId: string; reason: string }
@@ -522,7 +558,6 @@ export async function submitSafeActReport(
   }
 
   // 4. Log point ledger entries
-  // (The Supabase DB Trigger will automatically add points_balance to profiles for both entries!)
   const fullReason = `REPORTED SAFE ACT: ${payload.reason}`;
   const ledgerEntries = [
     { sender_id: payload.reporterId, receiver_id: payload.reporterId, amount: 5, reason: fullReason }
@@ -586,7 +621,6 @@ export async function awardPointsToEmployee(
   const managerName = managerProfile?.nickname || `${managerProfile?.first_name || ''} ${managerProfile?.last_name || ''}`.trim() || "a Manager";
 
   // 2. Record transaction in point_ledger
-  // (The Supabase DB Trigger automatically updates profiles.points_balance)
   const { error: ledgerError } = await supabase.from('point_ledger').insert([
     {
       sender_id: payload.managerId,
@@ -617,7 +651,7 @@ export async function awardPointsToEmployee(
 }
 
 // ==========================================
-// 5. HAZARDS & ROLL CALL AUDITS wont work 
+// 5. HAZARDS & ROLL CALL AUDITS
 // ==========================================
 
 /** Fetch the latest broadcast hazard score for a specific job location */
@@ -692,7 +726,7 @@ export async function getUserLedgerActivity(
     supabase
       .from('point_ledger')
       .select('*')
-      .eq('receiver_id', userId) // Strictly fetch points RECEIVED by this employee
+      .eq('receiver_id', userId)
       .order('created_at', { ascending: false })
       .limit(15),
     supabase
@@ -735,7 +769,10 @@ export async function getUserLedgerActivity(
 /** Fetch master data set required for the Manager Command Center */
 export async function getManagerMasterData(supabase: SupabaseClient) {
   const [teamRes, awardsRes, actsRes, meetingsRes, redemptionsRes] = await Promise.all([
-    supabase.from('profiles').select('id, first_name, last_name, nickname, role, points_balance, location, must_change_password').order('first_name'),
+    supabase
+      .from('profiles')
+      .select('id, first_name, last_name, nickname, role, points_balance, location, must_change_password, is_active')
+      .order('first_name'),
     supabase.from('point_ledger').select('*').gt('amount', 0),
     supabase.from('safe_acts').select('*'),
     supabase.from('safety_meetings').select('*'),
@@ -743,7 +780,7 @@ export async function getManagerMasterData(supabase: SupabaseClient) {
   ]);
 
   const allUsers = (teamRes.data as UserProfile[]) || [];
-  const activeTeam = allUsers.filter(p => p.role !== 'manager');
+  const activeTeam = allUsers.filter(p => p.role !== 'manager' && p.is_active !== false);
 
   return {
     allUsers,
@@ -778,7 +815,6 @@ export interface EvaluatedCert {
   daysRemaining: number | null;
 }
 
-// Master list of certifications based on user role
 export const BASE_EMPLOYEE_CERTS = [
   { key: 'scissor_lift', title: 'Scissor Lift Operator' },
   { key: 'boom_lift', title: 'Boom Lift Operator' },
@@ -794,22 +830,18 @@ export const MANAGER_ADDITIONAL_CERTS = [
   { key: 'lift_trainer', title: 'Certified Lift Trainer' },
 ];
 
-/** Evaluate certification status against the 90-day warning threshold */
 export function calculateCertStatus(
   issueDateStr: string | null,
   expirationDateStr: string | null
 ): { status: CertStatus; daysRemaining: number | null } {
-  // 1. If no dates exist at all, they haven't completed training
   if (!issueDateStr && !expirationDateStr) {
     return { status: 'NOT_TRAINED', daysRemaining: null };
   }
 
-  // 2. If it has an issue date but never expires (e.g. OSHA 10)
   if (!expirationDateStr) {
     return { status: 'VALID', daysRemaining: null };
   }
 
-  // 3. If an expiration date exists, calculate the timeline
   const now = new Date();
   const exp = new Date(expirationDateStr);
   const diffTime = exp.getTime() - now.getTime();
@@ -820,7 +852,6 @@ export function calculateCertStatus(
   return { status: 'VALID', daysRemaining };
 }
 
-/** Fetch employee certifications evaluated with status badges */
 export async function getEmployeeCertifications(
   supabase: SupabaseClient,
   userId: string,
@@ -858,7 +889,6 @@ export async function getEmployeeCertifications(
   });
 }
 
-/** Upsert an employee certification record */
 export async function upsertEmployeeCertification(
   supabase: SupabaseClient,
   payload: {
@@ -890,7 +920,6 @@ export async function upsertEmployeeCertification(
   return { success: true, data };
 }
 
-/** Fetch required daily paperwork URL for a given location */
 export async function getLocationPaperworkUrl(
   supabase: SupabaseClient,
   locationName: string | null | undefined
@@ -899,7 +928,6 @@ export async function getLocationPaperworkUrl(
 
   const target = locationName.trim();
 
-  // 1. Exact match attempt
   const { data: exactData, error: exactErr } = await supabase
     .from('locations')
     .select('name, paperwork_url')
@@ -914,7 +942,6 @@ export async function getLocationPaperworkUrl(
     return exactData.paperwork_url;
   }
 
-  // 2. Fuzzy wildcard attempt (handles partial location string matches)
   const { data: fuzzyData } = await supabase
     .from('locations')
     .select('paperwork_url')
@@ -927,7 +954,6 @@ export async function getLocationPaperworkUrl(
     return fuzzyData.paperwork_url;
   }
 
-  // 3. Keyword fallback (e.g., if profile string is "Nestle Springville", match any row containing "Nestle")
   const primaryWord = target.split(' ')[0];
   if (primaryWord.length > 2) {
     const { data: keywordData } = await supabase
@@ -944,7 +970,6 @@ export async function getLocationPaperworkUrl(
   return null;
 }
 
-/** Upsert employee certification dates (Manager Only) */
 export async function saveEmployeeCertification(
   supabase: SupabaseClient,
   payload: { employeeId: string; certType: string; issueDate: string | null; expirationDate: string | null }
@@ -979,13 +1004,11 @@ export interface RedemptionRecord {
   status: 'pending_pickup' | 'in_progress' | 'ordered' | 'fulfilled' | 'cancelled';
   assigned_manager_id?: string | null;
   
-  // Joined Data
   employee?: { first_name: string; last_name?: string | null; nickname: string | null; location: string | null };
   item?: { item_name: string; image_url: string | null; images: string[] | null };
   manager?: { first_name: string; last_name?: string | null; nickname: string | null };
 }
 
-/** Fetch all redemption orders with joined employee and item data */
 export async function getFulfillmentOrders(
   supabase: SupabaseClient
 ): Promise<RedemptionRecord[]> {
@@ -1007,7 +1030,6 @@ export async function getFulfillmentOrders(
   return data as unknown as RedemptionRecord[];
 }
 
-/** Update the status and assignment of a specific order */
 export async function updateOrderStatus(
   supabase: SupabaseClient,
   redemptionId: string,
@@ -1026,7 +1048,6 @@ export async function updateOrderStatus(
   return { success: true };
 }
 
-/** Cancel an order, return points to the employee, replenish stock, and notify the user */
 export async function cancelAndRefundOrder(
   supabase: SupabaseClient,
   order: RedemptionRecord,
@@ -1085,7 +1106,6 @@ export async function cancelAndRefundOrder(
   }
 }
 
-/** Update an existing catalog inventory item */
 export async function updateInventoryItem(
   supabase: SupabaseClient,
   id: string,
@@ -1123,7 +1143,6 @@ export async function updateInventoryItem(
 // 9. SITE-SPECIFIC BRIEFING ROUTING
 // ==========================================
 
-/** Set a site-specific safety briefing override for the current day */
 export async function setSiteBriefingOverride(
   supabase: SupabaseClient,
   locationName: string,
@@ -1138,7 +1157,7 @@ export async function setSiteBriefingOverride(
       active_briefing_id: briefingId,
       active_briefing_date: todayStr
     })
-    .ilike('name', locationName.trim()) // Bulletproof match (ignores case/spaces)
+    .ilike('name', locationName.trim())
     .select();
 
   if (error) return { success: false, error: error.message };
@@ -1150,7 +1169,6 @@ export async function setSiteBriefingOverride(
   return { success: true };
 }
 
-/** Fetch the active briefing override for a specific location (if valid for today) */
 export async function getActiveSiteBriefingId(
   supabase: SupabaseClient,
   locationName: string | null | undefined
@@ -1163,12 +1181,11 @@ export async function getActiveSiteBriefingId(
   const { data, error } = await supabase
     .from('locations')
     .select('active_briefing_id, active_briefing_date')
-    .ilike('name', locationName.trim()) // ilike prevents case-sensitivity bugs
+    .ilike('name', locationName.trim())
     .maybeSingle();
 
   if (error || !data) return null;
   
-  // Only return the override if it was explicitly set for the local TODAY
   if (data.active_briefing_date === todayStr) {
     return data.active_briefing_id;
   }
@@ -1176,7 +1193,6 @@ export async function getActiveSiteBriefingId(
   return null;
 }
 
-/** Format employee display name with priority on nickname, combined with last name */
 export function formatEmployeeName(profile: { 
   first_name?: string | null; 
   last_name?: string | null; 
@@ -1186,3 +1202,298 @@ export function formatEmployeeName(profile: {
   const last = profile.last_name?.trim() || '';
   return last ? `${primaryName} ${last}`.trim() : primaryName;
 }
+
+export interface SubcontractorBriefingPayload {
+  briefingId: string;
+  briefingTitle: string;
+  companyName: string;
+  location: string;
+  attendeeNames: string[];
+}
+
+export async function completeSubcontractorSafetyBriefing(
+  supabase: SupabaseClient,
+  subcontractorProfileId: string,
+  payload: SubcontractorBriefingPayload
+): Promise<{ success: boolean; alreadyCheckedIn?: boolean; error?: string }> {
+  try {
+    const todayDate = new Date().toISOString().split("T")[0];
+
+    const { data: profile, error: profileErr } = await supabase
+      .from("profiles")
+      .select("id, last_safety_check, role")
+      .eq("id", subcontractorProfileId)
+      .single();
+
+    if (profileErr || !profile) {
+      return { success: false, error: profileErr?.message || "Subcontractor profile not found" };
+    }
+
+    if (profile.last_safety_check === todayDate) {
+      return { success: false, alreadyCheckedIn: true };
+    }
+
+    const { error: insertErr } = await supabase
+      .from("briefing_completions")
+      .insert({
+        user_id: subcontractorProfileId,
+        briefing_id: payload.briefingId,
+        briefing_title: payload.briefingTitle,
+        location: payload.location,
+        is_subcontractor: true,
+        company_name: payload.companyName,
+        attendee_names: payload.attendeeNames,
+        completed_at: new Date().toISOString()
+      });
+
+    if (insertErr) {
+      return { success: false, error: insertErr.message };
+    }
+
+    const { error: updateErr } = await supabase
+      .from("profiles")
+      .update({ last_safety_check: todayDate })
+      .eq("id", subcontractorProfileId);
+
+    if (updateErr) {
+      return { success: false, error: updateErr.message };
+    }
+
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err?.message || "Unexpected failure recording subcontractor log" };
+  }
+}
+
+// ==========================================
+// 10. JHA TYPES & FIELD OPERATIONS
+// ==========================================
+
+export interface JhaStep {
+  id: string;
+  step: string;
+  hazards: string;
+  controls: string;
+}
+
+export interface JhaStepTemplate {
+  id: string;
+  category: string;
+  step_description: string;
+  potential_hazards: string;
+  control_measures: string;
+}
+
+export interface DailyJhaRecord {
+  id: string;
+  title: string;
+  location: string;
+  date: string;
+  supervisor: string;
+  status: "ACTIVE" | "CLOSED";
+  training_required: string[];
+  equipment_used: string[];
+  permits_required: string[];
+  certifications_required: string[];
+  steps: JhaStep[];
+  created_at: string;
+  closed_at?: string | null;
+}
+
+export interface JhaAcknowledgmentRecord {
+  id: string;
+  jha_id: string;
+  user_id: string;
+  employee_name: string;
+  location: string;
+  signed_at: string;
+}
+
+/** 1. Fetch available step templates for manager autocomplete */
+export async function getJhaStepTemplates(supabase: any): Promise<JhaStepTemplate[]> {
+  const { data, error } = await supabase
+    .from("jha_step_templates")
+    .select("*")
+    .order("category", { ascending: true });
+  if (error) {
+    console.error("Error fetching JHA templates:", error);
+    return [];
+  }
+  return data || [];
+}
+
+/** 
+ * 2. Fetch all ACTIVE daily JHAs for a given site.
+ * Jobs remain active across days until explicitly closed out by a manager.
+ */
+export async function getActiveDailyJhas(supabase: any, location: string): Promise<DailyJhaRecord[]> {
+  try {
+    let query = supabase
+      .from("daily_jhas")
+      .select("*")
+      .eq("status", "ACTIVE")
+      .order("created_at", { ascending: false });
+
+    if (location && location !== "ALL") {
+      query = query.ilike("location", `%${location.trim()}%`);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.warn("[getActiveDailyJhas] Query issue:", error.message || error);
+      return [];
+    }
+    return (data || []) as DailyJhaRecord[];
+  } catch (err: any) {
+    console.warn("[getActiveDailyJhas] Exception caught:", err?.message || err);
+    return [];
+  }
+}
+
+/** 3. Create a new Daily JHA from manager console */
+export async function createDailyJha(
+  supabase: any,
+  payload: Omit<DailyJhaRecord, "id" | "created_at" | "closed_at">,
+  managerId: string
+): Promise<{ success: boolean; data?: DailyJhaRecord; error?: string }> {
+  try {
+    const { data, error } = await supabase
+      .from("daily_jhas")
+      .insert({
+        title: payload.title,
+        location: payload.location,
+        date: payload.date || new Date().toISOString().split("T")[0],
+        supervisor: payload.supervisor,
+        status: "ACTIVE",
+        training_required: payload.training_required || [],
+        equipment_used: payload.equipment_used || [],
+        permits_required: payload.permits_required || [],
+        certifications_required: payload.certifications_required || [],
+        steps: payload.steps || [],
+        created_by: managerId,
+      })
+      .select()
+      .single();
+
+    if (error) return { success: false, error: error.message };
+    return { success: true, data };
+  } catch (err: any) {
+    return { success: false, error: err?.message || "Failed to create JHA" };
+  }
+}
+
+/** 4. Employee sign-off for a specific JHA (supports daily multi-day signatures) */
+export async function signDailyJha(
+  supabase: any,
+  jhaId: string,
+  userId: string,
+  employeeName: string,
+  location: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const todayDate = new Date().toISOString().split("T")[0];
+    const nowIso = new Date().toISOString();
+
+    const { error } = await supabase
+      .from("jha_acknowledgments")
+      .upsert(
+        {
+          jha_id: jhaId,
+          user_id: userId,
+          employee_name: employeeName,
+          location,
+          signed_at: nowIso,
+          sign_date: todayDate,
+        },
+        { onConflict: "jha_id,user_id,sign_date" }
+      );
+
+    if (error) return { success: false, error: error.message };
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err?.message || "Failed to record JHA sign-off" };
+  }
+}
+
+/** 5. Fetch all acknowledgments for a given JHA (for manager log & print view) */
+export async function getJhaAcknowledgments(
+  supabase: any,
+  jhaId: string
+): Promise<JhaAcknowledgmentRecord[]> {
+  const { data, error } = await supabase
+    .from("jha_acknowledgments")
+    .select("*")
+    .eq("jha_id", jhaId)
+    .order("signed_at", { ascending: true });
+
+  if (error) {
+    console.error("Error fetching JHA acknowledgments:", error);
+    return [];
+  }
+  return data || [];
+}
+
+/** 6. Update an existing Daily JHA (Manager Edit / Close Out) */
+export async function updateDailyJha(
+  supabase: any,
+  jhaId: string,
+  payload: Partial<Omit<DailyJhaRecord, "id" | "created_at">>
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const updatePayload: Record<string, any> = {};
+
+    if (payload.title !== undefined) updatePayload.title = payload.title;
+    if (payload.location !== undefined) updatePayload.location = payload.location;
+    if (payload.supervisor !== undefined) updatePayload.supervisor = payload.supervisor;
+    if (payload.status !== undefined) {
+      updatePayload.status = payload.status;
+      if (payload.status === "CLOSED") {
+        updatePayload.closed_at = new Date().toISOString();
+      }
+    }
+    if (payload.training_required !== undefined) updatePayload.training_required = payload.training_required;
+    if (payload.equipment_used !== undefined) updatePayload.equipment_used = payload.equipment_used;
+    if (payload.permits_required !== undefined) updatePayload.permits_required = payload.permits_required;
+    if (payload.certifications_required !== undefined) updatePayload.certifications_required = payload.certifications_required;
+    if (payload.steps !== undefined) updatePayload.steps = payload.steps;
+
+    const { error } = await supabase
+      .from("daily_jhas")
+      .update(updatePayload)
+      .eq("id", jhaId);
+
+    if (error) return { success: false, error: error.message };
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err?.message || "Failed to update JHA" };
+  }
+}
+
+/** 7. Fetch list of JHA IDs that the current employee has signed TODAY */
+export async function getUserSignedJhaIdsToday(
+  supabase: any,
+  userId: string
+): Promise<string[]> {
+  try {
+    const today = new Date().toISOString().split("T")[0];
+    const startOfDay = `${today}T00:00:00.000Z`;
+
+    const { data, error } = await supabase
+      .from("jha_acknowledgments")
+      .select("jha_id")
+      .eq("user_id", userId)
+      .gte("signed_at", startOfDay);
+
+    if (error) {
+      console.warn("Notice checking user signed JHA IDs:", error.message);
+      return [];
+    }
+
+    return (data || []).map((row: any) => row.jha_id);
+  } catch (err: any) {
+    console.warn("Exception checking signed JHA IDs:", err?.message || err);
+    return [];
+  }
+}
+

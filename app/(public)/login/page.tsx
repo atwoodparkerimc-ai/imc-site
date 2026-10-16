@@ -72,7 +72,7 @@ function LoginContent() {
     return rawRedirect;
   };
 
-  // Handle User Login
+  // Handle User Login with Active Employment & Role Verification
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -90,7 +90,38 @@ function LoginContent() {
         return;
       }
 
-      if (data?.session) {
+      if (data?.user) {
+        // Intercept and verify active employment and role status
+        const { data: profile, error: profileError } = await supabase
+          .from("profiles")
+          .select("is_active, role")
+          .eq("id", data.user.id)
+          .single();
+
+        if (profileError) {
+          console.error("Failed to verify user profile state:", profileError.message);
+        }
+
+        if (profile && profile.is_active === false) {
+          // Immediately revoke session for deactivated former employees
+          await supabase.auth.signOut();
+          setFeedback({
+            message: "ACCOUNT DEACTIVATED. CONTACT SAFETY DIRECTOR.",
+            isError: true,
+          });
+          setIsLoading(false);
+          return;
+        }
+
+        // Dedicated routing: Subcontractor role routes strictly to subcontractor safety portal
+        if (profile && profile.role === "subcontractor") {
+          router.refresh();
+          setTimeout(() => {
+            window.location.replace("/subcontractor");
+          }, 150);
+          return;
+        }
+
         const targetUrl = getSafeRedirectUrl();
         router.refresh();
         setTimeout(() => {

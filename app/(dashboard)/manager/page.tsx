@@ -33,8 +33,12 @@ import HazardControlPanel from "./_components/HazardControlPanel";
 import CrewLocationManager from "./_components/CrewLocationManager";
 import EmployeeCertManager from "./_components/EmployeeCertManager";
 import AddEmployeeModal from "../dashboard/_components/AddEmployeeModal";
+import AddSubcontractorModal from "./_components/AddSubcontractorModal";
 import ManagerBriefingSelector from "./_components/ManagerBriefingSelector";
 import SafetyMeetingComplianceLog, { SafetyBriefingTopic, MeetingCompletionLogEntry } from "./_components/SafetyMeetingComplianceLog";
+import DailyJhaManager from "./_components/DailyJhaManager";
+
+const SUPER_ADMIN_EMAIL = "atwoodparkerimc@gmail.com";
 
 // Type compatibility shim for SafetyMeetingComplianceLog component
 interface UserProfileSubset {
@@ -207,6 +211,7 @@ export default function ManagerDashboard() {
   const [supabase] = useState(() => createClient());
 
   const [activeTab, setActiveTab] = useState<string>("safety"); 
+  const [userRole, setUserRole] = useState<string>("employee");
   const [employees, setEmployees] = useState<UserProfile[]>([]); 
   const [allUsers, setAllUsers] = useState<UserProfile[]>([]); 
   const [currentUserId, setCurrentUserId] = useState<string>("");
@@ -216,8 +221,9 @@ export default function ManagerDashboard() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [consoleError, setConsoleError] = useState<string | null>(null);
 
-  // Modal Control State
+  // Modal Control States
   const [isAddEmployeeOpen, setIsAddEmployeeOpen] = useState<boolean>(false);
+  const [isAddSubcontractorOpen, setIsAddSubcontractorOpen] = useState<boolean>(false);
   
   // Database States
   const [rawAwards, setRawAwards] = useState<PointLedgerEntry[]>([]);
@@ -248,7 +254,22 @@ export default function ManagerDashboard() {
         setCurrentUserEmail(user.email || null);
 
         const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
-        if (profile?.role !== 'manager') { router.push("/dashboard"); return; }
+        const role = profile?.role?.toLowerCase() || 'employee';
+        const isSuperAdmin = user.email?.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase();
+
+        // Allow Managers, Admins, Superadmins, and Foremen
+        const hasPortalAccess = isSuperAdmin || role === 'manager' || role === 'admin' || role === 'superadmin' || role === 'foreman';
+        if (!hasPortalAccess) { 
+          router.push("/dashboard"); 
+          return; 
+        }
+
+        setUserRole(role);
+
+        // Foremen start directly on the Daily JHA tab
+        if (role === 'foreman') {
+          setActiveTab('jha');
+        }
 
         await fetchMasterData(user.id);
         await fetchInventory();
@@ -586,6 +607,27 @@ export default function ManagerDashboard() {
     };
   }, [locationFilteredAwards, locationFilteredSafeActs, locationFilteredUsers, requisitionCount]);
 
+  // --- DYNAMIC TABS ACCORDING TO ROLE ---
+  const isForeman = userRole === 'foreman';
+
+  const visibleTabs = useMemo(() => {
+    const allTabs = [
+      { id: 'safety', label: 'Safety & Hazards' }, 
+      { id: 'jha', label: 'Daily JHA' },
+      { id: 'users', label: 'Manage Users' }, 
+      { id: 'telemetry', label: 'Insights' }, 
+      { id: 'inventory', label: 'Prize Inventory' }, 
+      { id: 'fulfillment', label: 'Order Fulfillment' },
+      { id: 'audit', label: 'Daily Roll Call' }
+    ];
+
+    // Foremen only have access to Daily JHA, Manage Users, and Insights
+    if (isForeman) {
+      return allTabs.filter(t => t.id === 'jha' || t.id === 'users' || t.id === 'telemetry');
+    }
+    return allTabs;
+  }, [isForeman]);
+
   if (isLoading) {
     return (
       <div className="flex flex-col justify-center items-center px-4 py-24 relative font-mono text-slate-100 flex-1">
@@ -610,17 +652,26 @@ export default function ManagerDashboard() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between md:justify-start gap-2.5 sm:gap-4">
               <h1 className="text-xl sm:text-3xl md:text-4xl font-black text-slate-100 uppercase tracking-tighter flex items-center gap-2">
                 <span className="w-2 h-2 rounded-none animate-pulse bg-[var(--color-brand-blue)]" />
-                Admin Portal
+                {isForeman ? "Operations Portal" : "Admin Portal"}
               </h1>
               
-              {currentUserEmail?.toLowerCase() === "atwoodparkerimc@gmail.com" && (
-                <button
-                  type="button"
-                  onClick={() => setIsAddEmployeeOpen(true)}
-                  className="w-full sm:w-auto min-h-[44px] px-4 py-2.5 text-white font-bold text-xs uppercase tracking-wider hover:bg-white hover:text-black active:bg-slate-200 transition-all cursor-pointer rounded-sm text-center bg-[var(--color-brand-blue)] shadow-[0_0_15px_rgba(0,136,255,0.25)] active:scale-[0.98] touch-manipulation focus:outline-none"
-                >
-                  + Provision Employee
-                </button>
+              {currentUserEmail?.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase() && (
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsAddEmployeeOpen(true)}
+                    className="w-full sm:w-auto min-h-[44px] px-4 py-2.5 text-white font-bold text-xs uppercase tracking-wider hover:bg-white hover:text-black active:bg-slate-200 transition-all cursor-pointer rounded-sm text-center bg-[var(--color-brand-blue)] shadow-[0_0_15px_rgba(0,136,255,0.25)] active:scale-[0.98] touch-manipulation focus:outline-none"
+                  >
+                    + Provision Employee
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsAddSubcontractorOpen(true)}
+                    className="w-full sm:w-auto min-h-[44px] px-4 py-2.5 text-[var(--color-brand-green,#00ff9d)] border border-[var(--color-brand-green,#00ff9d)] font-bold text-xs uppercase tracking-wider hover:bg-[var(--color-brand-green,#00ff9d)] hover:text-black transition-all cursor-pointer rounded-sm text-center bg-[var(--color-brand-card)] active:scale-[0.98] touch-manipulation focus:outline-none"
+                  >
+                    + Provision Subcontractor
+                  </button>
+                </div>
               )}
             </div>
             
@@ -648,14 +699,7 @@ export default function ManagerDashboard() {
 
           {/* SCROLLABLE MOBILE TAB BAR */}
           <div className="flex gap-2 sm:gap-4 pb-px overflow-x-auto -mx-3.5 px-3.5 sm:mx-0 sm:px-0 border-b border-[var(--color-brand-border)] no-scrollbar">
-            {[
-              { id: 'safety', label: 'Safety & Hazards' }, 
-              { id: 'users', label: 'Manage Users' }, 
-              { id: 'telemetry', label: 'Insights' }, 
-              { id: 'inventory', label: 'Prize Inventory' }, 
-              { id: 'fulfillment', label: 'Order Fulfillment' },
-              { id: 'audit', label: 'Daily Roll Call' }
-            ].map(tab => (
+            {visibleTabs.map(tab => (
               <button 
                 key={tab.id} 
                 type="button"
@@ -672,35 +716,47 @@ export default function ManagerDashboard() {
           </div>
         </motion.header>
 
-        {/* TAB 1: SAFETY & HAZARDS CONTROL CENTER */}
-        <div className={activeTab === 'safety' ? 'block print:hidden space-y-4 sm:space-y-6' : 'hidden'}>
-          <HazardControlPanel 
-            selectedLocation={selectedLocation} 
+        {/* TAB 1: SAFETY & HAZARDS CONTROL CENTER (Managers only) */}
+        {!isForeman && (
+          <div className={activeTab === 'safety' ? 'block print:hidden space-y-4 sm:space-y-6' : 'hidden'}>
+            <HazardControlPanel 
+              selectedLocation={selectedLocation} 
+              locations={locations}
+            />
+            <ManagerBriefingSelector 
+              locations={locations} 
+            />
+            <RecognitionForm 
+              employees={locationFilteredUsers} 
+              onAwardSuccess={async () => {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (user) await fetchMasterData(user.id);
+              }} 
+              itemVariants={itemVariants} 
+            />
+            
+            <SafetyMeetingComplianceLog 
+              briefings={briefingTopics}
+              completions={briefingCompletions}
+              allUsers={locationFilteredUsers as unknown as UserProfileSubset[]}
+              activeSite={selectedLocation}
+              formatEmployeeName={formatEmployeeName}
+              itemVariants={itemVariants}
+            />
+          </div>
+        )}
+
+        {/* TAB: DAILY JHA CONSOLE (Managers & Foremen) */}
+        <div className={activeTab === 'jha' ? 'block print:hidden space-y-4 sm:space-y-6' : 'hidden'}>
+          <DailyJhaManager
+            supabase={supabase}
+            currentUserId={currentUserId}
+            selectedLocation={selectedLocation}
             locations={locations}
-          />
-          <ManagerBriefingSelector 
-            locations={locations} 
-          />
-          <RecognitionForm 
-            employees={locationFilteredUsers} 
-            onAwardSuccess={async () => {
-              const { data: { user } } = await supabase.auth.getUser();
-              if (user) await fetchMasterData(user.id);
-            }} 
-            itemVariants={itemVariants} 
-          />
-          
-          <SafetyMeetingComplianceLog 
-            briefings={briefingTopics}
-            completions={briefingCompletions}
-            allUsers={locationFilteredUsers as unknown as UserProfileSubset[]}
-            activeSite={selectedLocation}
-            formatEmployeeName={formatEmployeeName}
-            itemVariants={itemVariants}
           />
         </div>
 
-        {/* TAB 2: MANAGE USERS */}
+        {/* TAB 2: MANAGE USERS (Managers & Foremen) */}
         <div className={activeTab === 'users' ? 'flex flex-col md:block print:hidden space-y-4 sm:space-y-6' : 'hidden'}>
           <div className="order-2 md:order-1">
             <EmployeeCertManager 
@@ -722,7 +778,7 @@ export default function ManagerDashboard() {
           </div>
         </div>
 
-        {/* TAB 3: TELEMETRY ENGINE & ANALYTICS */}
+        {/* TAB 3: TELEMETRY ENGINE & ANALYTICS (Managers & Foremen) */}
         {activeTab === 'telemetry' && (
           <div className="block print:hidden space-y-4 sm:space-y-6">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4">
@@ -787,36 +843,53 @@ export default function ManagerDashboard() {
           </div>
         )}
 
-        {/* TAB 4: INVENTORY LOGISTICS HUB */}
-        <div className={activeTab === 'inventory' ? 'block print:hidden' : 'hidden'}>
-          <PrizeInventory 
-            inventory={inventory} 
-            fetchInventory={fetchInventory} 
-            itemVariants={itemVariants} 
-          />
-        </div>
+        {/* TAB 4: INVENTORY LOGISTICS HUB (Managers only) */}
+        {!isForeman && (
+          <div className={activeTab === 'inventory' ? 'block print:hidden' : 'hidden'}>
+            <PrizeInventory 
+              inventory={inventory} 
+              fetchInventory={fetchInventory} 
+              itemVariants={itemVariants} 
+            />
+          </div>
+        )}
 
-        {/* TAB 5: ORDER FULFILLMENT BOARD */}
-        <div className={activeTab === 'fulfillment' ? 'block print:hidden' : 'hidden'}>
-          <FulfillmentBoard 
-            managers={locationFilteredUsers.filter(u => u.role === 'manager')}
-            itemVariants={itemVariants} 
-          />
-        </div>
+        {/* TAB 5: ORDER FULFILLMENT BOARD (Managers only) */}
+        {!isForeman && (
+          <div className={activeTab === 'fulfillment' ? 'block print:hidden' : 'hidden'}>
+            <FulfillmentBoard 
+              managers={locationFilteredUsers.filter(u => u.role === 'manager')}
+              itemVariants={itemVariants} 
+            />
+          </div>
+        )}
 
-        {/* TAB 6: CLIPBOARD AUDIT LOG SHEET */}
-        <div className={activeTab === 'audit' ? 'block' : 'hidden'}>
-          <DailyAuditSheet 
-            employees={locationFilteredUsers} 
-            itemVariants={itemVariants} 
-          />
-        </div>
+        {/* TAB 6: CLIPBOARD AUDIT LOG SHEET (Managers only) */}
+        {!isForeman && (
+          <div className={activeTab === 'audit' ? 'block' : 'hidden'}>
+            <DailyAuditSheet 
+              employees={locationFilteredUsers} 
+              itemVariants={itemVariants} 
+            />
+          </div>
+        )}
 
         {/* PROVISION EMPLOYEE MODAL */}
         <AddEmployeeModal
           isOpen={isAddEmployeeOpen}
           locations={locations}
           onClose={() => setIsAddEmployeeOpen(false)}
+          onSuccess={async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) await fetchMasterData(user.id);
+          }}
+        />
+
+        {/* PROVISION SUBCONTRACTOR MODAL */}
+        <AddSubcontractorModal
+          isOpen={isAddSubcontractorOpen}
+          locations={locations}
+          onClose={() => setIsAddSubcontractorOpen(false)}
           onSuccess={async () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (user) await fetchMasterData(user.id);

@@ -51,6 +51,18 @@ const NAV_ITEMS: NavItem[] = [
     )
   },
   { 
+    name: "Daily Jobs", 
+    path: "/daily-jobs",
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+        <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+        <path d="M9 12h6"></path>
+        <path d="M9 16h6"></path>
+      </svg>
+    )
+  },
+  { 
     name: "Reporting", 
     path: "/reporting",
     icon: (
@@ -126,12 +138,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(true);
   const [isMobileOpen, setIsMobileOpen] = useState<boolean>(false);
-  const [isManager, setIsManager] = useState<boolean>(false); 
+  const [isManager, setIsManager] = useState<boolean>(false);
+  const [isForeman, setIsForeman] = useState<boolean>(false);
   const [notification, setNotification] = useState<NotificationRecord | null>(null); 
   
   const [showMobileHeader, setShowMobileHeader] = useState<boolean>(true);
   const lastScrollYRef = useRef<number>(0);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+
+  const isSubcontractor = pathname?.startsWith("/subcontractor");
 
   useEffect(() => {
     let ticking = false;
@@ -181,38 +196,51 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         }
 
         const role = profile?.role?.toLowerCase();
-        const hasManagerPrivileges = isSuperAdmin || role === 'manager' || role === 'admin' || role === 'superadmin';
+
+        // Enforce route protection: redirect subcontractor users away from employee pages
+        if (role === 'subcontractor' && !pathname?.startsWith("/subcontractor")) {
+          router.replace("/subcontractor");
+          return;
+        }
+
+        const hasManagerPrivileges = isSuperAdmin || role === 'manager' || role === 'admin' || role === 'superadmin' || role === 'foreman';
 
         if (hasManagerPrivileges && isMounted) {
           setIsManager(true);
+          if (role === 'foreman') {
+            setIsForeman(true);
+          }
         }
 
-        const { data: alertFeed } = await supabase
-          .from('notifications')
-          .select('*')
-          .eq('user_id', user.id)
-          .eq('is_read', false)
-          .order('created_at', { ascending: false })
-          .limit(1);
+        // Only listen for reward/peer notifications if not in subcontractor portal
+        if (role !== 'subcontractor') {
+          const { data: alertFeed } = await supabase
+            .from('notifications')
+            .select('*')
+            .eq('user_id', user.id)
+            .eq('is_read', false)
+            .order('created_at', { ascending: false })
+            .limit(1);
 
-        if (alertFeed && alertFeed.length > 0 && isMounted) {
-          setNotification(alertFeed[0] as NotificationRecord);
-        }
+          if (alertFeed && alertFeed.length > 0 && isMounted) {
+            setNotification(alertFeed[0] as NotificationRecord);
+          }
 
-        if (!channelRef.current) {
-          channelRef.current = supabase
-            .channel(`alerts-${user.id}`)
-            .on(
-              'postgres_changes',
-              { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
-              (payload) => {
-                const typedPayload = payload as unknown as RealtimePayload;
-                if (typedPayload.new && !typedPayload.new.is_read) {
-                  setNotification(typedPayload.new);
+          if (!channelRef.current) {
+            channelRef.current = supabase
+              .channel(`alerts-${user.id}`)
+              .on(
+                'postgres_changes',
+                { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
+                (payload) => {
+                  const typedPayload = payload as unknown as RealtimePayload;
+                  if (typedPayload.new && !typedPayload.new.is_read) {
+                    setNotification(typedPayload.new);
+                  }
                 }
-              }
-            )
-            .subscribe();
+              )
+              .subscribe();
+          }
         }
       } catch (err) {
         console.error("Dashboard layout initialization error:", err);
@@ -228,7 +256,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         channelRef.current = null;
       }
     };
-  }, [supabase]); 
+  }, [supabase, pathname, router]); 
 
   const dismissNotification = async () => {
     if (!notification) return;
@@ -249,6 +277,42 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     setIsMobileOpen(false);
   }, [pathname]);
 
+  // ISOLATED SUBCONTRACTOR VIEW: Strips sidebars, notifications, and employee links entirely
+  if (isSubcontractor) {
+    return (
+      <div className="min-h-screen bg-brand-bg flex flex-col font-mono text-slate-100 selection:bg-[var(--color-brand-blue)] selection:text-white">
+        <header className="w-full border-b border-[var(--color-brand-border)] bg-[var(--color-brand-card)] px-4 sm:px-8 py-3.5 flex items-center justify-between shrink-0 z-20">
+          <div className="flex items-center gap-3">
+            <Image 
+              src="/imclogo.svg" 
+              alt="IMC Logo" 
+              width={110} 
+              height={30} 
+              className="h-7 w-auto object-contain"
+              priority
+            />
+            <span className="hidden sm:inline border-l border-[var(--color-brand-border)] pl-3 text-[11px] font-bold text-slate-400 uppercase tracking-widest">
+              Subcontractor Safety Portal
+            </span>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="min-h-[40px] px-4 py-2 text-xs font-bold uppercase tracking-wider text-slate-300 hover:text-white hover:border-slate-500 border border-[var(--color-brand-border)] bg-[var(--color-brand-bg)] rounded-sm transition-all cursor-pointer active:scale-[0.98]"
+          >
+            Sign Out ⎋
+          </button>
+        </header>
+
+        <main className="flex-1 flex flex-col relative z-10">
+          {children}
+        </main>
+      </div>
+    );
+  }
+
+  // STANDARD EMPLOYEE & MANAGER LAYOUT
   return (
     <div className="flex min-h-[100svh] w-full bg-brand-bg font-mono text-slate-100 selection:bg-[var(--color-brand-blue)] selection:text-white relative">
       
@@ -335,7 +399,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       </svg>
                     </div>
                     <span className="uppercase text-xs font-bold tracking-wider whitespace-nowrap">
-                      Admin Portal
+                      {isForeman ? "Operations Portal" : "Admin Portal"}
                     </span>
                   </MotionLink>
                 )}
@@ -474,7 +538,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     exit={{ opacity: 0, x: -10 }}
                     className="uppercase text-xs font-bold tracking-wider whitespace-nowrap"
                   >
-                    Admin Portal
+                    {isForeman ? "Operations Portal" : "Admin Portal"}
                   </motion.span>
                 )}
               </AnimatePresence>
