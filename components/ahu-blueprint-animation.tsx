@@ -124,7 +124,6 @@ function RectangularDuctReducer({ position, length, w1, h1, w2, h2 }: { position
 // --- U-SHAPE PRODUCTION LINE MASTER ASSEMBLY ---
 // ============================================================================
 function UShapeProductionLine({ position = [-0.5, -8.5, 0] }: { position?: [number, number, number] }) {
-  // Use fewer trays on mobile to reduce per-frame CPU matrix math
   const [trayCount, setTrayCount] = useState(120);
 
   useEffect(() => {
@@ -281,11 +280,7 @@ interface BlueprintAnimationProps {
 }
 
 export default function BlueprintAnimation({ interactive = false }: BlueprintAnimationProps) {
-  const [isMobile, setIsMobile] = useState(false);
-
   useEffect(() => {
-    setIsMobile(window.innerWidth < 1024);
-
     const originalWarn = console.warn;
     console.warn = (...args: any[]) => {
       if (
@@ -304,18 +299,18 @@ export default function BlueprintAnimation({ interactive = false }: BlueprintAni
 
   return (
     <div 
-      className={`w-full h-full flex items-center justify-center relative overflow-visible bg-transparent ${
+      className={`w-full h-full flex items-center justify-center relative overflow-hidden bg-transparent ${
         interactive ? "cursor-grab active:cursor-grabbing" : "cursor-default"
       }`}
     >
       <Canvas 
-        camera={{ position: [0, 8, 30], fov: 25 }} 
-        dpr={isMobile ? 1 : [1, 1.5]}
+        camera={{ position: [0, 8, 30], fov: 25, near: 0.1, far: 200 }} 
+        dpr={[1.5, 2]}
         gl={{ 
-          antialias: !isMobile, 
+          antialias: true, 
           alpha: true,
           powerPreference: "high-performance",
-          precision: isMobile ? "mediump" : "highp",
+          precision: "highp",
         }}
       >
         <directionalLight position={[10, 20, 15]} intensity={1.5} color="#ffffff" />

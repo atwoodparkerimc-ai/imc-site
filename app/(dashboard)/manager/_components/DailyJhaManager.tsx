@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   getActiveDailyJhas,
+  getArchivedDailyJhas,
   createDailyJha,
   updateDailyJha,
   getJhaAcknowledgments,
@@ -317,6 +318,7 @@ export default function DailyJhaManager({
 }: DailyJhaManagerProps) {
   const [mounted, setMounted] = useState(false);
   const [jhas, setJhas] = useState<DailyJhaRecord[]>([]);
+  const [archivedJhas, setArchivedJhas] = useState<DailyJhaRecord[]>([]);
   const [templates, setTemplates] = useState<JhaStepTemplate[]>(MASTER_JHA_TEMPLATES);
   const [isBuilderOpen, setIsBuilderOpen] = useState(false);
   const [isCatalogPickerOpen, setIsCatalogPickerOpen] = useState(false);
@@ -349,6 +351,10 @@ export default function DailyJhaManager({
   // Catalog Browser Filters
   const [catalogSearch, setCatalogSearch] = useState("");
   const [catalogCategory, setCatalogCategory] = useState("ALL");
+  const [sessionAddedCount, setSessionAddedCount] = useState(0);
+
+  // Archived JHA Search State
+  const [archivedSearch, setArchivedSearch] = useState("");
 
   useEffect(() => {
     setMounted(true);
@@ -369,8 +375,12 @@ export default function DailyJhaManager({
   const refreshJhas = async () => {
     setIsLoading(true);
     const loc = selectedLocation === "ALL" ? "Nestle Springville" : selectedLocation;
-    const records = await getActiveDailyJhas(supabase, loc);
-    setJhas(records);
+    const [activeRecords, closedRecords] = await Promise.all([
+      getActiveDailyJhas(supabase, loc),
+      getArchivedDailyJhas(supabase, loc),
+    ]);
+    setJhas(activeRecords);
+    setArchivedJhas(closedRecords);
     setIsLoading(false);
   };
 
@@ -427,6 +437,7 @@ export default function DailyJhaManager({
     setIsBuilderOpen(true);
   };
 
+  // MULTI-SELECT CATALOG INJECTION (DOES NOT CLOSE MODAL)
   const handleSelectTemplateCard = (tpl: JhaStepTemplate) => {
     const newStep: JhaStep = {
       id: `step-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
@@ -435,7 +446,7 @@ export default function DailyJhaManager({
       controls: tpl.control_measures,
     };
     setSteps((prev) => [...prev, newStep]);
-    setIsCatalogPickerOpen(false);
+    setSessionAddedCount((prev) => prev + 1);
   };
 
   const handleAddCustomStep = () => {
@@ -446,6 +457,45 @@ export default function DailyJhaManager({
       controls: "",
     };
     setSteps((prev) => [...prev, newStep]);
+  };
+
+  // STEP REORDERING HANDLERS
+  const handleMoveStepUp = (index: number) => {
+    if (index === 0) return;
+    setSteps((prev) => {
+      const copy = [...prev];
+      const temp = copy[index];
+      copy[index] = copy[index - 1];
+      copy[index - 1] = temp;
+      return copy;
+    });
+  };
+
+  const handleMoveStepDown = (index: number) => {
+    setSteps((prev) => {
+      if (index === prev.length - 1) return prev;
+      const copy = [...prev];
+      const temp = copy[index];
+      copy[index] = copy[index + 1];
+      copy[index + 1] = temp;
+      return copy;
+    });
+  };
+
+  // DUPLICATE STEP HANDLER
+  const handleDuplicateStep = (index: number) => {
+    setSteps((prev) => {
+      const target = prev[index];
+      const cloned: JhaStep = {
+        id: `step-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+        step: target.step,
+        hazards: target.hazards,
+        controls: target.controls,
+      };
+      const copy = [...prev];
+      copy.splice(index + 1, 0, cloned);
+      return copy;
+    });
   };
 
   const handleUpdateStep = (index: number, field: keyof JhaStep, value: string) => {
@@ -577,7 +627,13 @@ export default function DailyJhaManager({
     });
   }, [templates, catalogCategory, catalogSearch]);
 
-  // Helper function to format timestamp with clear Date and Time
+  const filteredArchivedJhas = useMemo(() => {
+    const q = archivedSearch.toLowerCase().trim();
+    return archivedJhas
+      .filter((jha) => !q || jha.title.toLowerCase().includes(q) || jha.supervisor.toLowerCase().includes(q))
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  }, [archivedJhas, archivedSearch]);
+
   const formatDateTime = (dateString: string) => {
     if (!dateString) return "--";
     const d = new Date(dateString);
@@ -592,11 +648,9 @@ export default function DailyJhaManager({
     });
   };
 
-  // --- DUAL PRINT ENGINE (TODAY'S SHIFT ONLY vs MASTER MULTI-DAY JOB REPORT) ---
   const handlePrintJha = (jha: DailyJhaRecord, acks: JhaAcknowledgmentRecord[], mode: "TODAY_ONLY" | "MASTER_HISTORY") => {
     const todayStr = new Date().toISOString().split("T")[0];
     
-    // Filter roster based on selected print scope
     const rosterToPrint = mode === "TODAY_ONLY"
       ? acks.filter((a) => {
           const aDate = a.signed_at ? new Date(a.signed_at).toISOString().split("T")[0] : "";
@@ -613,7 +667,7 @@ export default function DailyJhaManager({
       <html lang="en">
       <head>
         <meta charset="utf-8">
-        <title>IMC JHA - ${jha.title} (${mode === "TODAY_ONLY" ? "Daily Shift" : "Master Record"})</title>
+        <title>IMC JHA - ${jha.title}</title>
         <style>
           @page { size: letter portrait; margin: 0.5in; }
           * { box-sizing: border-box; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
@@ -785,6 +839,214 @@ export default function DailyJhaManager({
     }, 400);
   };
 
+  // --- BULK PRINT ENGINE (ALL OPEN/ACTIVE JHAs FOR TODAY) ---
+  const handlePrintAllActiveJhas = async () => {
+    if (jhas.length === 0) {
+      alert("No active JHAs available to print.");
+      return;
+    }
+
+    const todayStr = new Date().toISOString().split("T")[0];
+
+    // Fetch acknowledgments for all open JHAs concurrently
+    const jhaReportsData = await Promise.all(
+      jhas.map(async (jha) => {
+        const acks = await getJhaAcknowledgments(supabase, jha.id);
+        const todayAcks = acks.filter((a) => {
+          const aDate = a.signed_at ? new Date(a.signed_at).toISOString().split("T")[0] : "";
+          return aDate === todayStr;
+        });
+        return { jha, acks: todayAcks };
+      })
+    );
+
+    const printDocHTML = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="utf-8">
+        <title>IMC - Bulk Daily JHA Shift Report (${todayStr})</title>
+        <style>
+          @page { size: letter portrait; margin: 0.5in; }
+          * { box-sizing: border-box; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+          body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; color: #111827; background: #fff; margin: 0; padding: 0; font-size: 8.5pt; line-height: 1.35; }
+          .page-container { page-break-after: always; padding-bottom: 20px; }
+          .page-container:last-child { page-break-after: avoid; }
+          .header-table { width: 100%; border-bottom: 2.5px solid #0f172a; padding-bottom: 10px; margin-bottom: 12px; }
+          .logo { height: 36px; width: auto; }
+          .company-title { font-size: 14pt; font-weight: 900; text-transform: uppercase; margin: 0; color: #0f172a; }
+          .report-subtitle { font-size: 9.5pt; font-weight: 700; text-transform: uppercase; color: #334155; margin: 2px 0 0 0; }
+          .meta-box { font-family: monospace; font-size: 7.5pt; text-align: right; line-height: 1.4; }
+          .meta-grid { width: 100%; border-collapse: collapse; margin-bottom: 14px; border: 1px solid #cbd5e1; font-size: 8pt; }
+          .meta-grid td { padding: 5px 8px; border: 1px solid #cbd5e1; }
+          .meta-label { font-weight: 800; text-transform: uppercase; background-color: #f8fafc; width: 18%; color: #334155; }
+          .meta-value { font-weight: 600; width: 32%; }
+          .pill { display: inline-block; padding: 1px 6px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 2px; font-size: 7pt; font-weight: 700; margin: 1px 3px 1px 0; text-transform: uppercase; }
+          table.jha-table { width: 100%; border-collapse: collapse; border: 1px solid #cbd5e1; margin-bottom: 16px; font-size: 8pt; }
+          table.jha-table th { background-color: #0f172a; color: #fff; border: 1px solid #0f172a; padding: 6px 8px; text-align: left; font-weight: 800; text-transform: uppercase; font-size: 7.5pt; }
+          table.jha-table td { border: 1px solid #cbd5e1; padding: 6px 8px; vertical-align: top; }
+          table.jha-table tr:nth-child(even) { background-color: #fafafa; }
+          .roster-title { font-size: 8.5pt; font-weight: 900; text-transform: uppercase; margin: 16px 0 6px 0; padding-bottom: 3px; border-bottom: 1.5px solid #0f172a; display: flex; justify-content: space-between; }
+          table.roster-table { width: 100%; border-collapse: collapse; border: 1px solid #cbd5e1; font-size: 8pt; }
+          table.roster-table th { background-color: #f1f5f9; border: 1px solid #cbd5e1; padding: 5px 8px; text-align: left; font-weight: 800; text-transform: uppercase; font-size: 7.5pt; }
+          table.roster-table td { border: 1px solid #cbd5e1; padding: 4px 8px; }
+          .signoff-section { margin-top: 24px; padding-top: 12px; border-top: 1.5px solid #0f172a; page-break-inside: avoid; }
+          .attestation { font-size: 7pt; font-family: monospace; color: #475569; text-transform: uppercase; margin-bottom: 16px; line-height: 1.35; }
+          .sig-row { display: flex; justify-content: space-between; gap: 20px; }
+          .sig-col { flex: 1; }
+          .sig-line { border-bottom: 1.5px solid #0f172a; height: 26px; margin-bottom: 4px; }
+          .sig-label { font-size: 7.5pt; font-weight: 800; text-transform: uppercase; }
+        </style>
+      </head>
+      <body>
+        ${jhaReportsData
+          .map(
+            ({ jha, acks }) => `
+          <div class="page-container">
+            <table class="header-table" cellpadding="0" cellspacing="0">
+              <tr>
+                <td style="width: 140px; vertical-align: top;"><img src="/imclogo.svg" alt="IMC Logo" class="logo" /></td>
+                <td style="vertical-align: top; padding-left: 12px;">
+                  <h1 class="company-title">Interwest Mechanical Contractors</h1>
+                  <div class="report-subtitle">Daily Pre-Task Plan & Shift Attendance</div>
+                  <div style="font-size: 7.5pt; font-family: monospace; font-weight: 700; color: #475569; margin-top: 2px;">
+                    OSHA 29 CFR 1926.21 & Site Environmental Health & Safety Standard
+                  </div>
+                </td>
+                <td class="meta-box" style="vertical-align: top;">
+                  <div><strong>SHIFT DATE:</strong> ${todayStr}</div>
+                  <div><strong>WORKSITE:</strong> ${jha.location.toUpperCase()}</div>
+                  <div><strong>STATUS:</strong> ${jha.status}</div>
+                </td>
+              </tr>
+            </table>
+
+            <table class="meta-grid">
+              <tr>
+                <td class="meta-label">Task / Job Scope:</td>
+                <td class="meta-value" style="font-weight: 800; text-transform: uppercase;">${jha.title}</td>
+                <td class="meta-label">Designated Supervisor:</td>
+                <td class="meta-value">${jha.supervisor}</td>
+              </tr>
+              <tr>
+                <td class="meta-label">Required Training:</td>
+                <td class="meta-value">${jha.training_required.map((t: string) => `<span class="pill">${t}</span>`).join("") || "--"}</td>
+                <td class="meta-label">Permits Required:</td>
+                <td class="meta-value">${jha.permits_required.map((p: string) => `<span class="pill">${p}</span>`).join("") || "--"}</td>
+              </tr>
+              <tr>
+                <td class="meta-label">Equipment Used:</td>
+                <td class="meta-value">${jha.equipment_used.map((e: string) => `<span class="pill">${e}</span>`).join("") || "--"}</td>
+                <td class="meta-label">Certifications:</td>
+                <td class="meta-value">${jha.certifications_required.map((c: string) => `<span class="pill">${c}</span>`).join("") || "--"}</td>
+              </tr>
+            </table>
+
+            <table class="jha-table">
+              <thead>
+                <tr>
+                  <th style="width: 6%; text-align: center;">Seq</th>
+                  <th style="width: 32%;">Work Step Sequence</th>
+                  <th style="width: 31%;">Potential Hazards</th>
+                  <th style="width: 31%;">Hazard Control Measures</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${jha.steps
+                  .map(
+                    (s: any, idx: number) => `
+                  <tr>
+                    <td style="text-align: center; font-weight: 800; font-family: monospace;">${idx + 1}</td>
+                    <td style="font-weight: 700;">${s.step}</td>
+                    <td style="color: #991b1b;">${s.hazards}</td>
+                    <td style="color: #065f46; font-weight: 600;">${s.controls}</td>
+                  </tr>
+                `
+                  )
+                  .join("")}
+              </tbody>
+            </table>
+
+            <div class="roster-title">
+              <span>Today's Verified Crew Attendance Roster (${acks.length} Sign-Offs Logged)</span>
+              <span>Shift Date: ${todayStr}</span>
+            </div>
+            <table class="roster-table">
+              <thead>
+                <tr>
+                  <th style="width: 6%; text-align: center;">#</th>
+                  <th style="width: 36%;">Employee Legal Name</th>
+                  <th style="width: 24%;">Assigned Worksite</th>
+                  <th style="width: 34%; text-align: right;">Verified Date & Time Stamp</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${
+                  acks.length > 0
+                    ? acks
+                        .map(
+                          (a: any, idx: number) => `
+                  <tr>
+                    <td style="text-align: center; font-family: monospace;">${idx + 1}</td>
+                    <td style="font-weight: 700; text-transform: uppercase;">${a.employee_name}</td>
+                    <td style="font-family: monospace; font-size: 7.5pt; text-transform: uppercase;">${a.location}</td>
+                    <td style="text-align: right; font-family: monospace; font-size: 8pt; font-weight: 700; color: #0f172a;">
+                      ${formatDateTime(a.signed_at)}
+                    </td>
+                  </tr>
+                `
+                        )
+                        .join("")
+                    : `<tr><td colspan="4" style="text-align: center; font-family: monospace; padding: 10px;">[ NO CREW SIGN-OFFS RECORDED TODAY FOR THIS SCOPE ]</td></tr>`
+                }
+              </tbody>
+            </table>
+
+            <div class="signoff-section">
+              <div class="attestation">
+                Attestation Statement: All personnel listed above have reviewed and acknowledged the specific hazards, controls, and scope of work identified in this Job Hazard Analysis prior to starting work.
+              </div>
+              <div class="sig-row">
+                <div class="sig-col" style="flex: 2;">
+                  <div class="sig-line"></div>
+                  <div class="sig-label">Supervisor / Lead Signature: ${jha.supervisor}</div>
+                </div>
+                <div class="sig-col">
+                  <div class="sig-line"></div>
+                  <div class="sig-label">Execution Date</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `
+          )
+          .join("")}
+      </body>
+      </html>
+    `;
+
+    const iframe = document.createElement("iframe");
+    iframe.style.position = "fixed";
+    iframe.style.right = "0";
+    iframe.style.bottom = "0";
+    iframe.style.width = "0";
+    iframe.style.height = "0";
+    iframe.style.border = "0";
+    document.body.appendChild(iframe);
+
+    const doc = iframe.contentWindow?.document;
+    if (!doc) return;
+    doc.open();
+    doc.write(printDocHTML);
+    doc.close();
+
+    iframe.contentWindow?.focus();
+    setTimeout(() => {
+      iframe.contentWindow?.print();
+      setTimeout(() => document.body.removeChild(iframe), 1000);
+    }, 600);
+  };
+
   return (
     <div className="space-y-4 sm:space-y-6 font-mono text-slate-100 select-none pb-8">
       {/* HEADER CARD */}
@@ -819,13 +1081,23 @@ export default function DailyJhaManager({
           <h3 className="text-xs font-bold uppercase tracking-widest text-slate-300">
             Open Tasks & JHAs ({jhas.length})
           </h3>
-          <button
-            type="button"
-            onClick={refreshJhas}
-            className="text-[11px] font-bold uppercase text-[var(--color-brand-blue)] hover:text-white cursor-pointer"
-          >
-            ↻ Refresh
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={handlePrintAllActiveJhas}
+              disabled={jhas.length === 0}
+              className="text-[11px] font-black uppercase bg-[var(--color-brand-blue)] text-white hover:bg-white hover:text-black px-3 py-1.5 rounded-sm transition-all cursor-pointer disabled:opacity-40"
+            >
+              ⎙ Print All Today&apos;s JHAs
+            </button>
+            <button
+              type="button"
+              onClick={refreshJhas}
+              className="text-[11px] font-bold uppercase text-[var(--color-brand-blue)] hover:text-white cursor-pointer"
+            >
+              ↻ Refresh
+            </button>
+          </div>
         </div>
 
         {isLoading ? (
@@ -870,6 +1142,76 @@ export default function DailyJhaManager({
                   </span>
                   <span className="text-[var(--color-brand-blue)] font-bold uppercase">
                     Inspect & Print ↗
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* 2. ARCHIVED & CLOSED JHA HISTORY SECTION */}
+      <div className="border rounded-sm bg-[var(--color-brand-card)] border-[var(--color-brand-border)] p-4 sm:p-6 space-y-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-[var(--color-brand-border)] pb-3">
+          <div>
+            <h3 className="text-xs font-bold uppercase tracking-widest text-slate-300 flex items-center gap-2">
+              <span>📁</span>
+              <span>Archived & Closed JHA History ({filteredArchivedJhas.length})</span>
+            </h3>
+            <p className="text-[10px] text-slate-400 mt-0.5 uppercase">
+              Completed and archived safety task documents ordered by newest first.
+            </p>
+          </div>
+
+          <div className="w-full sm:w-64">
+            <input
+              type="text"
+              value={archivedSearch}
+              onChange={(e) => setArchivedSearch(e.target.value)}
+              placeholder="Search past job name / lead..."
+              className="w-full bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] px-3 py-1.5 text-xs text-slate-100 uppercase rounded-sm outline-none"
+            />
+          </div>
+        </div>
+
+        {isLoading ? (
+          <div className="p-8 text-center text-xs font-bold text-slate-500 uppercase tracking-widest">
+            Loading archived history...
+          </div>
+        ) : filteredArchivedJhas.length === 0 ? (
+          <div className="p-8 text-center border border-dashed border-[var(--color-brand-border)] rounded-sm text-slate-500 text-xs font-bold uppercase tracking-widest">
+            [ {archivedSearch ? "No closed JHAs match your search query" : "No closed JHAs archived for this location yet"} ]
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+            {filteredArchivedJhas.map((jha) => (
+              <div
+                key={jha.id}
+                onClick={() => handleOpenReview(jha)}
+                className="p-4 border rounded-sm bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] hover:border-slate-500 cursor-pointer transition-all space-y-3 opacity-90 hover:opacity-100"
+              >
+                <div className="flex justify-between items-start gap-2">
+                  <span className="text-[10px] font-mono text-slate-400">
+                    Initiated: {jha.date}
+                  </span>
+                  <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-sm bg-slate-800 text-slate-300 border border-slate-700">
+                    CLOSED
+                  </span>
+                </div>
+
+                <div>
+                  <h4 className="text-sm font-bold uppercase text-slate-200 line-clamp-2">
+                    {jha.title}
+                  </h4>
+                  <p className="text-[11px] text-slate-400 font-mono mt-1">
+                    Supervisor: <strong className="text-slate-300">{jha.supervisor}</strong>
+                  </p>
+                </div>
+
+                <div className="pt-2 border-t border-[var(--color-brand-border)]/60 flex justify-between items-center text-[10px] text-slate-400">
+                  <span>{jha.steps.length} Steps</span>
+                  <span className="text-[var(--color-brand-blue)] font-bold uppercase">
+                    View Audit Report ↗
                   </span>
                 </div>
               </div>
@@ -1061,7 +1403,7 @@ export default function DailyJhaManager({
                                   key={p}
                                   type="button"
                                   onClick={() => toggleArrayItem(permitsRequired, setPermitsRequired, p)}
-                                  className={`px-2.5 py-0.5 text-[10px] font-bold uppercase rounded-sm border cursor-pointer ${
+                                  className={`px-2 py-0.5 text-[10px] font-bold uppercase rounded-sm border cursor-pointer ${
                                     permitsRequired.includes(p)
                                       ? "bg-[var(--color-brand-blue)] border-[var(--color-brand-blue)] text-white"
                                       : "bg-[var(--color-brand-card)] border-[var(--color-brand-border)] text-slate-400"
@@ -1237,14 +1579,17 @@ export default function DailyJhaManager({
                                 Work Steps, Potential Hazards & Controls ({steps.length})
                               </h4>
                               <p className="text-[10px] text-slate-400">
-                                Browse rich pre-populated industrial sequences or create clean custom step rows.
+                                Reorder steps, duplicate rows, or browse catalog sequences.
                               </p>
                             </div>
 
                             <div className="flex items-center gap-2 w-full sm:w-auto">
                               <button
                                 type="button"
-                                onClick={() => setIsCatalogPickerOpen(true)}
+                                onClick={() => {
+                                  setSessionAddedCount(0);
+                                  setIsCatalogPickerOpen(true);
+                                }}
                                 className="min-h-[38px] px-3.5 bg-[var(--color-brand-blue)] text-white text-xs font-black uppercase rounded-sm hover:bg-white hover:text-black cursor-pointer shadow-md transition-all flex items-center gap-1.5"
                               >
                                 <span>📚</span>
@@ -1272,15 +1617,50 @@ export default function DailyJhaManager({
                                   key={st.id}
                                   className="p-3 border rounded-sm bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] space-y-2 relative"
                                 >
+                                  {/* Step Action Header with Reorder Arrows */}
                                   <div className="flex justify-between items-center text-[10px] font-bold text-slate-400 uppercase">
-                                    <span>Step Sequence #{idx + 1}</span>
-                                    <button
-                                      type="button"
-                                      onClick={() => handleRemoveStep(idx)}
-                                      className="text-red-400 hover:text-white cursor-pointer"
-                                    >
-                                      Remove Step ✕
-                                    </button>
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="text-white font-black">#{idx + 1}</span>
+                                      <div className="flex items-center gap-0.5 ml-2 border border-[var(--color-brand-border)] rounded-sm bg-[var(--color-brand-card)]">
+                                        <button
+                                          type="button"
+                                          disabled={idx === 0}
+                                          onClick={() => handleMoveStepUp(idx)}
+                                          className="px-2 py-0.5 hover:bg-white/10 text-slate-300 disabled:opacity-30 cursor-pointer"
+                                          title="Move Step Up"
+                                        >
+                                          ▲
+                                        </button>
+                                        <span className="w-px h-3 bg-[var(--color-brand-border)]" />
+                                        <button
+                                          type="button"
+                                          disabled={idx === steps.length - 1}
+                                          onClick={() => handleMoveStepDown(idx)}
+                                          className="px-2 py-0.5 hover:bg-white/10 text-slate-300 disabled:opacity-30 cursor-pointer"
+                                          title="Move Step Down"
+                                        >
+                                          ▼
+                                        </button>
+                                      </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-3">
+                                      <button
+                                        type="button"
+                                        onClick={() => handleDuplicateStep(idx)}
+                                        className="text-cyan-400 hover:text-white cursor-pointer"
+                                        title="Duplicate Step"
+                                      >
+                                        📋 Duplicate
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleRemoveStep(idx)}
+                                        className="text-red-400 hover:text-white cursor-pointer"
+                                      >
+                                        Remove ✕
+                                      </button>
+                                    </div>
                                   </div>
 
                                   <div className="space-y-1">
@@ -1356,7 +1736,7 @@ export default function DailyJhaManager({
               )}
             </AnimatePresence>
 
-            {/* MODAL 2: SEARCHABLE JHA STEP CATALOG BROWSER */}
+            {/* MODAL 2: PERSISTENT MULTI-SELECT JHA STEP CATALOG BROWSER */}
             <AnimatePresence>
               {isCatalogPickerOpen && (
                 <div className="fixed inset-0 z-[10000] flex items-center justify-center p-2 sm:p-4 bg-black/90 backdrop-blur-md font-mono text-slate-100 select-none">
@@ -1373,7 +1753,7 @@ export default function DailyJhaManager({
                           Standard Operating Tasks • Catalog Library
                         </span>
                         <h3 className="text-sm font-black uppercase text-white mt-0.5">
-                          Select Step To Inject ({filteredTemplates.length} Available)
+                          Multi-Select Tasks (Added This Session: {sessionAddedCount})
                         </h3>
                       </div>
                       <button
@@ -1414,7 +1794,7 @@ export default function DailyJhaManager({
                       </div>
                     </div>
 
-                    {/* Rich Step Cards Grid */}
+                    {/* Rich Step Cards Grid (Stays open after clicking) */}
                     <div className="flex-1 overflow-y-auto p-4 space-y-2.5 custom-scrollbar bg-[var(--color-brand-bg)]">
                       {filteredTemplates.length === 0 ? (
                         <div className="p-12 text-center text-slate-500 font-bold uppercase text-xs border border-dashed border-[var(--color-brand-border)]">
@@ -1432,7 +1812,7 @@ export default function DailyJhaManager({
                                 {tpl.category}
                               </span>
                               <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-brand-blue)] group-hover:underline">
-                                + Insert This Step ↗
+                                + Inject Step (Stays Open) ↗
                               </span>
                             </div>
 
@@ -1464,13 +1844,17 @@ export default function DailyJhaManager({
                       )}
                     </div>
 
-                    <div className="p-3 border-t border-[var(--color-brand-border)] bg-[var(--color-brand-card)] flex justify-end shrink-0">
+                    {/* Persistent Footer with Done Button */}
+                    <div className="p-3 border-t border-[var(--color-brand-border)] bg-[var(--color-brand-card)] flex justify-between items-center shrink-0">
+                      <span className="text-xs font-bold text-slate-400 uppercase">
+                        {sessionAddedCount} task{sessionAddedCount === 1 ? "" : "s"} added to current JHA draft.
+                      </span>
                       <button
                         type="button"
                         onClick={() => setIsCatalogPickerOpen(false)}
-                        className="px-5 py-2 text-xs font-bold uppercase border border-[var(--color-brand-border)] text-slate-400 hover:text-white rounded-sm cursor-pointer"
+                        className="px-6 py-2.5 text-xs font-black uppercase bg-[var(--color-brand-blue)] text-white hover:bg-white hover:text-black rounded-sm cursor-pointer shadow-md"
                       >
-                        Close Browser
+                        Done Adding Steps ✓
                       </button>
                     </div>
                   </motion.div>
@@ -1506,14 +1890,16 @@ export default function DailyJhaManager({
                       </div>
 
                       <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => handleStartEdit(selectedJhaForReview)}
-                          className="min-h-[36px] px-3.5 bg-[var(--color-brand-blue)] hover:bg-white hover:text-black text-white rounded-sm font-bold uppercase text-[11px] transition-all cursor-pointer shadow-sm flex items-center gap-1.5"
-                        >
-                          <span>✎</span>
-                          <span>Edit JHA</span>
-                        </button>
+                        {selectedJhaForReview.status === "ACTIVE" && (
+                          <button
+                            type="button"
+                            onClick={() => handleStartEdit(selectedJhaForReview)}
+                            className="min-h-[36px] px-3.5 bg-[var(--color-brand-blue)] hover:bg-white hover:text-black text-white rounded-sm font-bold uppercase text-[11px] transition-all cursor-pointer shadow-sm flex items-center gap-1.5"
+                          >
+                            <span>✎</span>
+                            <span>Edit JHA</span>
+                          </button>
+                        )}
 
                         <button
                           type="button"

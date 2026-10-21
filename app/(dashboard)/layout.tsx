@@ -28,7 +28,8 @@ interface RealtimePayload {
   new: NotificationRecord;
 }
 
-const NAV_ITEMS: NavItem[] = [
+// 1. Full Employee / Manager Navigation
+const EMPLOYEE_NAV_ITEMS: NavItem[] = [
   { 
     name: "Dashboard", 
     path: "/dashboard",
@@ -84,6 +85,31 @@ const NAV_ITEMS: NavItem[] = [
   },
 ];
 
+// 2. Focused Subcontractor Navigation (Matches employee styling, strictly limited scope)
+const SUBCONTRACTOR_NAV_ITEMS: NavItem[] = [
+  { 
+    name: "Safety Meeting", 
+    path: "/subcontractor",
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+      </svg>
+    )
+  },
+  { 
+    name: "Daily Jobs", 
+    path: "/subcontractor/daily-jobs",
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+        <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+        <path d="M9 12h6"></path>
+        <path d="M9 16h6"></path>
+      </svg>
+    )
+  },
+];
+
 // Hardware-accelerated drawer variants with synchronized timeline
 const drawerContainerVariants: Variants = {
   hidden: { 
@@ -127,7 +153,6 @@ const drawerItemVariants: Variants = {
   }
 };
 
-// Uses modern Framer Motion factory
 const MotionLink = motion.create(Link);
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -147,6 +172,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   const isSubcontractor = pathname?.startsWith("/subcontractor");
+  const navItems = isSubcontractor ? SUBCONTRACTOR_NAV_ITEMS : EMPLOYEE_NAV_ITEMS;
 
   useEffect(() => {
     let ticking = false;
@@ -277,42 +303,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     setIsMobileOpen(false);
   }, [pathname]);
 
-  // ISOLATED SUBCONTRACTOR VIEW: Strips sidebars, notifications, and employee links entirely
-  if (isSubcontractor) {
-    return (
-      <div className="min-h-screen bg-brand-bg flex flex-col font-mono text-slate-100 selection:bg-[var(--color-brand-blue)] selection:text-white">
-        <header className="w-full border-b border-[var(--color-brand-border)] bg-[var(--color-brand-card)] px-4 sm:px-8 py-3.5 flex items-center justify-between shrink-0 z-20">
-          <div className="flex items-center gap-3">
-            <Image 
-              src="/imclogo.svg" 
-              alt="IMC Logo" 
-              width={110} 
-              height={30} 
-              className="h-7 w-auto object-contain"
-              priority
-            />
-            <span className="hidden sm:inline border-l border-[var(--color-brand-border)] pl-3 text-[11px] font-bold text-slate-400 uppercase tracking-widest">
-              Subcontractor Safety Portal
-            </span>
-          </div>
-
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="min-h-[40px] px-4 py-2 text-xs font-bold uppercase tracking-wider text-slate-300 hover:text-white hover:border-slate-500 border border-[var(--color-brand-border)] bg-[var(--color-brand-bg)] rounded-sm transition-all cursor-pointer active:scale-[0.98]"
-          >
-            Sign Out ⎋
-          </button>
-        </header>
-
-        <main className="flex-1 flex flex-col relative z-10">
-          {children}
-        </main>
-      </div>
-    );
-  }
-
-  // STANDARD EMPLOYEE & MANAGER LAYOUT
   return (
     <div className="flex min-h-[100svh] w-full bg-brand-bg font-mono text-slate-100 selection:bg-[var(--color-brand-blue)] selection:text-white relative">
       
@@ -358,7 +348,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </div>
 
               <div className="flex flex-col flex-1 py-6 gap-2 px-3 overflow-y-auto overscroll-contain">
-                {NAV_ITEMS.map((item) => {
+                {navItems.map((item) => {
                   const isActive = pathname === item.path;
                   return (
                     <MotionLink
@@ -382,7 +372,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   );
                 })}
 
-                {isManager && (
+                {!isSubcontractor && isManager && (
                   <MotionLink 
                     href="/manager"
                     variants={drawerItemVariants}
@@ -406,29 +396,31 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </div>
 
               <div className="nav-footer-bar p-3 border-t border-[var(--color-brand-border)] flex flex-col gap-2 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-                <MotionLink 
-                  href="/profile"
-                  variants={drawerItemVariants}
-                  onClick={() => setIsMobileOpen(false)}
-                  className={`nav-footer-btn w-full flex items-center gap-3 px-3 p-3 rounded-sm min-h-[48px] transition-all active:scale-[0.98] touch-manipulation ${
-                    pathname === "/profile" ? "active" : ""
-                  }`}
-                >
-                  <div className="w-5 flex justify-center items-center flex-shrink-0">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                      <circle cx="12" cy="7" r="4"></circle>
-                    </svg>
-                  </div>
-                  <span className="uppercase text-xs font-semibold tracking-wider whitespace-nowrap">
-                    Profile
-                  </span>
-                </MotionLink>
+                {!isSubcontractor && (
+                  <MotionLink 
+                    href="/profile"
+                    variants={drawerItemVariants}
+                    onClick={() => setIsMobileOpen(false)}
+                    className={`nav-footer-btn w-full flex items-center gap-3 px-3 p-3 rounded-sm min-h-[48px] transition-all active:scale-[0.98] touch-manipulation ${
+                      pathname === "/profile" ? "active" : ""
+                    }`}
+                  >
+                    <div className="w-5 flex justify-center items-center flex-shrink-0">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                      </svg>
+                    </div>
+                    <span className="uppercase text-xs font-semibold tracking-wider whitespace-nowrap">
+                      Profile
+                    </span>
+                  </MotionLink>
+                )}
 
                 <motion.button 
                   variants={drawerItemVariants}
                   onClick={handleLogout}
-                  className="nav-logout-btn w-full flex items-center gap-3 px-3 p-3 rounded-sm text-left min-h-[48px] transition-all active:scale-[0.98] touch-manipulation"
+                  className="nav-logout-btn w-full flex items-center gap-3 px-3 p-3 rounded-sm text-left min-h-[48px] transition-all active:scale-[0.98] touch-manipulation cursor-pointer"
                 >
                   <div className="w-5 flex justify-center items-center flex-shrink-0">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -475,7 +467,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           
           <button 
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            className="text-slate-400 hover:text-white transition-colors ml-auto min-w-[40px] min-h-[40px] flex items-center justify-center rounded-sm hover:bg-white/5 active:scale-90 touch-manipulation focus:outline-none"
+            className="text-slate-400 hover:text-white transition-colors ml-auto min-w-[40px] min-h-[40px] flex items-center justify-center rounded-sm hover:bg-white/5 active:scale-90 touch-manipulation focus:outline-none cursor-pointer"
             aria-label={isSidebarOpen ? "Collapse Sidebar" : "Expand Sidebar"}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -487,7 +479,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
 
         <div className="flex flex-col flex-1 py-6 gap-2 px-3 overflow-y-auto">
-          {NAV_ITEMS.map((item) => {
+          {navItems.map((item) => {
             const isActive = pathname === item.path;
             return (
               <Link 
@@ -516,7 +508,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             );
           })}
 
-          {isManager && (
+          {!isSubcontractor && isManager && (
             <Link 
               href="/manager"
               className={`nav-manager-btn flex items-center gap-3.5 p-3 mt-4 rounded-sm group transition-all active:scale-[0.98] ${
@@ -547,31 +539,33 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
 
         <div className="nav-footer-bar p-3 flex flex-col gap-2">
-          <Link 
-            href="/profile"
-            className={`nav-footer-btn w-full flex items-center p-2.5 rounded-sm group transition-all active:scale-[0.98] ${
-              pathname === "/profile" ? "active" : ""
-            }`}
-          >
-            <div className="w-5 flex justify-center items-center flex-shrink-0">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                <circle cx="12" cy="7" r="4"></circle>
-              </svg>
-            </div>
-            <AnimatePresence>
-              {isSidebarOpen && (
-                <motion.span 
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -10 }}
-                  className="uppercase text-xs font-semibold tracking-wider whitespace-nowrap ml-3"
-                >
-                  Profile
-                </motion.span>
-              )}
-            </AnimatePresence>
-          </Link>
+          {!isSubcontractor && (
+            <Link 
+              href="/profile"
+              className={`nav-footer-btn w-full flex items-center p-2.5 rounded-sm group transition-all active:scale-[0.98] ${
+                pathname === "/profile" ? "active" : ""
+              }`}
+            >
+              <div className="w-5 flex justify-center items-center flex-shrink-0">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+              </div>
+              <AnimatePresence>
+                {isSidebarOpen && (
+                  <motion.span 
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -10 }}
+                    className="uppercase text-xs font-semibold tracking-wider whitespace-nowrap ml-3"
+                  >
+                    Profile
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </Link>
+          )}
 
           <button 
             onClick={handleLogout}
@@ -640,10 +634,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* Mobile Header Spacer */}
         <div className="h-16 md:hidden flex-shrink-0" />
         
-        <UnreadRecognitionModal 
-          notification={notification} 
-          onDismiss={dismissNotification} 
-        />
+        {!isSubcontractor && (
+          <UnreadRecognitionModal 
+            notification={notification} 
+            onDismiss={dismissNotification} 
+          />
+        )}
 
         <div className="absolute inset-0 pointer-events-none z-0 tactical-graph-paper" />
 

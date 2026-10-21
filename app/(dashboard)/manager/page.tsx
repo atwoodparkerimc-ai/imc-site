@@ -290,9 +290,9 @@ export default function ManagerDashboard() {
     setAllUsers(masterData.allUsers);
     setEmployees(masterData.activeTeam);
     
-    if (masterData.allUsers.length > 0 && !compUser) {
-      const userExists = masterData.allUsers.some(u => u.id === currentUserId);
-      setCompUser(userExists ? currentUserId : masterData.allUsers[0].id);
+    if (masterData.activeTeam.length > 0 && !compUser) {
+      const userExists = masterData.activeTeam.some(u => u.id === currentUserId);
+      setCompUser(userExists ? currentUserId : masterData.activeTeam[0].id);
     }
 
     setRawAwards(masterData.awards);
@@ -336,6 +336,11 @@ export default function ManagerDashboard() {
     return allUsers.filter(u => u.location === selectedLocation);
   }, [allUsers, selectedLocation]);
 
+  // Internal team members eligible for awards/points (strictly excludes subcontractors and inactive staff)
+  const awardEligibleEmployees = useMemo(() => {
+    return locationFilteredUsers.filter(u => u.role !== 'subcontractor' && u.is_active !== false);
+  }, [locationFilteredUsers]);
+
   const locationUserIds = useMemo(() => {
     return new Set(locationFilteredUsers.map(u => u.id));
   }, [locationFilteredUsers]);
@@ -352,13 +357,13 @@ export default function ManagerDashboard() {
 
   // Update default selected compliance user if current one is filtered out
   useEffect(() => {
-    if (locationFilteredUsers.length > 0) {
-      const exists = locationFilteredUsers.some(u => u.id === compUser);
+    if (awardEligibleEmployees.length > 0) {
+      const exists = awardEligibleEmployees.some(u => u.id === compUser);
       if (!exists) {
-        setCompUser(locationFilteredUsers[0].id);
+        setCompUser(awardEligibleEmployees[0].id);
       }
     }
-  }, [locationFilteredUsers, compUser]);
+  }, [awardEligibleEmployees, compUser]);
 
   // --- RUNTIME MEMOIZED CALCULATIONS ---
   const velocityData = useMemo(() => {
@@ -488,7 +493,7 @@ export default function ManagerDashboard() {
     const timeFiltered = filterByTime(rawAwards, tfTop, 'created_at');
     const map: Record<string, { name: string; points: number }> = {};
 
-    locationFilteredUsers.forEach(u => {
+    awardEligibleEmployees.forEach(u => {
       const displayName = formatEmployeeName(u) || "User";
       map[u.id] = { name: displayName, points: 0 };
     });
@@ -500,7 +505,7 @@ export default function ManagerDashboard() {
     });
 
     return Object.values(map).sort((a, b) => b.points - a.points).slice(0, 5);
-  }, [rawAwards, locationFilteredUsers, tfTop]);
+  }, [rawAwards, awardEligibleEmployees, tfTop]);
 
   const topSafeActReceivedContributors = useMemo(() => {
     const filteredActs = filterByTime(locationFilteredSafeActs, tfTop, 'created_at');
@@ -510,7 +515,7 @@ export default function ManagerDashboard() {
       const targetUserId = act.recipient_id || act.reporter_id;
       if (!targetUserId) return;
 
-      const matchedEmp = allUsers.find(p => p.id === targetUserId);
+      const matchedEmp = awardEligibleEmployees.find(p => p.id === targetUserId);
       if (matchedEmp) {
         const displayName = formatEmployeeName(matchedEmp) || "User";
         if (!map[targetUserId]) {
@@ -523,7 +528,7 @@ export default function ManagerDashboard() {
     });
 
     return Object.values(map).sort((a, b) => b.points - a.points).slice(0, 5);
-  }, [locationFilteredSafeActs, allUsers, tfTop]);
+  }, [locationFilteredSafeActs, awardEligibleEmployees, tfTop]);
 
   const topSafeActGiftedContributors = useMemo(() => {
     const filteredActs = filterByTime(locationFilteredSafeActs, tfTop, 'created_at');
@@ -533,7 +538,7 @@ export default function ManagerDashboard() {
       const reporterId = act.reporter_id;
       if (!reporterId) return;
 
-      const matchedEmp = allUsers.find(p => p.id === reporterId);
+      const matchedEmp = awardEligibleEmployees.find(p => p.id === reporterId);
       if (matchedEmp) {
         const displayName = formatEmployeeName(matchedEmp) || "User";
         if (!map[reporterId]) {
@@ -546,7 +551,7 @@ export default function ManagerDashboard() {
     });
 
     return Object.values(map).sort((a, b) => b.points - a.points).slice(0, 5);
-  }, [locationFilteredSafeActs, allUsers, tfTop]);
+  }, [locationFilteredSafeActs, awardEligibleEmployees, tfTop]);
 
   const complianceData = useMemo(() => {
     if (!compUser) return [];
@@ -602,10 +607,10 @@ export default function ManagerDashboard() {
     return {
       totalAwarded: locationFilteredAwards.reduce((acc, val) => acc + val.amount, 0),
       safeActsToday: safeActsToday,
-      activeMembers: locationFilteredUsers.length,
+      activeMembers: awardEligibleEmployees.length,
       requisitions: requisitionCount
     };
-  }, [locationFilteredAwards, locationFilteredSafeActs, locationFilteredUsers, requisitionCount]);
+  }, [locationFilteredAwards, locationFilteredSafeActs, awardEligibleEmployees, requisitionCount]);
 
   // --- DYNAMIC TABS ACCORDING TO ROLE ---
   const isForeman = userRole === 'foreman';
@@ -727,7 +732,7 @@ export default function ManagerDashboard() {
               locations={locations} 
             />
             <RecognitionForm 
-              employees={locationFilteredUsers} 
+              employees={awardEligibleEmployees} 
               onAwardSuccess={async () => {
                 const { data: { user } } = await supabase.auth.getUser();
                 if (user) await fetchMasterData(user.id);
@@ -824,7 +829,7 @@ export default function ManagerDashboard() {
 
             <ComplianceTracker 
               complianceData={complianceData} 
-              allUsers={locationFilteredUsers} 
+              allUsers={awardEligibleEmployees} 
               compUser={compUser} 
               setCompUser={setCompUser} 
               tfComp={tfComp} 
@@ -836,7 +841,7 @@ export default function ManagerDashboard() {
             <SafeActTracker 
               rawSafeActs={locationFilteredSafeActs}
               rawAwards={locationFilteredAwards}
-              allUsers={locationFilteredUsers}
+              allUsers={awardEligibleEmployees}
               CustomTooltip={CustomTooltip}
               itemVariants={itemVariants}
             />

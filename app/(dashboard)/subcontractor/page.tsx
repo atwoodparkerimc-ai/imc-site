@@ -26,13 +26,18 @@ const checks: ChecklistItem[] = [
   { id: 4, text: "All listed subcontractor workers are fit for duty." },
 ];
 
+interface LoggedSubmission {
+  id: string;
+  completed_at: string;
+  attendee_names: string[];
+}
+
 export default function SubcontractorSafetyPage() {
   const router = useRouter();
   const [supabase] = useState(() => createClient());
 
   const [acknowledged, setAcknowledged] = useState<number[]>([]);
   const [isSigning, setIsSigning] = useState<boolean>(false);
-  const [hasCompletedToday, setHasCompletedToday] = useState<boolean>(false);
   const [isLoadingStatus, setIsLoadingStatus] = useState<boolean>(true);
   const [showConfirmation, setShowConfirmation] = useState<boolean>(false);
   const [terminalFeedback, setTerminalFeedback] = useState<{ message: string; isError: boolean } | null>(null);
@@ -41,11 +46,28 @@ export default function SubcontractorSafetyPage() {
   const [companyProfile, setCompanyProfile] = useState<UserProfile | null>(null);
   const [attendeeInput, setAttendeeInput] = useState<string>("");
   const [attendees, setAttendees] = useState<string[]>([]);
+  const [todaySubmissions, setTodaySubmissions] = useState<LoggedSubmission[]>([]);
 
   // Daily Briefing Interactive Gate State
   const [dailyBriefing, setDailyBriefing] = useState<SafetyBriefing>(() => getDailyBriefing());
   const [showBriefingModal, setShowBriefingModal] = useState<boolean>(false);
   const [hasCompletedBriefing, setHasCompletedBriefing] = useState<boolean>(false);
+
+  const fetchTodaySubmissions = async (userId: string) => {
+    const todayStr = new Date().toISOString().split("T")[0];
+    const startOfDay = `${todayStr}T00:00:00.000Z`;
+
+    const { data, error } = await supabase
+      .from("briefing_completions")
+      .select("id, completed_at, attendee_names")
+      .eq("user_id", userId)
+      .gte("completed_at", startOfDay)
+      .order("completed_at", { ascending: false });
+
+    if (!error && data) {
+      setTodaySubmissions(data as LoggedSubmission[]);
+    }
+  };
 
   useEffect(() => {
     async function initSubcontractorSession() {
@@ -59,8 +81,6 @@ export default function SubcontractorSafetyPage() {
         const profile = await getEmployeeProfile(supabase, user.id);
         setCompanyProfile(profile);
 
-        const todayDate = new Date().toISOString().split("T")[0];
-
         // Match site briefing override if configured
         if (profile?.location) {
           const safeLoc = profile.location.trim();
@@ -71,13 +91,7 @@ export default function SubcontractorSafetyPage() {
           }
         }
 
-        if (profile?.last_safety_check === todayDate) {
-          setHasCompletedToday(true);
-          setHasCompletedBriefing(true);
-          setAcknowledged(checks.map(c => c.id));
-        } else {
-          setShowBriefingModal(true);
-        }
+        await fetchTodaySubmissions(user.id);
       } catch (err) {
         console.error("Subcontractor initialization failure:", err);
       } finally {
@@ -115,7 +129,7 @@ export default function SubcontractorSafetyPage() {
   };
 
   const handleSign = async () => {
-    if (acknowledged.length !== checks.length || isSigning || hasCompletedToday) return;
+    if (acknowledged.length !== checks.length || isSigning) return;
 
     if (attendees.length === 0) {
       setTerminalFeedback({
@@ -148,21 +162,23 @@ export default function SubcontractorSafetyPage() {
       });
 
       if (!result.success) {
-        if (result.alreadyCheckedIn) {
-          setHasCompletedToday(true);
-          setAcknowledged(checks.map(c => c.id));
-          setTerminalFeedback({ message: "Briefing signature already logged for today.", isError: false });
-        } else {
-          setTerminalFeedback({ message: `Database Exception: ${result.error}`, isError: true });
-        }
+        setTerminalFeedback({ message: `Database Exception: ${result.error}`, isError: true });
         setIsSigning(false);
         return;
       }
 
-      setHasCompletedToday(true);
+      // Refresh list of logged shifts for today
+      await fetchTodaySubmissions(user.id);
+
       setShowConfirmation(true);
+      setTerminalFeedback({ message: `Roster logged successfully for ${attendees.length} worker(s).`, isError: false });
+
+      // Reset form so another shift / group can be logged anytime
+      setAttendees([]);
+      setAcknowledged([]);
     } catch (err: any) {
       setTerminalFeedback({ message: `Signature failure: ${err?.message}`, isError: true });
+    } finally {
       setIsSigning(false);
     }
   };
@@ -204,7 +220,7 @@ export default function SubcontractorSafetyPage() {
                 {companyDisplayName}
               </h1>
               <p className="text-slate-400 text-[10px] sm:text-xs font-bold uppercase tracking-wider mt-0.5">
-                Site: <span className="text-white font-bold">{companyProfile?.location || "Springville Shop"}</span> • OSHA Compliance Sign-Off
+                Site: <span className="text-white font-bold">{companyProfile?.location || "Springville Shop"}</span> • Multi-Shift OSHA Sign-Off
               </p>
             </div>
 
@@ -213,9 +229,9 @@ export default function SubcontractorSafetyPage() {
                 <div className="px-3 py-1 bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] text-xs text-slate-400 font-bold uppercase rounded-sm animate-pulse">
                   Verifying...
                 </div>
-              ) : hasCompletedToday ? (
+              ) : todaySubmissions.length > 0 ? (
                 <div className="px-3 py-1 bg-[var(--color-brand-green,#00ff9d)]/10 border border-[var(--color-brand-green,#00ff9d)]/50 text-[var(--color-brand-green,#00ff9d)] text-xs font-black uppercase rounded-sm">
-                  [LOGGED FOR TODAY]
+                  [{todaySubmissions.length} SHIFT ROSTER{todaySubmissions.length > 1 ? "S" : ""} LOGGED TODAY]
                 </div>
               ) : (
                 <div className="px-3 py-1 bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] text-[var(--color-brand-blue,#0088ff)] text-xs font-bold uppercase rounded-sm">
@@ -229,9 +245,9 @@ export default function SubcontractorSafetyPage() {
         {/* MAIN GRID */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           
-          {/* TOPIC SUMMARY */}
-          <div className="border p-4 sm:p-6 rounded-sm shadow-xl bg-[var(--color-brand-card)] border-[var(--color-brand-border)] flex flex-col justify-between">
-            <div className="space-y-4">
+          {/* TOPIC SUMMARY & TODAY'S LOGGED LOGS */}
+          <div className="space-y-4">
+            <div className="border p-4 sm:p-6 rounded-sm shadow-xl bg-[var(--color-brand-card)] border-[var(--color-brand-border)] space-y-4">
               <h2 className="text-slate-200 font-bold uppercase tracking-widest text-xs border-b pb-3 border-[var(--color-brand-border)]">
                 Daily Safety Briefing
               </h2>
@@ -256,18 +272,36 @@ export default function SubcontractorSafetyPage() {
               </div>
 
               <div className="p-3.5 sm:p-4 border rounded-sm bg-[var(--color-brand-bg)] border-[var(--color-brand-border)]">
-                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Audit Protocol</p>
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Multi-Shift Access</p>
                 <p className="text-xs text-slate-300 mt-1 leading-relaxed">
-                  Signatures log directly to Interwest Mechanical Contractors OSHA ledger. Subcontractors do not participate in company reward points.
+                  You can submit additional rosters whenever new personnel or shifts arrive on site today. All entries are preserved in the site OSHA compliance ledger.
                 </p>
               </div>
             </div>
 
-            <div className="pt-4 mt-4 border-t border-[var(--color-brand-border)] text-center">
-              <span className="text-[9px] text-slate-500 uppercase tracking-widest font-mono font-bold">
-                IMC SUBCONTRACTOR SAFETY LEDGER
-              </span>
-            </div>
+            {/* PREVIOUS SHIFT LOGS TODAY */}
+            {todaySubmissions.length > 0 && (
+              <div className="border p-4 sm:p-5 rounded-sm shadow-xl bg-[var(--color-brand-card)] border-[var(--color-brand-border)] space-y-3">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300 flex justify-between items-center border-b border-[var(--color-brand-border)] pb-2">
+                  <span>Logged Today ({todaySubmissions.length})</span>
+                  <span className="text-[var(--color-brand-green,#00ff9d)]">✓ Verified</span>
+                </h3>
+
+                <div className="space-y-2 max-h-60 overflow-y-auto custom-scrollbar">
+                  {todaySubmissions.map((sub, idx) => (
+                    <div key={sub.id || idx} className="p-2.5 bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] rounded-sm text-xs space-y-1">
+                      <div className="flex justify-between items-center text-[10px] text-slate-400 font-mono">
+                        <span>Shift #{todaySubmissions.length - idx}</span>
+                        <span>{new Date(sub.completed_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                      </div>
+                      <p className="text-[11px] font-bold text-white uppercase">
+                        {(sub.attendee_names || []).join(", ") || "Crew on site"}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* CHECKLIST & ROSTER FORM */}
@@ -301,9 +335,7 @@ export default function SubcontractorSafetyPage() {
                     <button
                       key={check.id}
                       type="button"
-                      disabled={hasCompletedToday || (!hasCompletedBriefing && check.id !== 3)}
                       onClick={() => {
-                        if (hasCompletedToday) return;
                         if (!hasCompletedBriefing && check.id === 3) {
                           setShowBriefingModal(true);
                           return;
@@ -337,35 +369,33 @@ export default function SubcontractorSafetyPage() {
                   On-Site Subcontractor Personnel ({attendees.length})
                 </h3>
                 <span className="text-[10px] text-slate-400 uppercase font-bold">
-                  Enter each worker present
+                  Enter workers for this shift
                 </span>
               </div>
 
-              {!hasCompletedToday && (
-                <div className="flex gap-2 mb-3">
-                  <input
-                    type="text"
-                    value={attendeeInput}
-                    onChange={(e) => setAttendeeInput(e.target.value)}
-                    onKeyDown={handleKeyDownAttendee}
-                    placeholder="Worker Full Name (e.g., John Miller)"
-                    className="flex-1 bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue,#0088ff)] px-3 py-2 text-xs text-white uppercase rounded-sm outline-none"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleAddAttendee}
-                    className="min-h-[40px] px-4 text-xs font-bold uppercase tracking-wider bg-[var(--color-brand-blue,#0088ff)] hover:bg-white hover:text-black text-white rounded-sm transition-all cursor-pointer"
-                  >
-                    + Add Worker
-                  </button>
-                </div>
-              )}
+              <div className="flex gap-2 mb-3">
+                <input
+                  type="text"
+                  value={attendeeInput}
+                  onChange={(e) => setAttendeeInput(e.target.value)}
+                  onKeyDown={handleKeyDownAttendee}
+                  placeholder="Worker Full Name (e.g., John Miller)"
+                  className="flex-1 bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue,#0088ff)] px-3 py-2 text-xs text-white uppercase rounded-sm outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={handleAddAttendee}
+                  className="min-h-[40px] px-4 text-xs font-bold uppercase tracking-wider bg-[var(--color-brand-blue,#0088ff)] hover:bg-white hover:text-black text-white rounded-sm transition-all cursor-pointer"
+                >
+                  + Add Worker
+                </button>
+              </div>
 
               {/* Tag Pill Roster Display */}
               <div className="p-3 border rounded-sm bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] min-h-[56px] flex flex-wrap gap-2 items-center">
                 {attendees.length === 0 ? (
                   <span className="text-[11px] text-slate-500 uppercase font-bold">
-                    [ No crew members added yet. Type worker name and click Add ]
+                    [ No crew members added for this sign-off yet. Type worker name and click Add ]
                   </span>
                 ) : (
                   attendees.map((worker, idx) => (
@@ -374,15 +404,13 @@ export default function SubcontractorSafetyPage() {
                       className="px-2.5 py-1 text-xs font-bold uppercase rounded-sm bg-[var(--color-brand-card)] border border-[var(--color-brand-border)] text-slate-200 flex items-center gap-2"
                     >
                       <span>{worker}</span>
-                      {!hasCompletedToday && (
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveAttendee(idx)}
-                          className="text-slate-400 hover:text-[var(--color-brand-red,#ff3b5c)] font-black text-xs cursor-pointer"
-                        >
-                          ✕
-                        </button>
-                      )}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveAttendee(idx)}
+                        className="text-slate-400 hover:text-[var(--color-brand-red,#ff3b5c)] font-black text-xs cursor-pointer"
+                      >
+                        ✕
+                      </button>
                     </span>
                   ))
                 )}
@@ -390,11 +418,7 @@ export default function SubcontractorSafetyPage() {
             </div>
 
             {/* 3. Action Button */}
-            {hasCompletedToday ? (
-              <div className="w-full py-4 text-xs font-bold uppercase tracking-widest text-center rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] text-slate-400">
-                ✓ COMPLIANCE SIGNATURE & ROSTER RECORDED FOR TODAY
-              </div>
-            ) : !hasCompletedBriefing ? (
+            {!hasCompletedBriefing ? (
               <button
                 type="button"
                 onClick={() => setShowBriefingModal(true)}
@@ -407,7 +431,7 @@ export default function SubcontractorSafetyPage() {
                 type="button"
                 onClick={handleSign}
                 disabled={!allChecksComplete || attendees.length === 0 || isSigning}
-                className="w-full py-4 text-xs font-bold uppercase tracking-widest text-center rounded-sm border bg-[var(--color-brand-blue,#0088ff)] border-[var(--color-brand-blue,#0088ff)] text-white hover:bg-white hover:text-black disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all"
+                className="w-full py-4 text-xs font-bold uppercase tracking-widest text-center rounded-sm border bg-[var(--color-brand-blue,#0088ff)] border-[var(--color-brand-blue,#0088ff)] text-white hover:bg-white hover:text-black disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all shadow-md active:scale-[0.99]"
               >
                 {isSigning ? "Recording Sign-Off..." : "Submit Subcontractor Sign-Off ↗"}
               </button>
@@ -436,14 +460,14 @@ export default function SubcontractorSafetyPage() {
                 Roster Recorded
               </h2>
               <p className="text-slate-300 mt-2 text-xs font-sans">
-                {attendees.length} worker{attendees.length > 1 ? "s" : ""} registered under {companyDisplayName}. The compliance entry is logged to the daily site record.
+                Roster registered under {companyDisplayName}. The compliance entry has been logged to the daily site record. You can submit another roster at any point today.
               </p>
               <button
                 type="button"
                 onClick={() => setShowConfirmation(false)}
                 className="mt-6 w-full py-2.5 text-xs font-bold uppercase tracking-wider bg-[var(--color-brand-green,#00ff9d)] text-black rounded-sm cursor-pointer hover:bg-white"
               >
-                Dismiss
+                Dismiss & Continue
               </button>
             </div>
           </motion.div>

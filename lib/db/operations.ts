@@ -186,7 +186,7 @@ export async function initializeBackdatedPoints(
   return { success: true };
 }
 
-/** Fetch list of team members at the SAME LOCATION, excluding the current active user and inactive staff */
+/** Fetch list of team members at the SAME LOCATION, excluding current user, inactive staff, and subcontractors */
 export async function getPeerProfiles(
   supabase: SupabaseClient, 
   userId: string,
@@ -196,7 +196,8 @@ export async function getPeerProfiles(
     .from('profiles')
     .select('id, first_name, last_name, nickname, location')
     .neq('id', userId)
-    .neq('is_active', false);
+    .neq('is_active', false)
+    .neq('role', 'subcontractor'); // Excludes subcontractors from peer awards
 
   // Strictly filter peers matching active site location if provided
   if (userLocation) {
@@ -483,7 +484,6 @@ export async function completeDailySafetyBriefing(
       ]);
 
     if (briefingLogErr) {
-      // Non-blocking catch to ensure points & check-in are never impacted
       console.warn("Briefing completion ledger log error:", briefingLogErr.message);
     }
   }
@@ -780,7 +780,12 @@ export async function getManagerMasterData(supabase: SupabaseClient) {
   ]);
 
   const allUsers = (teamRes.data as UserProfile[]) || [];
-  const activeTeam = allUsers.filter(p => p.role !== 'manager' && p.is_active !== false);
+  // Active team strictly excludes managers, subcontractors, and inactive staff
+  const activeTeam = allUsers.filter(p => 
+    p.role !== 'manager' && 
+    p.role !== 'subcontractor' && 
+    p.is_active !== false
+  );
 
   return {
     allUsers,
@@ -1229,10 +1234,6 @@ export async function completeSubcontractorSafetyBriefing(
       return { success: false, error: profileErr?.message || "Subcontractor profile not found" };
     }
 
-    if (profile.last_safety_check === todayDate) {
-      return { success: false, alreadyCheckedIn: true };
-    }
-
     const { error: insertErr } = await supabase
       .from("briefing_completions")
       .insert({
@@ -1497,3 +1498,64 @@ export async function getUserSignedJhaIdsToday(
   }
 }
 
+/** 8. Subcontractor bulk sign-off for a specific JHA with multiple crew members */
+export async function signSubcontractorDailyJha(
+  supabase: any,
+  jhaId: string,
+  subcontractorUserId: string,
+  companyName: string,
+  location: string,
+  workerNames: string[]
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const todayDate = new Date().toISOString().split("T")[0];
+    const nowIso = new Date().toISOString();
+
+    const rows = workerNames.map((name) => ({
+      jha_id: jhaId,
+      user_id: subcontractorUserId,
+      employee_name: `${name.trim()} (${companyName})`,
+      location,
+      signed_at: nowIso,
+      sign_date: todayDate,
+    }));
+
+    const { error } = await supabase
+      .from("jha_acknowledgments")
+      .insert(rows);
+
+    if (error) return { success: false, error: error.message };
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err?.message || "Failed to record subcontractor JHA sign-offs" };
+  }
+}
+
+/** 9. Fetch all CLOSED/ARCHIVED JHAs ordered by date (newest first) */
+export async function getArchivedDailyJhas(
+  supabase: any,
+  location: string
+): Promise<DailyJhaRecord[]> {
+  try {
+    let query = supabase
+      .from("daily_jhas")
+      .select("*")
+      .eq("status", "CLOSED")
+      .order("created_at", { ascending: false });
+
+    if (location && location !== "ALL") {
+      query = query.ilike("location", `%${location.trim()}%`);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.warn("[getArchivedDailyJhas] Query issue:", error.message || error);
+      return [];
+    }
+    return (data || []) as DailyJhaRecord[];
+  } catch (err: any) {
+    console.warn("[getArchivedDailyJhas] Exception caught:", err?.message || err);
+    return [];
+  }
+}
