@@ -1291,7 +1291,7 @@ export interface DailyJhaRecord {
   location: string;
   date: string;
   supervisor: string;
-  status: "ACTIVE" | "CLOSED";
+  status: "ACTIVE" | "PENDING" | "PAUSED" | "CLOSED";
   training_required: string[];
   equipment_used: string[];
   permits_required: string[];
@@ -1299,6 +1299,10 @@ export interface DailyJhaRecord {
   steps: JhaStep[];
   created_at: string;
   closed_at?: string | null;
+  paused_at?: string | null;
+  reopened_at?: string | null;
+  activation_date?: string | null;
+  is_manual_activation?: boolean;
 }
 
 export interface JhaAcknowledgmentRecord {
@@ -1310,7 +1314,7 @@ export interface JhaAcknowledgmentRecord {
   signed_at: string;
 }
 
-/** 1. Fetch available step templates for manager autocomplete */
+/** 1. Fetch available step templates */
 export async function getJhaStepTemplates(supabase: any): Promise<JhaStepTemplate[]> {
   const { data, error } = await supabase
     .from("jha_step_templates")
@@ -1324,15 +1328,16 @@ export async function getJhaStepTemplates(supabase: any): Promise<JhaStepTemplat
 }
 
 /** 
- * 2. Fetch all ACTIVE daily JHAs for a given site.
- * Jobs remain active across days until explicitly closed out by a manager.
+ * 2. Fetch all ACTIVE daily JHAs (For employees and active dashboard lane)
+ * Automatically promotes PENDING JHAs whose scheduled date has arrived.
  */
 export async function getActiveDailyJhas(supabase: any, location: string): Promise<DailyJhaRecord[]> {
   try {
+    const today = new Date().toISOString().split("T")[0];
     let query = supabase
       .from("daily_jhas")
       .select("*")
-      .eq("status", "ACTIVE")
+      .in("status", ["ACTIVE", "PENDING"])
       .order("created_at", { ascending: false });
 
     if (location && location !== "ALL") {
@@ -1340,19 +1345,94 @@ export async function getActiveDailyJhas(supabase: any, location: string): Promi
     }
 
     const { data, error } = await query;
+    if (error) return [];
 
-    if (error) {
-      console.warn("[getActiveDailyJhas] Query issue:", error.message || error);
-      return [];
-    }
-    return (data || []) as DailyJhaRecord[];
-  } catch (err: any) {
-    console.warn("[getActiveDailyJhas] Exception caught:", err?.message || err);
+    const activeRecords = (data || []).filter((jha: any) => {
+      if (jha.status === "ACTIVE") return true;
+      if (jha.status === "PENDING" && !jha.is_manual_activation && jha.activation_date && jha.activation_date <= today) {
+        return true;
+      }
+      return false;
+    });
+
+    return activeRecords as DailyJhaRecord[];
+  } catch (err) {
     return [];
   }
 }
 
-/** 3. Create a new Daily JHA from manager console */
+/** 3. Fetch all PAUSED JHAs */
+export async function getPausedDailyJhas(supabase: any, location: string): Promise<DailyJhaRecord[]> {
+  try {
+    let query = supabase
+      .from("daily_jhas")
+      .select("*")
+      .eq("status", "PAUSED")
+      .order("paused_at", { ascending: false });
+
+    if (location && location !== "ALL") {
+      query = query.ilike("location", `%${location.trim()}%`);
+    }
+
+    const { data, error } = await query;
+    if (error) return [];
+    return (data || []) as DailyJhaRecord[];
+  } catch (err) {
+    return [];
+  }
+}
+
+/** 4. Fetch all STAGED / ON HOLD (Pending future or manual release) JHAs */
+export async function getStagedDailyJhas(supabase: any, location: string): Promise<DailyJhaRecord[]> {
+  try {
+    const today = new Date().toISOString().split("T")[0];
+    let query = supabase
+      .from("daily_jhas")
+      .select("*")
+      .eq("status", "PENDING")
+      .order("created_at", { ascending: false });
+
+    if (location && location !== "ALL") {
+      query = query.ilike("location", `%${location.trim()}%`);
+    }
+
+    const { data, error } = await query;
+    if (error) return [];
+
+    const staged = (data || []).filter((jha: any) => {
+      if (jha.is_manual_activation) return true;
+      if (jha.activation_date && jha.activation_date > today) return true;
+      return false;
+    });
+
+    return staged as DailyJhaRecord[];
+  } catch (err) {
+    return [];
+  }
+}
+
+/** 5. Fetch all CLOSED / ARCHIVED JHAs */
+export async function getArchivedDailyJhas(supabase: any, location: string): Promise<DailyJhaRecord[]> {
+  try {
+    let query = supabase
+      .from("daily_jhas")
+      .select("*")
+      .eq("status", "CLOSED")
+      .order("closed_at", { ascending: false });
+
+    if (location && location !== "ALL") {
+      query = query.ilike("location", `%${location.trim()}%`);
+    }
+
+    const { data, error } = await query;
+    if (error) return [];
+    return (data || []) as DailyJhaRecord[];
+  } catch (err) {
+    return [];
+  }
+}
+
+/** 6. Create a new Daily JHA */
 export async function createDailyJha(
   supabase: any,
   payload: Omit<DailyJhaRecord, "id" | "created_at" | "closed_at">,
@@ -1366,12 +1446,14 @@ export async function createDailyJha(
         location: payload.location,
         date: payload.date || new Date().toISOString().split("T")[0],
         supervisor: payload.supervisor,
-        status: "ACTIVE",
+        status: payload.status || "ACTIVE",
         training_required: payload.training_required || [],
         equipment_used: payload.equipment_used || [],
         permits_required: payload.permits_required || [],
         certifications_required: payload.certifications_required || [],
         steps: payload.steps || [],
+        activation_date: payload.activation_date || null,
+        is_manual_activation: payload.is_manual_activation || false,
         created_by: managerId,
       })
       .select()
@@ -1384,7 +1466,64 @@ export async function createDailyJha(
   }
 }
 
-/** 4. Employee sign-off for a specific JHA (supports daily multi-day signatures) */
+/** 7. Update an existing Daily JHA */
+export async function updateDailyJha(
+  supabase: any,
+  jhaId: string,
+  payload: Partial<Omit<DailyJhaRecord, "id" | "created_at">>
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const updatePayload: Record<string, any> = {};
+
+    if (payload.title !== undefined) updatePayload.title = payload.title;
+    if (payload.location !== undefined) updatePayload.location = payload.location;
+    if (payload.supervisor !== undefined) updatePayload.supervisor = payload.supervisor;
+    if (payload.status !== undefined) {
+      updatePayload.status = payload.status;
+      if (payload.status === "CLOSED") {
+        updatePayload.closed_at = new Date().toISOString();
+      } else if (payload.status === "PAUSED") {
+        updatePayload.paused_at = new Date().toISOString();
+      } else if (payload.status === "ACTIVE") {
+        updatePayload.reopened_at = new Date().toISOString();
+      }
+    }
+    if (payload.training_required !== undefined) updatePayload.training_required = payload.training_required;
+    if (payload.equipment_used !== undefined) updatePayload.equipment_used = payload.equipment_used;
+    if (payload.permits_required !== undefined) updatePayload.permits_required = payload.permits_required;
+    if (payload.certifications_required !== undefined) updatePayload.certifications_required = payload.certifications_required;
+    if (payload.steps !== undefined) updatePayload.steps = payload.steps;
+    if (payload.activation_date !== undefined) updatePayload.activation_date = payload.activation_date;
+    if (payload.is_manual_activation !== undefined) updatePayload.is_manual_activation = payload.is_manual_activation;
+
+    const { error } = await supabase
+      .from("daily_jhas")
+      .update(updatePayload)
+      .eq("id", jhaId);
+
+    if (error) return { success: false, error: error.message };
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err?.message || "Failed to update JHA" };
+  }
+}
+
+/** 8. Fetch employee acknowledgments */
+export async function getJhaAcknowledgments(
+  supabase: any,
+  jhaId: string
+): Promise<JhaAcknowledgmentRecord[]> {
+  const { data, error } = await supabase
+    .from("jha_acknowledgments")
+    .select("*")
+    .eq("jha_id", jhaId)
+    .order("signed_at", { ascending: true });
+
+  if (error) return [];
+  return data || [];
+}
+
+/** 9. Sign Daily JHA */
 export async function signDailyJha(
   supabase: any,
   jhaId: string,
@@ -1413,65 +1552,11 @@ export async function signDailyJha(
     if (error) return { success: false, error: error.message };
     return { success: true };
   } catch (err: any) {
-    return { success: false, error: err?.message || "Failed to record JHA sign-off" };
+    return { success: false, error: err?.message || "Failed to record sign-off" };
   }
 }
 
-/** 5. Fetch all acknowledgments for a given JHA (for manager log & print view) */
-export async function getJhaAcknowledgments(
-  supabase: any,
-  jhaId: string
-): Promise<JhaAcknowledgmentRecord[]> {
-  const { data, error } = await supabase
-    .from("jha_acknowledgments")
-    .select("*")
-    .eq("jha_id", jhaId)
-    .order("signed_at", { ascending: true });
-
-  if (error) {
-    console.error("Error fetching JHA acknowledgments:", error);
-    return [];
-  }
-  return data || [];
-}
-
-/** 6. Update an existing Daily JHA (Manager Edit / Close Out) */
-export async function updateDailyJha(
-  supabase: any,
-  jhaId: string,
-  payload: Partial<Omit<DailyJhaRecord, "id" | "created_at">>
-): Promise<{ success: boolean; error?: string }> {
-  try {
-    const updatePayload: Record<string, any> = {};
-
-    if (payload.title !== undefined) updatePayload.title = payload.title;
-    if (payload.location !== undefined) updatePayload.location = payload.location;
-    if (payload.supervisor !== undefined) updatePayload.supervisor = payload.supervisor;
-    if (payload.status !== undefined) {
-      updatePayload.status = payload.status;
-      if (payload.status === "CLOSED") {
-        updatePayload.closed_at = new Date().toISOString();
-      }
-    }
-    if (payload.training_required !== undefined) updatePayload.training_required = payload.training_required;
-    if (payload.equipment_used !== undefined) updatePayload.equipment_used = payload.equipment_used;
-    if (payload.permits_required !== undefined) updatePayload.permits_required = payload.permits_required;
-    if (payload.certifications_required !== undefined) updatePayload.certifications_required = payload.certifications_required;
-    if (payload.steps !== undefined) updatePayload.steps = payload.steps;
-
-    const { error } = await supabase
-      .from("daily_jhas")
-      .update(updatePayload)
-      .eq("id", jhaId);
-
-    if (error) return { success: false, error: error.message };
-    return { success: true };
-  } catch (err: any) {
-    return { success: false, error: err?.message || "Failed to update JHA" };
-  }
-}
-
-/** 7. Fetch list of JHA IDs that the current employee has signed TODAY */
+/** 10. Check today's signed JHAs for employee view */
 export async function getUserSignedJhaIdsToday(
   supabase: any,
   userId: string
@@ -1486,19 +1571,14 @@ export async function getUserSignedJhaIdsToday(
       .eq("user_id", userId)
       .gte("signed_at", startOfDay);
 
-    if (error) {
-      console.warn("Notice checking user signed JHA IDs:", error.message);
-      return [];
-    }
-
+    if (error) return [];
     return (data || []).map((row: any) => row.jha_id);
-  } catch (err: any) {
-    console.warn("Exception checking signed JHA IDs:", err?.message || err);
+  } catch (err) {
     return [];
   }
 }
 
-/** 8. Subcontractor bulk sign-off for a specific JHA with multiple crew members */
+/** 11. Subcontractor bulk sign-off */
 export async function signSubcontractorDailyJha(
   supabase: any,
   jhaId: string,
@@ -1527,35 +1607,6 @@ export async function signSubcontractorDailyJha(
     if (error) return { success: false, error: error.message };
     return { success: true };
   } catch (err: any) {
-    return { success: false, error: err?.message || "Failed to record subcontractor JHA sign-offs" };
-  }
-}
-
-/** 9. Fetch all CLOSED/ARCHIVED JHAs ordered by date (newest first) */
-export async function getArchivedDailyJhas(
-  supabase: any,
-  location: string
-): Promise<DailyJhaRecord[]> {
-  try {
-    let query = supabase
-      .from("daily_jhas")
-      .select("*")
-      .eq("status", "CLOSED")
-      .order("created_at", { ascending: false });
-
-    if (location && location !== "ALL") {
-      query = query.ilike("location", `%${location.trim()}%`);
-    }
-
-    const { data, error } = await query;
-
-    if (error) {
-      console.warn("[getArchivedDailyJhas] Query issue:", error.message || error);
-      return [];
-    }
-    return (data || []) as DailyJhaRecord[];
-  } catch (err: any) {
-    console.warn("[getArchivedDailyJhas] Exception caught:", err?.message || err);
-    return [];
+    return { success: false, error: err?.message || "Failed to sign" };
   }
 }

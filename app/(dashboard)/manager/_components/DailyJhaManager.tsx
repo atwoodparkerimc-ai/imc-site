@@ -317,7 +317,9 @@ export default function DailyJhaManager({
   locations,
 }: DailyJhaManagerProps) {
   const [mounted, setMounted] = useState(false);
-  const [jhas, setJhas] = useState<DailyJhaRecord[]>([]);
+  
+  // Job Stores
+  const [allOpenRecords, setAllOpenRecords] = useState<DailyJhaRecord[]>([]);
   const [archivedJhas, setArchivedJhas] = useState<DailyJhaRecord[]>([]);
   const [templates, setTemplates] = useState<JhaStepTemplate[]>(MASTER_JHA_TEMPLATES);
   const [isBuilderOpen, setIsBuilderOpen] = useState(false);
@@ -342,6 +344,16 @@ export default function DailyJhaManager({
   const [steps, setSteps] = useState<JhaStep[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Stage & Activation Routing State
+  const [stageRouting, setStageRouting] = useState<"ACTIVE" | "SCHEDULED" | "MANUAL_HOLD">("ACTIVE");
+  const [scheduledStartDate, setScheduledStartDate] = useState("");
+
+  // Batch Report Modal States
+  const [isBatchModalOpen, setIsBatchModalOpen] = useState(false);
+  const [batchReportScope, setBatchReportScope] = useState<"CLOSED_ONLY" | "ALL_SIGNED">("ALL_SIGNED");
+  const [batchTimeframe, setBatchTimeframe] = useState<"WEEK" | "MONTH" | "YEAR">("WEEK");
+  const [isGeneratingBatch, setIsGeneratingBatch] = useState(false);
+
   // Manual inputs
   const [customTraining, setCustomTraining] = useState("");
   const [customEquipment, setCustomEquipment] = useState("");
@@ -362,7 +374,7 @@ export default function DailyJhaManager({
 
   // Background scroll lock when modals are active
   useEffect(() => {
-    if (isBuilderOpen || selectedJhaForReview || isCatalogPickerOpen) {
+    if (isBuilderOpen || selectedJhaForReview || isCatalogPickerOpen || isBatchModalOpen) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "";
@@ -370,17 +382,29 @@ export default function DailyJhaManager({
     return () => {
       document.body.style.overflow = "";
     };
-  }, [isBuilderOpen, selectedJhaForReview, isCatalogPickerOpen]);
+  }, [isBuilderOpen, selectedJhaForReview, isCatalogPickerOpen, isBatchModalOpen]);
 
   const refreshJhas = async () => {
     setIsLoading(true);
     const loc = selectedLocation === "ALL" ? "Nestle Springville" : selectedLocation;
-    const [activeRecords, closedRecords] = await Promise.all([
-      getActiveDailyJhas(supabase, loc),
+    
+    let openQuery = supabase
+      .from("daily_jhas")
+      .select("*")
+      .neq("status", "CLOSED")
+      .order("created_at", { ascending: false });
+
+    if (loc && loc !== "ALL") {
+      openQuery = openQuery.ilike("location", `%${loc.trim()}%`);
+    }
+
+    const [{ data: openData }, closedRecords] = await Promise.all([
+      openQuery,
       getArchivedDailyJhas(supabase, loc),
     ]);
-    setJhas(activeRecords);
-    setArchivedJhas(closedRecords);
+
+    setAllOpenRecords((openData || []) as DailyJhaRecord[]);
+    setArchivedJhas(closedRecords || []);
     setIsLoading(false);
   };
 
@@ -404,6 +428,39 @@ export default function DailyJhaManager({
     refreshJhas();
   }, [supabase, selectedLocation]);
 
+  // Client-Side Split into 3 Operational Stages
+  const { activeJhas, pausedJhas, onHoldJhas } = useMemo(() => {
+    const todayStr = new Date().toISOString().split("T")[0];
+    const active: DailyJhaRecord[] = [];
+    const paused: DailyJhaRecord[] = [];
+    const hold: DailyJhaRecord[] = [];
+
+    allOpenRecords.forEach((item) => {
+      const isManual = Boolean((item as any).is_manual_activation);
+      const actDate = (item as any).activation_date || null;
+
+      if (item.status === "PAUSED") {
+        paused.push(item);
+      } else if (item.status === "PENDING") {
+        if (!isManual && actDate && actDate <= todayStr) {
+          active.push(item);
+        } else {
+          hold.push(item);
+        }
+      } else {
+        if (isManual) {
+          hold.push(item);
+        } else if (actDate && actDate > todayStr) {
+          hold.push(item);
+        } else {
+          active.push(item);
+        }
+      }
+    });
+
+    return { activeJhas: active, pausedJhas: paused, onHoldJhas: hold };
+  }, [allOpenRecords]);
+
   const handleOpenReview = async (jha: DailyJhaRecord) => {
     setSelectedJhaForReview(jha);
     const acks = await getJhaAcknowledgments(supabase, jha.id);
@@ -415,11 +472,26 @@ export default function DailyJhaManager({
     setTitle(jha.title);
     setJobLocation(jha.location);
     setSupervisor(jha.supervisor);
-    setTrainingRequired([...jha.training_required]);
-    setEquipmentUsed([...jha.equipment_used]);
-    setPermitsRequired([...jha.permits_required]);
-    setCertificationsRequired([...jha.certifications_required]);
-    setSteps([...jha.steps]);
+    setTrainingRequired([...(jha.training_required || [])]);
+    setEquipmentUsed([...(jha.equipment_used || [])]);
+    setPermitsRequired([...(jha.permits_required || [])]);
+    setCertificationsRequired([...(jha.certifications_required || [])]);
+    setSteps([...(jha.steps || [])]);
+
+    const isManual = Boolean((jha as any).is_manual_activation);
+    const actDate = (jha as any).activation_date || "";
+
+    if (isManual) {
+      setStageRouting("MANUAL_HOLD");
+      setScheduledStartDate("");
+    } else if (actDate) {
+      setStageRouting("SCHEDULED");
+      setScheduledStartDate(actDate);
+    } else {
+      setStageRouting("ACTIVE");
+      setScheduledStartDate("");
+    }
+
     setSelectedJhaForReview(null);
     setIsBuilderOpen(true);
   };
@@ -434,10 +506,11 @@ export default function DailyJhaManager({
     setPermitsRequired([]);
     setCertificationsRequired([]);
     setSteps([]);
+    setStageRouting("ACTIVE");
+    setScheduledStartDate("");
     setIsBuilderOpen(true);
   };
 
-  // MULTI-SELECT CATALOG INJECTION (DOES NOT CLOSE MODAL)
   const handleSelectTemplateCard = (tpl: JhaStepTemplate) => {
     const newStep: JhaStep = {
       id: `step-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
@@ -459,7 +532,6 @@ export default function DailyJhaManager({
     setSteps((prev) => [...prev, newStep]);
   };
 
-  // STEP REORDERING HANDLERS
   const handleMoveStepUp = (index: number) => {
     if (index === 0) return;
     setSteps((prev) => {
@@ -482,7 +554,6 @@ export default function DailyJhaManager({
     });
   };
 
-  // DUPLICATE STEP HANDLER
   const handleDuplicateStep = (index: number) => {
     setSteps((prev) => {
       const target = prev[index];
@@ -538,6 +609,10 @@ export default function DailyJhaManager({
       alert("Please enter both the Job Title and Supervisor name.");
       return;
     }
+    if (stageRouting === "SCHEDULED" && !scheduledStartDate) {
+      alert("Please specify a calendar start date for scheduled work.");
+      return;
+    }
     if (steps.length === 0) {
       alert("Please add at least one work step to the JHA.");
       return;
@@ -545,18 +620,26 @@ export default function DailyJhaManager({
 
     setIsSubmitting(true);
 
-    if (editingJhaId) {
-      const res = await updateDailyJha(supabase, editingJhaId, {
-        title: title.trim(),
-        location: jobLocation,
-        supervisor: supervisor.trim(),
-        training_required: trainingRequired,
-        equipment_used: equipmentUsed,
-        permits_required: permitsRequired,
-        certifications_required: certificationsRequired,
-        steps,
-      });
+    const resolvedStatus = stageRouting === "ACTIVE" ? "ACTIVE" : "PENDING";
+    const resolvedActivationDate = stageRouting === "SCHEDULED" ? scheduledStartDate : null;
+    const resolvedIsManual = stageRouting === "MANUAL_HOLD";
 
+    const payload: any = {
+      title: title.trim(),
+      location: jobLocation,
+      supervisor: supervisor.trim(),
+      status: resolvedStatus,
+      activation_date: resolvedActivationDate,
+      is_manual_activation: resolvedIsManual,
+      training_required: trainingRequired,
+      equipment_used: equipmentUsed,
+      permits_required: permitsRequired,
+      certifications_required: certificationsRequired,
+      steps,
+    };
+
+    if (editingJhaId) {
+      const res = await updateDailyJha(supabase, editingJhaId, payload);
       setIsSubmitting(false);
 
       if (res.success) {
@@ -570,16 +653,8 @@ export default function DailyJhaManager({
       const res = await createDailyJha(
         supabase,
         {
-          title: title.trim(),
-          location: jobLocation,
+          ...payload,
           date: new Date().toISOString().split("T")[0],
-          supervisor: supervisor.trim(),
-          status: "ACTIVE",
-          training_required: trainingRequired,
-          equipment_used: equipmentUsed,
-          permits_required: permitsRequired,
-          certifications_required: certificationsRequired,
-          steps,
         },
         currentUserId
       );
@@ -595,16 +670,51 @@ export default function DailyJhaManager({
     }
   };
 
-  const handleCloseOutJob = async (jhaId: string) => {
-    if (!confirm("Are you sure you want to close out this JHA? This will archive the task.")) return;
-    
-    const res = await updateDailyJha(supabase, jhaId, { status: "CLOSED" });
+  const handleTransitionJha = async (jhaId: string, updates: Record<string, any>) => {
+    const res = await updateDailyJha(supabase, jhaId, updates as any);
     if (res.success) {
-      setSelectedJhaForReview(null);
+      if (selectedJhaForReview && selectedJhaForReview.id === jhaId) {
+        setSelectedJhaForReview(null);
+      }
       await refreshJhas();
     } else {
-      alert(`Error closing out JHA: ${res.error}`);
+      alert(`Error updating JHA status: ${res.error}`);
     }
+  };
+
+  const handleCloseOutJob = async (jhaId: string) => {
+    if (!confirm("Are you sure you want to close out this JHA? This will archive the task.")) return;
+    await handleTransitionJha(jhaId, { status: "CLOSED" });
+  };
+
+  const handlePauseJob = async (jhaId: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    if (!confirm("Pause this JHA? It will be removed from crew sign-off screens until resumed.")) return;
+    await handleTransitionJha(jhaId, { status: "PAUSED" });
+  };
+
+  const handleResumeJob = async (jhaId: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    await handleTransitionJha(jhaId, { status: "ACTIVE" });
+  };
+
+  const handleReleaseHoldNow = async (jhaId: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    await handleTransitionJha(jhaId, { 
+      status: "ACTIVE", 
+      is_manual_activation: false, 
+      activation_date: new Date().toISOString().split("T")[0] 
+    });
+  };
+
+  const handleReopenArchivedJob = async (jhaId: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    if (!confirm("Reopen this past JHA back onto the active job floor?")) return;
+    await handleTransitionJha(jhaId, { 
+      status: "ACTIVE", 
+      is_manual_activation: false, 
+      activation_date: new Date().toISOString().split("T")[0] 
+    });
   };
 
   const availableCategories = useMemo(() => {
@@ -648,6 +758,7 @@ export default function DailyJhaManager({
     });
   };
 
+  // --- INDIVIDUAL PRINT ENGINE ---
   const handlePrintJha = (jha: DailyJhaRecord, acks: JhaAcknowledgmentRecord[], mode: "TODAY_ONLY" | "MASTER_HISTORY") => {
     const todayStr = new Date().toISOString().split("T")[0];
     
@@ -726,15 +837,15 @@ export default function DailyJhaManager({
           </tr>
           <tr>
             <td class="meta-label">Required Training:</td>
-            <td class="meta-value">${jha.training_required.map((t) => `<span class="pill">${t}</span>`).join("") || "--"}</td>
+            <td class="meta-value">${(jha.training_required || []).map((t) => `<span class="pill">${t}</span>`).join("") || "--"}</td>
             <td class="meta-label">Permits Required:</td>
-            <td class="meta-value">${jha.permits_required.map((p) => `<span class="pill">${p}</span>`).join("") || "--"}</td>
+            <td class="meta-value">${(jha.permits_required || []).map((p) => `<span class="pill">${p}</span>`).join("") || "--"}</td>
           </tr>
           <tr>
             <td class="meta-label">Equipment Used:</td>
-            <td class="meta-value">${jha.equipment_used.map((e) => `<span class="pill">${e}</span>`).join("") || "--"}</td>
+            <td class="meta-value">${(jha.equipment_used || []).map((e) => `<span class="pill">${e}</span>`).join("") || "--"}</td>
             <td class="meta-label">Certifications Tracked:</td>
-            <td class="meta-value">${jha.certifications_required.map((c) => `<span class="pill">${c}</span>`).join("") || "--"}</td>
+            <td class="meta-value">${(jha.certifications_required || []).map((c) => `<span class="pill">${c}</span>`).join("") || "--"}</td>
           </tr>
         </table>
 
@@ -748,7 +859,7 @@ export default function DailyJhaManager({
             </tr>
           </thead>
           <tbody>
-            ${jha.steps
+            ${(jha.steps || [])
               .map(
                 (s, idx) => `
               <tr>
@@ -841,16 +952,15 @@ export default function DailyJhaManager({
 
   // --- BULK PRINT ENGINE (ALL OPEN/ACTIVE JHAs FOR TODAY) ---
   const handlePrintAllActiveJhas = async () => {
-    if (jhas.length === 0) {
+    if (activeJhas.length === 0) {
       alert("No active JHAs available to print.");
       return;
     }
 
     const todayStr = new Date().toISOString().split("T")[0];
 
-    // Fetch acknowledgments for all open JHAs concurrently
     const jhaReportsData = await Promise.all(
-      jhas.map(async (jha) => {
+      activeJhas.map(async (jha) => {
         const acks = await getJhaAcknowledgments(supabase, jha.id);
         const todayAcks = acks.filter((a) => {
           const aDate = a.signed_at ? new Date(a.signed_at).toISOString().split("T")[0] : "";
@@ -860,12 +970,97 @@ export default function DailyJhaManager({
       })
     );
 
+    executeBatchPrint(jhaReportsData, `Bulk Daily Shift Report (${todayStr})`);
+  };
+
+  // --- BATCH TIMEFRAME PRINT ENGINE (WINDOWED SIGNATURE FILTER) ---
+  const handleExecuteBatchReport = async () => {
+    setIsGeneratingBatch(true);
+
+    try {
+      const now = new Date();
+      const cutoff = new Date();
+      if (batchTimeframe === "WEEK") {
+        cutoff.setDate(now.getDate() - 7);
+      } else if (batchTimeframe === "MONTH") {
+        cutoff.setDate(now.getDate() - 30);
+      } else if (batchTimeframe === "YEAR") {
+        cutoff.setDate(now.getDate() - 365);
+      }
+
+      const timeframeLabel = batchTimeframe === "WEEK" ? "Past 7 Days" : batchTimeframe === "MONTH" ? "Past 30 Days" : "Past 365 Days";
+      let reportsToPrint: { jha: DailyJhaRecord; acks: JhaAcknowledgmentRecord[] }[] = [];
+
+      if (batchReportScope === "CLOSED_ONLY") {
+        // Filter closed JHAs within cutoff
+        const eligibleClosed = archivedJhas.filter((jha) => {
+          const targetDate = jha.closed_at ? new Date(jha.closed_at) : new Date(jha.created_at);
+          return !isNaN(targetDate.getTime()) && targetDate >= cutoff;
+        });
+
+        reportsToPrint = await Promise.all(
+          eligibleClosed.map(async (jha) => {
+            const acks = await getJhaAcknowledgments(supabase, jha.id);
+            // Windowed signatures only
+            const windowedAcks = acks.filter((a) => {
+              if (!a.signed_at) return false;
+              const sDate = new Date(a.signed_at);
+              return !isNaN(sDate.getTime()) && sDate >= cutoff;
+            });
+            return { jha, acks: windowedAcks };
+          })
+        );
+      } else {
+        // ALL categories combined - ONLY include if signed in the timeframe window
+        const pool = [...allOpenRecords, ...archivedJhas];
+
+        const evaluated = await Promise.all(
+          pool.map(async (jha) => {
+            const acks = await getJhaAcknowledgments(supabase, jha.id);
+            // Filter strictly inside the timeframe window
+            const windowedAcks = acks.filter((a) => {
+              if (!a.signed_at) return false;
+              const sDate = new Date(a.signed_at);
+              return !isNaN(sDate.getTime()) && sDate >= cutoff;
+            });
+            return { jha, acks: windowedAcks };
+          })
+        );
+
+        // Discard any JHA with 0 signers in this window
+        reportsToPrint = evaluated.filter((item) => item.acks.length > 0);
+      }
+
+      if (reportsToPrint.length === 0) {
+        alert(`No JHAs found matching the criteria with signatures recorded in the ${timeframeLabel}.`);
+        setIsGeneratingBatch(false);
+        return;
+      }
+
+      executeBatchPrint(
+        reportsToPrint, 
+        `${batchReportScope === "CLOSED_ONLY" ? "Closed Archives" : "Activity Audit"} (${timeframeLabel})`
+      );
+      setIsBatchModalOpen(false);
+    } catch (err: any) {
+      alert(`Failed to generate batch report: ${err?.message || err}`);
+    } finally {
+      setIsGeneratingBatch(false);
+    }
+  };
+
+  const executeBatchPrint = (
+    reports: { jha: DailyJhaRecord; acks: JhaAcknowledgmentRecord[] }[],
+    reportTitle: string
+  ) => {
+    const todayStr = new Date().toISOString().split("T")[0];
+
     const printDocHTML = `
       <!DOCTYPE html>
       <html lang="en">
       <head>
         <meta charset="utf-8">
-        <title>IMC - Bulk Daily JHA Shift Report (${todayStr})</title>
+        <title>IMC - ${reportTitle}</title>
         <style>
           @page { size: letter portrait; margin: 0.5in; }
           * { box-sizing: border-box; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
@@ -899,7 +1094,7 @@ export default function DailyJhaManager({
         </style>
       </head>
       <body>
-        ${jhaReportsData
+        ${reports
           .map(
             ({ jha, acks }) => `
           <div class="page-container">
@@ -908,13 +1103,13 @@ export default function DailyJhaManager({
                 <td style="width: 140px; vertical-align: top;"><img src="/imclogo.svg" alt="IMC Logo" class="logo" /></td>
                 <td style="vertical-align: top; padding-left: 12px;">
                   <h1 class="company-title">Interwest Mechanical Contractors</h1>
-                  <div class="report-subtitle">Daily Pre-Task Plan & Shift Attendance</div>
+                  <div class="report-subtitle">${reportTitle}</div>
                   <div style="font-size: 7.5pt; font-family: monospace; font-weight: 700; color: #475569; margin-top: 2px;">
                     OSHA 29 CFR 1926.21 & Site Environmental Health & Safety Standard
                   </div>
                 </td>
                 <td class="meta-box" style="vertical-align: top;">
-                  <div><strong>SHIFT DATE:</strong> ${todayStr}</div>
+                  <div><strong>PRINT DATE:</strong> ${todayStr}</div>
                   <div><strong>WORKSITE:</strong> ${jha.location.toUpperCase()}</div>
                   <div><strong>STATUS:</strong> ${jha.status}</div>
                 </td>
@@ -930,15 +1125,15 @@ export default function DailyJhaManager({
               </tr>
               <tr>
                 <td class="meta-label">Required Training:</td>
-                <td class="meta-value">${jha.training_required.map((t: string) => `<span class="pill">${t}</span>`).join("") || "--"}</td>
+                <td class="meta-value">${(jha.training_required || []).map((t: string) => `<span class="pill">${t}</span>`).join("") || "--"}</td>
                 <td class="meta-label">Permits Required:</td>
-                <td class="meta-value">${jha.permits_required.map((p: string) => `<span class="pill">${p}</span>`).join("") || "--"}</td>
+                <td class="meta-value">${(jha.permits_required || []).map((p: string) => `<span class="pill">${p}</span>`).join("") || "--"}</td>
               </tr>
               <tr>
                 <td class="meta-label">Equipment Used:</td>
-                <td class="meta-value">${jha.equipment_used.map((e: string) => `<span class="pill">${e}</span>`).join("") || "--"}</td>
+                <td class="meta-value">${(jha.equipment_used || []).map((e: string) => `<span class="pill">${e}</span>`).join("") || "--"}</td>
                 <td class="meta-label">Certifications:</td>
-                <td class="meta-value">${jha.certifications_required.map((c: string) => `<span class="pill">${c}</span>`).join("") || "--"}</td>
+                <td class="meta-value">${(jha.certifications_required || []).map((c: string) => `<span class="pill">${c}</span>`).join("") || "--"}</td>
               </tr>
             </table>
 
@@ -952,7 +1147,7 @@ export default function DailyJhaManager({
                 </tr>
               </thead>
               <tbody>
-                ${jha.steps
+                ${(jha.steps || [])
                   .map(
                     (s: any, idx: number) => `
                   <tr>
@@ -968,8 +1163,8 @@ export default function DailyJhaManager({
             </table>
 
             <div class="roster-title">
-              <span>Today's Verified Crew Attendance Roster (${acks.length} Sign-Offs Logged)</span>
-              <span>Shift Date: ${todayStr}</span>
+              <span>Verified Shift Sign-Offs in Selected Window (${acks.length} Sign-Offs Logged)</span>
+              <span>Scope Status: ${jha.status}</span>
             </div>
             <table class="roster-table">
               <thead>
@@ -997,7 +1192,7 @@ export default function DailyJhaManager({
                 `
                         )
                         .join("")
-                    : `<tr><td colspan="4" style="text-align: center; font-family: monospace; padding: 10px;">[ NO CREW SIGN-OFFS RECORDED TODAY FOR THIS SCOPE ]</td></tr>`
+                    : `<tr><td colspan="4" style="text-align: center; font-family: monospace; padding: 10px;">[ NO CREW SIGN-OFFS RECORDED IN THIS TIMEFRAME WINDOW ]</td></tr>`
                 }
               </tbody>
             </table>
@@ -1066,26 +1261,40 @@ export default function DailyJhaManager({
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={handleStartCreateNew}
-          className="w-full md:w-auto min-h-[44px] px-5 py-2.5 text-xs font-black uppercase tracking-wider bg-[var(--color-brand-blue)] text-white hover:bg-white hover:text-black rounded-sm transition-all cursor-pointer shadow-[0_0_15px_rgba(0,136,255,0.25)] active:scale-[0.98]"
-        >
-          + Create Daily JHA
-        </button>
+        <div className="flex items-center gap-2.5 w-full md:w-auto">
+          <button
+            type="button"
+            onClick={() => setIsBatchModalOpen(true)}
+            className="w-1/2 md:w-auto min-h-[44px] px-4 py-2.5 text-xs font-bold uppercase tracking-wider bg-[var(--color-brand-card)] border border-[var(--color-brand-border)] hover:border-white text-slate-200 rounded-sm transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-sm"
+          >
+            <span>⎙</span>
+            <span>Export Batch Report</span>
+          </button>
+          
+          <button
+            type="button"
+            onClick={handleStartCreateNew}
+            className="w-1/2 md:w-auto min-h-[44px] px-5 py-2.5 text-xs font-black uppercase tracking-wider bg-[var(--color-brand-blue)] text-white hover:bg-white hover:text-black rounded-sm transition-all cursor-pointer shadow-[0_0_15px_rgba(0,136,255,0.25)] active:scale-[0.98]"
+          >
+            + Create Daily JHA
+          </button>
+        </div>
       </div>
 
-      {/* ACTIVE JHAS LIST */}
+      {/* 1. ACTIVE / OPEN JHAS LIST */}
       <div className="border rounded-sm bg-[var(--color-brand-card)] border-[var(--color-brand-border)] p-4 sm:p-6">
         <div className="flex justify-between items-center border-b border-[var(--color-brand-border)] pb-3 mb-4">
-          <h3 className="text-xs font-bold uppercase tracking-widest text-slate-300">
-            Open Tasks & JHAs ({jhas.length})
-          </h3>
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 bg-emerald-400 rounded-none animate-pulse" />
+            <h3 className="text-xs font-bold uppercase tracking-widest text-slate-300">
+              Open / Active Tasks ({activeJhas.length})
+            </h3>
+          </div>
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={handlePrintAllActiveJhas}
-              disabled={jhas.length === 0}
+              disabled={activeJhas.length === 0}
               className="text-[11px] font-black uppercase bg-[var(--color-brand-blue)] text-white hover:bg-white hover:text-black px-3 py-1.5 rounded-sm transition-all cursor-pointer disabled:opacity-40"
             >
               ⎙ Print All Today&apos;s JHAs
@@ -1104,13 +1313,13 @@ export default function DailyJhaManager({
           <div className="p-8 text-center text-xs font-bold text-slate-500 uppercase tracking-widest">
             Loading JHA records...
           </div>
-        ) : jhas.length === 0 ? (
+        ) : activeJhas.length === 0 ? (
           <div className="p-8 text-center border border-dashed border-[var(--color-brand-border)] rounded-sm text-slate-500 text-xs font-bold uppercase tracking-widest">
             [ No active JHAs created for this location ]
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
-            {jhas.map((jha) => (
+            {activeJhas.map((jha) => (
               <div
                 key={jha.id}
                 onClick={() => handleOpenReview(jha)}
@@ -1120,10 +1329,8 @@ export default function DailyJhaManager({
                   <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-sm bg-[var(--color-brand-card)] border border-[var(--color-brand-border)] text-[var(--color-brand-blue)]">
                     {jha.location}
                   </span>
-                  <span className={`text-[10px] font-mono font-bold uppercase ${
-                    jha.status === "ACTIVE" ? "text-emerald-400" : "text-slate-500"
-                  }`}>
-                    {jha.status}
+                  <span className="text-[10px] font-mono font-bold uppercase text-emerald-400">
+                    ACTIVE
                   </span>
                 </div>
 
@@ -1137,9 +1344,13 @@ export default function DailyJhaManager({
                 </div>
 
                 <div className="pt-2 border-t border-[var(--color-brand-border)] flex justify-between items-center text-[11px]">
-                  <span className="text-slate-400 font-bold">
-                    {jha.steps.length} Steps Sequence
-                  </span>
+                  <button
+                    type="button"
+                    onClick={(e) => handlePauseJob(jha.id, e)}
+                    className="px-2.5 py-1 text-[10px] font-bold uppercase border border-amber-500/40 bg-amber-500/10 text-amber-400 hover:bg-amber-500 hover:text-black rounded-sm cursor-pointer transition-colors"
+                  >
+                    ⏸ Pause Work
+                  </button>
                   <span className="text-[var(--color-brand-blue)] font-bold uppercase">
                     Inspect & Print ↗
                   </span>
@@ -1150,13 +1361,141 @@ export default function DailyJhaManager({
         )}
       </div>
 
-      {/* 2. ARCHIVED & CLOSED JHA HISTORY SECTION */}
+      {/* 2. PAUSED / STANDBY JHAS LIST */}
+      <div className="border rounded-sm bg-[var(--color-brand-card)] border-[var(--color-brand-border)] p-4 sm:p-6 space-y-4">
+        <div className="flex justify-between items-center border-b border-[var(--color-brand-border)] pb-3">
+          <div className="flex items-center gap-2">
+            <span className="text-amber-400 text-sm">⏸</span>
+            <h3 className="text-xs font-bold uppercase tracking-widest text-amber-400">
+              Paused / Standby Tasks ({pausedJhas.length})
+            </h3>
+          </div>
+          <span className="text-[10px] text-slate-400 uppercase font-mono">
+            Hidden from employee signature screens
+          </span>
+        </div>
+
+        {isLoading ? (
+          <div className="p-8 text-center text-xs font-bold text-slate-500 uppercase tracking-widest">
+            Loading paused tasks...
+          </div>
+        ) : pausedJhas.length === 0 ? (
+          <div className="p-8 text-center border border-dashed border-[var(--color-brand-border)] rounded-sm text-slate-500 text-xs font-bold uppercase tracking-widest">
+            [ No work scopes currently paused on standby ]
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+            {pausedJhas.map((jha) => (
+              <div
+                key={jha.id}
+                onClick={() => handleOpenReview(jha)}
+                className="p-4 border rounded-sm bg-[var(--color-brand-bg)] border-amber-500/30 hover:border-amber-400 cursor-pointer transition-all space-y-3"
+              >
+                <div className="flex justify-between items-start gap-2">
+                  <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-sm bg-amber-500/10 text-amber-400 border border-amber-500/30">
+                    PAUSED
+                  </span>
+                  <span className="text-[10px] font-mono text-slate-400">{jha.location}</span>
+                </div>
+
+                <div>
+                  <h4 className="text-sm font-black uppercase text-slate-200 line-clamp-2">
+                    {jha.title}
+                  </h4>
+                  <p className="text-[11px] text-slate-400 font-mono mt-1">
+                    Supervisor: <strong className="text-slate-300">{jha.supervisor}</strong>
+                  </p>
+                </div>
+
+                <div className="pt-2 border-t border-[var(--color-brand-border)] flex justify-between items-center text-[11px]">
+                  <button
+                    type="button"
+                    onClick={(e) => handleResumeJob(jha.id, e)}
+                    className="px-3 py-1 text-[10px] font-bold uppercase border border-emerald-500/40 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500 hover:text-black rounded-sm cursor-pointer transition-colors"
+                  >
+                    ▶ Resume Work
+                  </button>
+                  <span className="text-slate-400 font-bold uppercase">Inspect ↗</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* 3. ON HOLD & SCHEDULED JHAS LIST */}
+      <div className="border rounded-sm bg-[var(--color-brand-card)] border-[var(--color-brand-border)] p-4 sm:p-6 space-y-4">
+        <div className="flex justify-between items-center border-b border-[var(--color-brand-border)] pb-3">
+          <div className="flex items-center gap-2">
+            <span className="text-cyan-400 text-sm">⏳</span>
+            <h3 className="text-xs font-bold uppercase tracking-widest text-cyan-400">
+              Hold & Scheduled Pipeline ({onHoldJhas.length})
+            </h3>
+          </div>
+          <span className="text-[10px] text-slate-400 uppercase font-mono">
+            Awaiting manual release or calendar auto-start date
+          </span>
+        </div>
+
+        {isLoading ? (
+          <div className="p-8 text-center text-xs font-bold text-slate-500 uppercase tracking-widest">
+            Loading staged pipeline...
+          </div>
+        ) : onHoldJhas.length === 0 ? (
+          <div className="p-8 text-center border border-dashed border-[var(--color-brand-border)] rounded-sm text-slate-500 text-xs font-bold uppercase tracking-widest">
+            [ No upcoming tasks on hold or scheduled ]
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+            {onHoldJhas.map((jha) => {
+              const isManual = Boolean((jha as any).is_manual_activation);
+              const actDate = (jha as any).activation_date;
+              return (
+                <div
+                  key={jha.id}
+                  onClick={() => handleOpenReview(jha)}
+                  className="p-4 border rounded-sm bg-[var(--color-brand-bg)] border-cyan-500/30 hover:border-cyan-400 cursor-pointer transition-all space-y-3"
+                >
+                  <div className="flex justify-between items-start gap-2">
+                    <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-sm bg-cyan-500/10 text-cyan-300 border border-cyan-500/30">
+                      {isManual ? "MANUAL HOLD" : `AUTO-START: ${actDate || "PENDING"}`}
+                    </span>
+                    <span className="text-[10px] font-mono text-slate-400">{jha.location}</span>
+                  </div>
+
+                  <div>
+                    <h4 className="text-sm font-black uppercase text-slate-200 line-clamp-2">
+                      {jha.title}
+                    </h4>
+                    <p className="text-[11px] text-slate-400 font-mono mt-1">
+                      Supervisor: <strong className="text-slate-300">{jha.supervisor}</strong>
+                    </p>
+                  </div>
+
+                  <div className="pt-2 border-t border-[var(--color-brand-border)] flex justify-between items-center text-[11px]">
+                    <button
+                      type="button"
+                      onClick={(e) => handleReleaseHoldNow(jha.id, e)}
+                      className="px-2.5 py-1 text-[10px] font-black uppercase bg-[var(--color-brand-blue)] text-white hover:bg-white hover:text-black rounded-sm cursor-pointer transition-colors"
+                    >
+                      🚀 Release Now
+                    </button>
+                    <span className="text-cyan-400 font-bold uppercase">Inspect ↗</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* 4. ARCHIVED & CLOSED JHA HISTORY SECTION */}
       <div className="border rounded-sm bg-[var(--color-brand-card)] border-[var(--color-brand-border)] p-4 sm:p-6 space-y-4">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-[var(--color-brand-border)] pb-3">
           <div>
             <h3 className="text-xs font-bold uppercase tracking-widest text-slate-300 flex items-center gap-2">
               <span>📁</span>
-              <span>Archived & Closed JHA History ({filteredArchivedJhas.length})</span>
+              <span>Past & Closed JHA History ({filteredArchivedJhas.length})</span>
             </h3>
             <p className="text-[10px] text-slate-400 mt-0.5 uppercase">
               Completed and archived safety task documents ordered by newest first.
@@ -1209,7 +1548,13 @@ export default function DailyJhaManager({
                 </div>
 
                 <div className="pt-2 border-t border-[var(--color-brand-border)]/60 flex justify-between items-center text-[10px] text-slate-400">
-                  <span>{jha.steps.length} Steps</span>
+                  <button
+                    type="button"
+                    onClick={(e) => handleReopenArchivedJob(jha.id, e)}
+                    className="px-2 py-0.5 border border-cyan-500/40 text-cyan-400 hover:bg-cyan-500 hover:text-black rounded-sm font-bold uppercase transition-colors"
+                  >
+                    ↺ Reopen Task
+                  </button>
                   <span className="text-[var(--color-brand-blue)] font-bold uppercase">
                     View Audit Report ↗
                   </span>
@@ -1255,6 +1600,67 @@ export default function DailyJhaManager({
                       className="flex-1 flex flex-col min-h-0 overflow-hidden"
                     >
                       <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5 custom-scrollbar text-xs">
+                        
+                        {/* Operational Staging Selector */}
+                        <div className="p-3.5 border rounded-sm bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] space-y-2.5">
+                          <div>
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-300 block">
+                              Operational Deployment Routing
+                            </span>
+                            <span className="text-[9px] text-slate-500 uppercase">
+                              Control whether work goes live to the crew today, is parked on hold, or is pre-scheduled.
+                            </span>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            <label className={`p-2.5 border rounded-sm flex flex-col gap-0.5 cursor-pointer transition-colors ${stageRouting === 'ACTIVE' ? 'border-emerald-500 bg-emerald-500/10 text-emerald-300' : 'border-[var(--color-brand-border)] bg-[var(--color-brand-card)] text-slate-400'}`}>
+                              <div className="flex items-center gap-2">
+                                <input type="radio" name="staging" checked={stageRouting === 'ACTIVE'} onChange={() => setStageRouting('ACTIVE')} className="hidden" />
+                                <span className="text-[11px] font-bold uppercase">🚀 Start Active (Today)</span>
+                              </div>
+                              <span className="text-[9px] text-slate-500">Live on floor for crew sign-offs.</span>
+                            </label>
+
+                            <label className={`p-2.5 border rounded-sm flex flex-col gap-0.5 cursor-pointer transition-colors ${stageRouting === 'SCHEDULED' ? 'border-cyan-500 bg-cyan-500/10 text-cyan-300' : 'border-[var(--color-brand-border)] bg-[var(--color-brand-card)] text-slate-400'}`}>
+                              <div className="flex items-center gap-2">
+                                <input type="radio" name="staging" checked={stageRouting === 'SCHEDULED'} onChange={() => setStageRouting('SCHEDULED')} className="hidden" />
+                                <span className="text-[11px] font-bold uppercase">📅 Hard Start Date</span>
+                              </div>
+                              <span className="text-[9px] text-slate-500">Promotes automatically on set date.</span>
+                            </label>
+
+                            <label className={`p-2.5 border rounded-sm flex flex-col gap-0.5 cursor-pointer transition-colors ${stageRouting === 'MANUAL_HOLD' ? 'border-amber-500 bg-amber-500/10 text-amber-300' : 'border-[var(--color-brand-border)] bg-[var(--color-brand-card)] text-slate-400'}`}>
+                              <div className="flex items-center gap-2">
+                                <input type="radio" name="staging" checked={stageRouting === 'MANUAL_HOLD'} onChange={() => setStageRouting('MANUAL_HOLD')} className="hidden" />
+                                <span className="text-[11px] font-bold uppercase">⏸ Manual Hold</span>
+                              </div>
+                              <span className="text-[9px] text-slate-500">Parked until manually released.</span>
+                            </label>
+                          </div>
+
+ {stageRouting === "SCHEDULED" && (
+  <div className="pt-1">
+    <style>{`
+      input[type="date"]::-webkit-calendar-picker-indicator {
+        filter: invert(1);
+        cursor: pointer;
+      }
+    `}</style>
+    <label className="text-[10px] font-bold uppercase tracking-wider text-cyan-400 block mb-1">
+      Calendar Start Date (Auto-Promote)
+    </label>
+    <input
+      type="date"
+      required
+      value={scheduledStartDate}
+      onChange={(e) => setScheduledStartDate(e.target.value)}
+      style={{ colorScheme: "dark" }}
+      className="w-full min-h-[42px] px-3 bg-[var(--color-brand-card)] border border-cyan-500/40 text-slate-100 rounded-sm outline-none font-mono text-xs cursor-pointer"
+    />
+  </div>
+)}
+                        </div>
+
                         {/* Basic Metadata */}
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
                           <div className="sm:col-span-2 space-y-1">
@@ -1305,7 +1711,6 @@ export default function DailyJhaManager({
 
                         {/* Tracked Certifications & Permits */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                          {/* Tracked Certifications Only */}
                           <div className="space-y-2 p-3 border rounded-sm bg-[var(--color-brand-bg)] border-[var(--color-brand-border)]">
                             <div className="flex justify-between items-center">
                               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-300">
@@ -1368,7 +1773,6 @@ export default function DailyJhaManager({
                             </div>
                           </div>
 
-                          {/* Permits Required */}
                           <div className="space-y-2 p-3 border rounded-sm bg-[var(--color-brand-bg)] border-[var(--color-brand-border)]">
                             <span className="text-[10px] font-bold uppercase tracking-wider text-slate-300">
                               Permits Required ({permitsRequired.length})
@@ -1496,7 +1900,6 @@ export default function DailyJhaManager({
                             </span>
                           </div>
 
-                          {/* Manual Tool Input */}
                           <div className="flex gap-2">
                             <input
                               type="text"
@@ -1520,7 +1923,6 @@ export default function DailyJhaManager({
                             </button>
                           </div>
 
-                          {/* Custom Added Badges */}
                           {equipmentUsed.filter((item) => !EQUIPMENT_CATEGORIES.some((c) => c.items.includes(item))).length > 0 && (
                             <div className="flex flex-wrap gap-1.5 p-2 bg-[var(--color-brand-card)] border border-[var(--color-brand-border)] rounded-sm">
                               <span className="text-[9px] uppercase font-bold text-slate-400 mr-1 self-center">
@@ -1540,7 +1942,6 @@ export default function DailyJhaManager({
                             </div>
                           )}
 
-                          {/* Categorized Grid */}
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
                             {EQUIPMENT_CATEGORIES.map((cat) => (
                               <div
@@ -1617,7 +2018,6 @@ export default function DailyJhaManager({
                                   key={st.id}
                                   className="p-3 border rounded-sm bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] space-y-2 relative"
                                 >
-                                  {/* Step Action Header with Reorder Arrows */}
                                   <div className="flex justify-between items-center text-[10px] font-bold text-slate-400 uppercase">
                                     <div className="flex items-center gap-1.5">
                                       <span className="text-white font-black">#{idx + 1}</span>
@@ -1727,7 +2127,7 @@ export default function DailyJhaManager({
                           disabled={isSubmitting}
                           className="min-h-[44px] px-8 bg-[var(--color-brand-blue)] text-white hover:bg-white hover:text-black rounded-sm font-black uppercase text-xs cursor-pointer transition-all disabled:opacity-50 shadow-lg active:scale-[0.98]"
                         >
-                          {isSubmitting ? "Saving..." : editingJhaId ? "Save JHA Changes ↗" : "Publish Active JHA ↗"}
+                          {isSubmitting ? "Saving..." : editingJhaId ? "Save JHA Changes ↗" : "Publish JHA Target ↗"}
                         </button>
                       </div>
                     </form>
@@ -1746,7 +2146,6 @@ export default function DailyJhaManager({
                     exit={{ opacity: 0, scale: 0.97 }}
                     className="w-full max-w-4xl h-[88vh] max-h-[88vh] flex flex-col border shadow-2xl rounded-sm bg-[var(--color-brand-card)] border-[var(--color-brand-border)] overflow-hidden"
                   >
-                    {/* Header */}
                     <div className="p-4 border-b border-[var(--color-brand-border)] bg-[var(--color-brand-bg)] flex justify-between items-center shrink-0">
                       <div>
                         <span className="text-[10px] font-black uppercase text-[var(--color-brand-blue)] tracking-wider">
@@ -1765,7 +2164,6 @@ export default function DailyJhaManager({
                       </button>
                     </div>
 
-                    {/* Filter and Search Bar */}
                     <div className="p-3 border-b border-[var(--color-brand-border)] bg-[var(--color-brand-card)] shrink-0 space-y-2.5">
                       <input
                         type="text"
@@ -1775,7 +2173,6 @@ export default function DailyJhaManager({
                         className="w-full min-h-[40px] px-3 bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] focus:border-[var(--color-brand-blue)] text-slate-100 uppercase rounded-sm text-xs font-bold outline-none"
                       />
 
-                      {/* Category Pill Filters */}
                       <div className="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar">
                         {availableCategories.map((cat) => (
                           <button
@@ -1794,7 +2191,6 @@ export default function DailyJhaManager({
                       </div>
                     </div>
 
-                    {/* Rich Step Cards Grid (Stays open after clicking) */}
                     <div className="flex-1 overflow-y-auto p-4 space-y-2.5 custom-scrollbar bg-[var(--color-brand-bg)]">
                       {filteredTemplates.length === 0 ? (
                         <div className="p-12 text-center text-slate-500 font-bold uppercase text-xs border border-dashed border-[var(--color-brand-border)]">
@@ -1844,7 +2240,6 @@ export default function DailyJhaManager({
                       )}
                     </div>
 
-                    {/* Persistent Footer with Done Button */}
                     <div className="p-3 border-t border-[var(--color-brand-border)] bg-[var(--color-brand-card)] flex justify-between items-center shrink-0">
                       <span className="text-xs font-bold text-slate-400 uppercase">
                         {sessionAddedCount} task{sessionAddedCount === 1 ? "" : "s"} added to current JHA draft.
@@ -1876,7 +2271,7 @@ export default function DailyJhaManager({
                     <div className="p-4 sm:p-5 border-b border-[var(--color-brand-border)] flex justify-between items-start bg-[var(--color-brand-bg)] shrink-0">
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className={`w-2 h-2 ${selectedJhaForReview.status === "ACTIVE" ? "bg-emerald-400 animate-pulse" : "bg-slate-500"}`} />
+                          <span className={`w-2 h-2 ${selectedJhaForReview.status === "ACTIVE" ? "bg-emerald-400 animate-pulse" : selectedJhaForReview.status === "PAUSED" ? "bg-amber-400" : "bg-cyan-400"}`} />
                           <span className="text-[10px] font-black uppercase text-[var(--color-brand-blue)] tracking-wider">
                             {selectedJhaForReview.location} • Job Hazard Analysis Document [{selectedJhaForReview.status}]
                           </span>
@@ -1890,7 +2285,7 @@ export default function DailyJhaManager({
                       </div>
 
                       <div className="flex items-center gap-2">
-                        {selectedJhaForReview.status === "ACTIVE" && (
+                        {selectedJhaForReview.status !== "CLOSED" && (
                           <button
                             type="button"
                             onClick={() => handleStartEdit(selectedJhaForReview)}
@@ -1920,7 +2315,7 @@ export default function DailyJhaManager({
                             Required Training:
                           </span>
                           <div className="flex flex-wrap gap-1">
-                            {selectedJhaForReview.training_required.length > 0 ? (
+                            {(selectedJhaForReview.training_required || []).length > 0 ? (
                               selectedJhaForReview.training_required.map((t, idx) => (
                                 <span key={idx} className="px-2 py-0.5 text-[9px] font-bold uppercase bg-[var(--color-brand-card)] border border-[var(--color-brand-border)] text-slate-200 rounded-sm">
                                   {t}
@@ -1937,7 +2332,7 @@ export default function DailyJhaManager({
                             Permits Required:
                           </span>
                           <div className="flex flex-wrap gap-1">
-                            {selectedJhaForReview.permits_required.length > 0 ? (
+                            {(selectedJhaForReview.permits_required || []).length > 0 ? (
                               selectedJhaForReview.permits_required.map((p, idx) => (
                                 <span key={idx} className="px-2 py-0.5 text-[9px] font-bold uppercase bg-[var(--color-brand-card)] border border-[var(--color-brand-border)] text-amber-400 rounded-sm">
                                   {p}
@@ -1954,7 +2349,7 @@ export default function DailyJhaManager({
                             Equipment & Machinery Assigned:
                           </span>
                           <div className="flex flex-wrap gap-1">
-                            {selectedJhaForReview.equipment_used.length > 0 ? (
+                            {(selectedJhaForReview.equipment_used || []).length > 0 ? (
                               selectedJhaForReview.equipment_used.map((e, idx) => (
                                 <span key={idx} className="px-2 py-0.5 text-[9px] font-bold uppercase bg-[var(--color-brand-card)] border border-[var(--color-brand-border)] text-slate-300 rounded-sm">
                                   {e}
@@ -1971,7 +2366,7 @@ export default function DailyJhaManager({
                             Certifications Tracked:
                           </span>
                           <div className="flex flex-wrap gap-1">
-                            {selectedJhaForReview.certifications_required.length > 0 ? (
+                            {(selectedJhaForReview.certifications_required || []).length > 0 ? (
                               selectedJhaForReview.certifications_required.map((c, idx) => (
                                 <span key={idx} className="px-2 py-0.5 text-[9px] font-bold uppercase bg-[var(--color-brand-card)] border border-[var(--color-brand-border)] text-cyan-400 rounded-sm">
                                   {c}
@@ -1987,11 +2382,11 @@ export default function DailyJhaManager({
                       {/* Work Steps Sequence Table */}
                       <div className="space-y-2.5">
                         <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-300">
-                          Work Step Sequence, Potential Hazards & Control Measures ({selectedJhaForReview.steps.length} Steps)
+                          Work Step Sequence, Potential Hazards & Control Measures ({(selectedJhaForReview.steps || []).length} Steps)
                         </h4>
 
                         <div className="space-y-2">
-                          {selectedJhaForReview.steps.map((st, idx) => (
+                          {(selectedJhaForReview.steps || []).map((st, idx) => (
                             <div
                               key={st.id || idx}
                               className="p-3.5 border rounded-sm bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] space-y-2"
@@ -2078,9 +2473,17 @@ export default function DailyJhaManager({
                           >
                             ✓ Close Job Out (Archive)
                           </button>
+                        ) : selectedJhaForReview.status === "PAUSED" ? (
+                          <button
+                            type="button"
+                            onClick={() => handleResumeJob(selectedJhaForReview.id)}
+                            className="min-h-[40px] px-4 border border-emerald-500/40 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500 hover:text-black rounded-sm font-bold uppercase text-xs cursor-pointer transition-all"
+                          >
+                            ▶ Resume Task
+                          </button>
                         ) : (
                           <span className="text-slate-500 font-mono text-xs uppercase font-bold">
-                            [ Job Completed & Archived ]
+                            [ {selectedJhaForReview.status} ]
                           </span>
                         )}
                       </div>
@@ -2104,6 +2507,123 @@ export default function DailyJhaManager({
                           <span>Print Master Job Report</span>
                         </button>
                       </div>
+                    </div>
+                  </motion.div>
+                </div>
+              )}
+            </AnimatePresence>
+
+            {/* MODAL 4: BATCH TIMEFRAME EXPORT DIALOG */}
+            <AnimatePresence>
+              {isBatchModalOpen && (
+                <div className="fixed inset-0 z-[10001] flex items-center justify-center p-3 bg-black/90 backdrop-blur-md font-mono text-slate-100 select-none">
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.96 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.96 }}
+                    className="w-full max-w-lg border rounded-sm bg-[var(--color-brand-card)] border-[var(--color-brand-border)] shadow-2xl p-5 sm:p-6 space-y-5"
+                  >
+                    <div className="flex justify-between items-center border-b border-[var(--color-brand-border)] pb-3">
+                      <div>
+                        <span className="text-[10px] font-bold uppercase text-[var(--color-brand-blue)] tracking-wider">
+                          Audit Archive Exporter
+                        </span>
+                        <h3 className="text-sm font-black uppercase text-white mt-0.5">
+                          Print Timeframe Batch Report
+                        </h3>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setIsBatchModalOpen(false)}
+                        className="text-slate-400 hover:text-white font-bold text-lg cursor-pointer px-1"
+                      >
+                        ✕
+                      </button>
+                    </div>
+
+                    <div className="space-y-4 text-xs">
+                      {/* Scope Selector */}
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+                          Report Category Scope
+                        </label>
+                        <div className="grid grid-cols-2 gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setBatchReportScope("ALL_SIGNED")}
+                            className={`p-3 border rounded-sm text-left transition-colors cursor-pointer ${
+                              batchReportScope === "ALL_SIGNED"
+                                ? "border-[var(--color-brand-blue)] bg-[var(--color-brand-blue)]/10 text-white font-black"
+                                : "border-[var(--color-brand-border)] bg-[var(--color-brand-bg)] text-slate-400"
+                            }`}
+                          >
+                            <span className="block text-xs uppercase mb-0.5">All Categories</span>
+                            <span className="block text-[9px] text-slate-500 font-normal">Active, Paused, Hold, Closed (Must have signatures in timeframe)</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => setBatchReportScope("CLOSED_ONLY")}
+                            className={`p-3 border rounded-sm text-left transition-colors cursor-pointer ${
+                              batchReportScope === "CLOSED_ONLY"
+                                ? "border-[var(--color-brand-blue)] bg-[var(--color-brand-blue)]/10 text-white font-black"
+                                : "border-[var(--color-brand-border)] bg-[var(--color-brand-bg)] text-slate-400"
+                            }`}
+                          >
+                            <span className="block text-xs uppercase mb-0.5">Closed Only</span>
+                            <span className="block text-[9px] text-slate-500 font-normal">Only completed and archived past jobs completed in window</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Timeframe Selector */}
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+                          Timeframe Window (Signatures Evaluated)
+                        </label>
+                        <div className="grid grid-cols-3 gap-2">
+                          {(["WEEK", "MONTH", "YEAR"] as const).map((tf) => (
+                            <button
+                              key={tf}
+                              type="button"
+                              onClick={() => setBatchTimeframe(tf)}
+                              className={`py-2 px-3 border rounded-sm text-center uppercase font-bold text-xs cursor-pointer transition-colors ${
+                                batchTimeframe === tf
+                                  ? "border-emerald-500 bg-emerald-500/10 text-emerald-300 font-black"
+                                  : "border-[var(--color-brand-border)] bg-[var(--color-brand-bg)] text-slate-400"
+                              }`}
+                            >
+                              {tf === "WEEK" ? "Past 7 Days" : tf === "MONTH" ? "Past 30 Days" : "Past Year"}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="p-3 bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] rounded-sm text-[10px] text-slate-400 space-y-1">
+                        <p className="font-bold text-white uppercase">Windowed Signature Filter Active:</p>
+                        <p>
+                          The resulting report will only display sign-offs stamped within the selected window. Any job with zero signatures in this duration is automatically excluded.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end gap-2.5 pt-3 border-t border-[var(--color-brand-border)]">
+                      <button
+                        type="button"
+                        onClick={() => setIsBatchModalOpen(false)}
+                        className="px-4 py-2 border border-[var(--color-brand-border)] text-slate-400 hover:text-white uppercase font-bold text-xs rounded-sm cursor-pointer"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        disabled={isGeneratingBatch}
+                        onClick={handleExecuteBatchReport}
+                        className="px-6 py-2 bg-[var(--color-brand-blue)] text-white hover:bg-white hover:text-black uppercase font-black text-xs rounded-sm cursor-pointer transition-all disabled:opacity-50 flex items-center gap-1.5"
+                      >
+                        <span>⎙</span>
+                        <span>{isGeneratingBatch ? "Processing..." : "Generate Batch Print ↗"}</span>
+                      </button>
                     </div>
                   </motion.div>
                 </div>
