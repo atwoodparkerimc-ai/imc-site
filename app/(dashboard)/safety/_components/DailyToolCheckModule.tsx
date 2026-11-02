@@ -1,3 +1,4 @@
+// app/(dashboard)/safety/_components/DailyToolCheckModule.tsx
 "use client";
 
 import { useState, useMemo } from "react";
@@ -27,7 +28,7 @@ interface DailyToolCheckModuleProps {
   onBack: () => void;
 }
 
-type TabType = "FAVORITES" | "MY_TOOLBOX" | "CATALOG_ADD";
+type TabType = "SELECTED_TODAY" | "MY_TOOLBOX" | "CATALOG_ADD";
 type CategoryType = "ALL" | "Hand Tools" | "Power Tools" | "Rigging & Access" | "Shop Tools";
 
 export default function DailyToolCheckModule({
@@ -40,7 +41,7 @@ export default function DailyToolCheckModule({
   onComplete,
   onBack,
 }: DailyToolCheckModuleProps) {
-  const [activeTab, setActiveTab] = useState<TabType>("FAVORITES");
+  const [activeTab, setActiveTab] = useState<TabType>("SELECTED_TODAY");
   const [categoryFilter, setCategoryFilter] = useState<CategoryType>("ALL");
   const [catalogSearch, setCatalogSearch] = useState("");
   const [customToolName, setCustomToolName] = useState("");
@@ -83,6 +84,31 @@ export default function DailyToolCheckModule({
   // Filtered Toolbox lists
   const favoriteTools = useMemo(() => toolbox.filter((t) => t.is_favorite), [toolbox]);
 
+  // Items currently selected for today's shift (pulls metadata from toolbox or catalog)
+  const shiftSelectedItems = useMemo(() => {
+    return selectedTools
+      .map((name) => {
+        const inBox = toolbox.find((t) => t.tool_name.toLowerCase() === name.toLowerCase());
+        if (inBox) return inBox;
+        const inCatalog = MASTER_TOOL_LIST.find((m) => m.name.toLowerCase() === name.toLowerCase());
+        return {
+          id: `temp-${name}`,
+          user_id: userId,
+          tool_name: name,
+          category: (inCatalog?.category || "Hand Tools") as any,
+          is_custom: false,
+          is_favorite: false,
+          last_tape_verified_month: null,
+          created_at: new Date().toISOString(),
+        } as EmployeeToolboxItem;
+      })
+      .filter((t) => {
+        const matchesCat = categoryFilter === "ALL" || t.category === categoryFilter;
+        const matchesSearch = !catalogSearch || t.tool_name.toLowerCase().includes(catalogSearch.toLowerCase());
+        return matchesCat && matchesSearch;
+      });
+  }, [selectedTools, toolbox, categoryFilter, catalogSearch, userId]);
+
   const filteredMyToolbox = useMemo(() => {
     return toolbox.filter((t) => {
       const matchesCat = categoryFilter === "ALL" || t.category === categoryFilter;
@@ -115,7 +141,8 @@ export default function DailyToolCheckModule({
       return;
     }
     const favNames = favoriteTools.map((t) => t.tool_name);
-    setSelectedTools(favNames);
+    // Merge favorites with whatever is already selected so nothing gets overwritten
+    setSelectedTools((prev) => Array.from(new Set([...prev, ...favNames])));
     setComplianceCertified(true);
     setErrorMessage(null);
   };
@@ -124,8 +151,13 @@ export default function DailyToolCheckModule({
     setSelectedTools(toolbox.map((t) => t.tool_name));
   };
 
+  const handleClearAllSelections = () => {
+    setSelectedTools([]);
+  };
+
   const handleToggleFavorite = async (item: EmployeeToolboxItem, e: React.MouseEvent) => {
     e.stopPropagation();
+    if (item.id.startsWith("temp-")) return;
     await toggleToolFavorite(supabase, item.id, !item.is_favorite);
     await onToolboxUpdated();
   };
@@ -140,13 +172,17 @@ export default function DailyToolCheckModule({
 
   const handleAddFromCatalog = async (name: string, category: "Hand Tools" | "Power Tools" | "Rigging & Access" | "Shop Tools") => {
     await addToolToToolbox(supabase, userId, name, category, false);
+    // Immediately check this tool into today's active shift
+    setSelectedTools((prev) => (prev.includes(name) ? prev : [...prev, name]));
     await onToolboxUpdated();
   };
 
   const handleAddCustomTool = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!customToolName.trim()) return;
-    await addToolToToolbox(supabase, userId, customToolName.trim(), customCategory, true);
+    const trimmed = customToolName.trim();
+    await addToolToToolbox(supabase, userId, trimmed, customCategory, true);
+    setSelectedTools((prev) => (prev.includes(trimmed) ? prev : [...prev, trimmed]));
     setCustomToolName("");
     await onToolboxUpdated();
   };
@@ -215,7 +251,7 @@ export default function DailyToolCheckModule({
             </span>
           </div>
           <h2 className="text-base sm:text-lg font-black uppercase text-white mt-0.5">
-            Step 3 of 4 • Daily Tool Check & Toolbox Audit
+            Step 3 of 4 • Daily Tool Check &amp; Toolbox Audit
           </h2>
           <p className="text-[11px] text-slate-400 mt-0.5">
             Select tools in use for today&apos;s shift. Hand tools check for defects; powered tools require monthly tape.
@@ -280,17 +316,25 @@ export default function DailyToolCheckModule({
       {/* TAB NAVIGATION & ACTION BAR */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-[var(--color-brand-border)] pb-2.5">
         <div className="flex gap-2">
+          {/* TAB 1: ALL TOOLS CHECKED FOR TODAY */}
           <button
             type="button"
-            onClick={() => setActiveTab("FAVORITES")}
-            className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wider border-b-2 transition-all cursor-pointer ${
-              activeTab === "FAVORITES"
+            onClick={() => setActiveTab("SELECTED_TODAY")}
+            className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wider border-b-2 transition-all cursor-pointer flex items-center gap-1.5 ${
+              activeTab === "SELECTED_TODAY"
                 ? "border-[var(--color-brand-blue,#0088ff)] text-[var(--color-brand-blue,#0088ff)] font-black"
                 : "border-transparent text-slate-400 hover:text-slate-200"
             }`}
           >
-            ⭐ Daily Favorites ({favoriteTools.length})
+            <span>📋 Today&apos;s Selection</span>
+            <span className={`text-[10px] px-1.5 py-0.2 rounded-xs font-mono font-bold ${
+              selectedTools.length > 0 ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40" : "bg-slate-800 text-slate-400"
+            }`}>
+              {selectedTools.length}
+            </span>
           </button>
+
+          {/* TAB 2: FULL TOOLBOX */}
           <button
             type="button"
             onClick={() => setActiveTab("MY_TOOLBOX")}
@@ -302,6 +346,8 @@ export default function DailyToolCheckModule({
           >
             🧰 All My Tools ({toolbox.length})
           </button>
+
+          {/* TAB 3: MASTER CATALOG */}
           <button
             type="button"
             onClick={() => setActiveTab("CATALOG_ADD")}
@@ -315,17 +361,19 @@ export default function DailyToolCheckModule({
           </button>
         </div>
 
-        {/* FAST-PASS FAVORITES BUTTON */}
-        {activeTab !== "CATALOG_ADD" && (
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <button
-              type="button"
-              onClick={handleConfirmAllFavorites}
-              className="flex-1 sm:flex-initial min-h-[38px] px-4 text-xs font-black uppercase bg-amber-400 hover:bg-white text-black rounded-sm cursor-pointer shadow-md transition-all active:scale-[0.98] flex items-center justify-center gap-1.5"
-            >
-              <span>⭐</span>
-              <span>Confirm All Favorites</span>
-            </button>
+        {/* FAST-PASS ACTIONS */}
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <button
+            type="button"
+            onClick={handleConfirmAllFavorites}
+            className="flex-1 sm:flex-initial min-h-[38px] px-3.5 text-xs font-black uppercase bg-amber-400 hover:bg-white text-black rounded-sm cursor-pointer shadow-md transition-all active:scale-[0.98] flex items-center justify-center gap-1.5"
+            title="Adds all your starred tools to today's active shift"
+          >
+            <span>⭐</span>
+            <span>Confirm All Favorites ({favoriteTools.length})</span>
+          </button>
+
+          {activeTab === "MY_TOOLBOX" && (
             <button
               type="button"
               onClick={handleSelectAllInToolbox}
@@ -333,8 +381,19 @@ export default function DailyToolCheckModule({
             >
               Select All
             </button>
-          </div>
-        )}
+          )}
+
+          {selectedTools.length > 0 && (
+            <button
+              type="button"
+              onClick={handleClearAllSelections}
+              className="px-2.5 min-h-[38px] text-[11px] font-bold uppercase border border-red-500/30 hover:border-red-400 text-red-400 rounded-sm cursor-pointer"
+              title="Uncheck all tools"
+            >
+              Clear
+            </button>
+          )}
+        </div>
       </div>
 
       {/* FILTER SEARCH & CATEGORY BAR */}
@@ -365,43 +424,32 @@ export default function DailyToolCheckModule({
         </div>
       </div>
 
-      {/* TAB 1: FAVORITES VIEW */}
-      {activeTab === "FAVORITES" && (
+      {/* TAB 1: TODAY'S ACTIVE SELECTION (EVERY TOOL CHECKED FOR TODAY) */}
+      {activeTab === "SELECTED_TODAY" && (
         <div className="space-y-3">
-          {favoriteTools.length === 0 ? (
+          {selectedTools.length === 0 ? (
             <div className="p-8 border border-dashed border-[var(--color-brand-border)] rounded-sm text-center space-y-2">
               <p className="text-xs font-bold uppercase text-slate-400">
-                [ No Daily Favorites Starred Yet ]
+                [ No Tools Checked For Today&apos;s Shift ]
               </p>
-              <p className="text-[11px] text-slate-500 font-sans max-w-sm mx-auto">
-                Go to the &quot;All My Tools&quot; tab and click the star (★) on your everyday tools to build your one-click daily carry kit.
+              <p className="text-[11px] text-slate-500 font-sans max-w-md mx-auto">
+                Click <strong className="text-amber-300 uppercase">Confirm All Favorites</strong> above to load your daily kit, or browse <strong className="text-white uppercase">&quot;All My Tools&quot;</strong> to check individual tools.
               </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
-              {favoriteTools.map((t) => {
-                const isSelected = selectedTools.includes(t.tool_name);
+              {shiftSelectedItems.map((t) => {
                 const requiresTape = isToolPowered(t.tool_name, t.category);
 
                 return (
                   <div
                     key={t.id}
                     onClick={() => toggleSelectTool(t.tool_name)}
-                    className={`p-3 border rounded-sm cursor-pointer transition-all flex items-center justify-between gap-2 ${
-                      isSelected
-                        ? "bg-[var(--color-brand-blue,#0088ff)]/15 border-[var(--color-brand-blue,#0088ff)]"
-                        : "bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] hover:border-slate-500"
-                    }`}
+                    className="p-3 border rounded-sm cursor-pointer transition-all flex items-center justify-between gap-2 bg-[var(--color-brand-blue,#0088ff)]/15 border-[var(--color-brand-blue,#0088ff)]"
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <div
-                        className={`w-4 h-4 rounded-xs border flex items-center justify-center flex-shrink-0 ${
-                          isSelected
-                            ? "bg-[var(--color-brand-blue,#0088ff)] border-[var(--color-brand-blue,#0088ff)] text-white"
-                            : "border-slate-500 bg-transparent"
-                        }`}
-                      >
-                        {isSelected && <span className="text-[10px] font-black">✓</span>}
+                      <div className="w-4 h-4 rounded-xs border flex items-center justify-center flex-shrink-0 bg-[var(--color-brand-blue,#0088ff)] border-[var(--color-brand-blue,#0088ff)] text-white">
+                        <span className="text-[10px] font-black">✓</span>
                       </div>
                       <div className="min-w-0">
                         <span className="text-xs font-bold uppercase text-white truncate block">
@@ -420,14 +468,21 @@ export default function DailyToolCheckModule({
                       </div>
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={(e) => handleToggleFavorite(t, e)}
-                      className="text-amber-400 hover:text-white text-base px-1"
-                      title="Favorite Star Toggle"
-                    >
-                      ★
-                    </button>
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      {/* Star reflects if it is saved in permanent favorites; unstarred if one-off */}
+                      <button
+                        type="button"
+                        onClick={(e) => handleToggleFavorite(t, e)}
+                        className={`text-base px-1 min-h-[32px] min-w-[32px] flex items-center justify-center ${
+                          t.is_favorite 
+                            ? "text-amber-400 drop-shadow-[0_0_6px_rgba(251,191,36,0.5)]" 
+                            : "text-slate-600 hover:text-amber-300"
+                        }`}
+                        title={t.is_favorite ? "Starred Daily Favorite" : "One-off tool (click to star as permanent favorite)"}
+                      >
+                        {t.is_favorite ? "★" : "☆"}
+                      </button>
+                    </div>
                   </div>
                 );
               })}
@@ -495,7 +550,9 @@ export default function DailyToolCheckModule({
                       <button
                         type="button"
                         onClick={(e) => handleToggleFavorite(t, e)}
-                        className={`text-sm px-1 ${t.is_favorite ? "text-amber-400" : "text-slate-600 hover:text-amber-400"}`}
+                        className={`text-base px-1 min-h-[32px] min-w-[32px] flex items-center justify-center ${
+                          t.is_favorite ? "text-amber-400" : "text-slate-600 hover:text-amber-400"
+                        }`}
                         title="Star / Unstar Favorite"
                       >
                         {t.is_favorite ? "★" : "☆"}
@@ -503,7 +560,7 @@ export default function DailyToolCheckModule({
                       <button
                         type="button"
                         onClick={(e) => handleRemoveTool(t.id, t.tool_name, e)}
-                        className="text-slate-600 hover:text-red-400 text-xs px-1"
+                        className="text-slate-600 hover:text-red-400 text-xs px-1 min-h-[32px] min-w-[28px] flex items-center justify-center"
                         title="Remove from toolbox"
                       >
                         ✕
@@ -545,7 +602,7 @@ export default function DailyToolCheckModule({
               type="submit"
               className="px-4 py-2 bg-[var(--color-brand-blue,#0088ff)] text-white hover:bg-white hover:text-black font-black uppercase text-xs rounded-sm cursor-pointer whitespace-nowrap"
             >
-              + Add Custom
+              + Add &amp; Select
             </button>
           </form>
 
@@ -593,7 +650,7 @@ export default function DailyToolCheckModule({
             Bearing {currentMonthInfo.color} tape; cord/airline undamaged; double insulated/ground prong intact; shields/guards in place.
           </div>
           <div className="p-2 rounded-sm bg-[var(--color-brand-card)] border border-[var(--color-brand-border)]">
-            <strong className="text-slate-300 font-mono uppercase block mb-0.5">Non-Powered Tools & Rigging (No Tape Required):</strong>
+            <strong className="text-slate-300 font-mono uppercase block mb-0.5">Non-Powered Tools &amp; Rigging (No Tape Required):</strong>
             No cracks in jaws/handles; handles tight/secure; striking tools have no mushroomed heads; blades sharp.
           </div>
         </div>

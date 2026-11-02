@@ -1,3 +1,4 @@
+// app/(dashboard)/profile/_components/ProfileToolboxManager.tsx
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
@@ -132,7 +133,7 @@ export default function ProfileToolboxManager({
             </span>
           </div>
           <h2 className="text-base sm:text-lg font-black uppercase text-white mt-0.5">
-            Personal Digital Toolbox & Favorites
+            Personal Digital Toolbox &amp; Favorites
           </h2>
           <p className="text-xs text-slate-400 mt-0.5">
             Configure your gear inventory once. Star your daily favorites (★) for fast 1-click morning check-ins.
@@ -272,12 +273,15 @@ export default function ProfileToolboxManager({
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      {/* Enriched & Larger Favorite Star Button */}
                       <button
                         type="button"
                         onClick={() => handleToggleFavorite(tool)}
-                        className={`text-base px-1 cursor-pointer transition-transform active:scale-125 ${
-                          tool.is_favorite ? "text-amber-400" : "text-slate-600 hover:text-amber-400"
+                        className={`min-h-[36px] min-w-[36px] flex items-center justify-center text-xl sm:text-2xl cursor-pointer transition-transform active:scale-125 select-none ${
+                          tool.is_favorite 
+                            ? "text-amber-400 drop-shadow-[0_0_6px_rgba(251,191,36,0.5)]" 
+                            : "text-slate-600 hover:text-amber-300"
                         }`}
                         title={tool.is_favorite ? "Unstar Favorite" : "Star as Daily Favorite"}
                       >
@@ -286,7 +290,7 @@ export default function ProfileToolboxManager({
                       <button
                         type="button"
                         onClick={() => handleRemove(tool)}
-                        className="text-slate-600 hover:text-red-400 text-xs px-1 cursor-pointer"
+                        className="min-h-[36px] min-w-[32px] flex items-center justify-center text-slate-600 hover:text-red-400 text-sm cursor-pointer transition-colors"
                         title="Remove tool"
                       >
                         ✕
@@ -338,10 +342,11 @@ export default function ProfileToolboxManager({
                       </div>
                     </div>
 
+                    {/* Enriched & Larger Favorite Star in Favorites Tab */}
                     <button
                       type="button"
                       onClick={() => handleToggleFavorite(tool)}
-                      className="text-amber-400 text-base px-1 cursor-pointer hover:text-white"
+                      className="min-h-[36px] min-w-[36px] flex items-center justify-center text-amber-400 drop-shadow-[0_0_6px_rgba(251,191,36,0.5)] text-xl sm:text-2xl cursor-pointer hover:text-white transition-all active:scale-125 select-none"
                       title="Remove from favorites"
                     >
                       ★
