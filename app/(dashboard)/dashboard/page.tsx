@@ -24,6 +24,7 @@ import {
 
 import FirstLoginPasswordModal from "./_components/FirstLoginPasswordModal";
 import TermsAcceptanceModal from "./_components/TermsAcceptanceModal";
+import ActiveShiftPaperworkCard from "./_components/ActiveShiftPaperworkCard";
 
 // --- NEON PARTICLE CLOUD (PERFORMANCE-OPTIMIZED WITH VISIBILITY PAUSE) ---
 const ParticleCloud = ({ r, g, b }: { r: number, g: number, b: number }) => {
@@ -211,7 +212,6 @@ const itemVariants: Variants = {
   show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 140, damping: 18 } }
 };
 
-const DEFAULT_NEXT_GOAL = 250;
 const DEFAULT_LOCATION = "Springville Shop";
 const DEFAULT_INCIDENT_DATE = "2025-11-27T00:00:00";
 
@@ -551,6 +551,18 @@ export default function DashboardPage() {
           </div>
         </Link>
       </motion.div>
+
+      {/* ACTIVE SHIFT PAPERWORK & TOOL STATUS CARD */}
+      {profile && (
+        <motion.div variants={itemVariants}>
+          <ActiveShiftPaperworkCard
+            supabase={supabase}
+            userId={profile.id}
+            isSafetyComplete={isSafetyComplete}
+            assignedLocation={assignedLocationDisplay}
+          />
+        </motion.div>
+      )}
 
       {/* OPERATIONAL CONSOLE FEED */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

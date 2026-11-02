@@ -1,3 +1,4 @@
+// app/(dashboard)/manager/_components/DailyJhaManager.tsx
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -14,6 +15,10 @@ import {
   JhaStepTemplate,
   JhaAcknowledgmentRecord,
 } from "@/lib/db/operations";
+import {
+  printSingleJhaReport,
+  printBatchJhaReport,
+} from "@/lib/reports/dailyJhaPrint";
 
 interface DailyJhaManagerProps {
   supabase: any;
@@ -115,7 +120,7 @@ const COMMON_PERMITS = [
   "Fall Protection & Harness Inspection",
 ];
 
-// 4. Updated training requirements without silica or OSHA 10/30
+// 4. Updated training requirements
 const COMMON_TRAINING = [
   "LOTO Authorized Training",
   "Fall Protection Competent Person",
@@ -131,183 +136,183 @@ const MASTER_JHA_TEMPLATES: JhaStepTemplate[] = [
     category: "Mobilization & Staging",
     step_description: "Tool and gang box transport, unloading, and site staging",
     potential_hazards: "Pedestrian line traffic, slips, trips, forklift cross-traffic, pinch points",
-    control_measures: "Spotter during roll-in; verify clear floor path; park carts in designated staging lanes outside fork aisles; wear composite/steel toe boots"
+    control_measures: "Spotter during roll-in; verify clear floor path; park carts in designated staging lanes outside fork aisles; wear composite/steel toe boots",
   },
   {
     id: "tpl-2",
     category: "Mobilization & Staging",
     step_description: "Erecting physical barricades and establishing drop / spark zones",
     potential_hazards: "Unauthorized personnel entering line break / hot work perimeter",
-    control_measures: "Erect yellow caution or red danger barricade tape 35 ft around perimeter; post warning signage; verify eyewash station access"
+    control_measures: "Erect yellow caution or red danger barricade tape 35 ft around perimeter; post warning signage; verify eyewash station access",
   },
   {
     id: "tpl-3",
     category: "Lockout / Tagout (LOTO)",
     step_description: "Verification of mechanical line isolation (Steam, Water, Ammonia, Air)",
     potential_hazards: "Residual stored pressure, scalding water, hazardous chemicals, thermal burns",
-    control_measures: "Follow facility energy control procedure; verify double-block-and-bleed; install red safety padlocks and lockout tags; crack bleeder slowly to test zero energy"
+    control_measures: "Follow facility energy control procedure; verify double-block-and-bleed; install red safety padlocks and lockout tags; crack bleeder slowly to test zero energy",
   },
   {
     id: "tpl-4",
     category: "Lockout / Tagout (LOTO)",
     step_description: "Electrical zero-energy isolation on pumps, drives, and motors",
     potential_hazards: "Arc flash, electrocution, accidental equipment restart",
-    control_measures: "Qualified technician zero-voltage test at motor peckerhead with calibrated meter; lockout local disconnect handle with personal padlock"
+    control_measures: "Qualified technician zero-voltage test at motor peckerhead with calibrated meter; lockout local disconnect handle with personal padlock",
   },
   {
     id: "tpl-5",
     category: "Lockout / Tagout (LOTO)",
     step_description: "Pneumatic and hydraulic supply line dump and lock",
     potential_hazards: "Sudden cylinder actuation, trapped hydraulic fluid injection",
-    control_measures: "Bleed air regulators to 0 PSI; lock dump valve in exhaust position; block mechanical linkages against gravity fall"
+    control_measures: "Bleed air regulators to 0 PSI; lock dump valve in exhaust position; block mechanical linkages against gravity fall",
   },
   {
     id: "tpl-6",
     category: "Demolition & Line Breaking",
     step_description: "First break on process pipe flanges and bolt loosening",
     potential_hazards: "Residual chemical wash, pressurized spray, gasket blowout, pinched fingers",
-    control_measures: "Wear full face shield over safety glasses, chemical apron, and nitrile over leather; loosen flange bolts furthest away first to create hinged drainage shield"
+    control_measures: "Wear full face shield over safety glasses, chemical apron, and nitrile over leather; loosen flange bolts furthest away first to create hinged drainage shield",
   },
   {
     id: "tpl-7",
     category: "Demolition & Line Breaking",
     step_description: "Cutting out redundant pipe spools and hangers using band saw or sawzall",
     potential_hazards: "Sparks, blade binding/kickback, sharp metal burrs, pipe spring/deflection",
-    control_measures: "Support both sides of cut with jack stands or chain fall; inspect band saw blade tension; de-burr pipe ends immediately; wear cut-level A4+ gloves"
+    control_measures: "Support both sides of cut with jack stands or chain fall; inspect band saw blade tension; de-burr pipe ends immediately; wear cut-level A4+ gloves",
   },
   {
     id: "tpl-8",
     category: "Demolition & Line Breaking",
     step_description: "Torch demolition or plasma cutting of structural pipe supports",
     potential_hazards: "Fire, molten slag drop, torch flashback, fume inhalation",
-    control_measures: "Hot work permit signed; 35-ft spark blanket sweep; 10# ABC extinguisher within arm reach; pre-inspect flashback arrestors; 30-min continuous fire watch"
+    control_measures: "Hot work permit signed; 35-ft spark blanket sweep; 10# ABC extinguisher within arm reach; pre-inspect flashback arrestors; 30-min continuous fire watch",
   },
   {
     id: "tpl-9",
     category: "Demolition & Line Breaking",
     step_description: "Cold cutting large-diameter pipe with clamshell / pipe cutter",
     potential_hazards: "Pinch points, rotating cutter gears, heavy tool dropped from height",
-    control_measures: "Secure tool tether; keep hands clear of rotating ring gear; verify pipe is chocked and stable"
+    control_measures: "Secure tool tether; keep hands clear of rotating ring gear; verify pipe is chocked and stable",
   },
   {
     id: "tpl-10",
     category: "Rigging & Hoisting",
     step_description: "Rigging and flying pipe spools, valves, and headers with chain fall or crane",
     potential_hazards: "Falling suspended load, sling failure, swing radius pinch points",
-    control_measures: "Inspect synthetic web/round slings and shackles before lift; check rated capacity chart; attach tag lines to both ends; strict zero-personnel under load policy"
+    control_measures: "Inspect synthetic web/round slings and shackles before lift; check rated capacity chart; attach tag lines to both ends; strict zero-personnel under load policy",
   },
   {
     id: "tpl-11",
     category: "Rigging & Hoisting",
     step_description: "Rigging with manual lever hoist (come-along) for horizontal alignment",
     potential_hazards: "Hook deflection, mechanical ratchet slip, sudden recoil under tension",
-    control_measures: "Never tip-load hook; verify safety latch closure; inspect chain links for elongation or twist; do not use cheater bars on ratchet handles"
+    control_measures: "Never tip-load hook; verify safety latch closure; inspect chain links for elongation or twist; do not use cheater bars on ratchet handles",
   },
   {
     id: "tpl-12",
     category: "Rigging & Hoisting",
     step_description: "Beam clamp installation and trolley rigging on overhead steel",
     potential_hazards: "Clamp slippage, overhead structural overload, dropped hardware",
-    control_measures: "Verify beam clamp size matches flange width; tighten set screw to specified torque; attach secondary safety cable to building structural steel"
+    control_measures: "Verify beam clamp size matches flange width; tighten set screw to specified torque; attach secondary safety cable to building structural steel",
   },
   {
     id: "tpl-13",
     category: "Working at Heights",
     step_description: "Operating scissor lift for overhead pipe rack fit-up",
     potential_hazards: "Crush against overhead steel, lift tip-over, tools falling into processing lines",
-    control_measures: "Pre-use lift inspection; 100% harness & lanyard tie-off to lift anchor point; tool lanyards attached; barricade lower drop zone with red danger tape"
+    control_measures: "Pre-use lift inspection; 100% harness & lanyard tie-off to lift anchor point; tool lanyards attached; barricade lower drop zone with red danger tape",
   },
   {
     id: "tpl-14",
     category: "Working at Heights",
     step_description: "Operating articulating boom lift to access exterior utility bridges",
     potential_hazards: "Boom bounce, basket pinch points, ground slope tip hazard",
-    control_measures: "Full body harness with 6-ft shock-absorbing lanyard; verify ground stability and outrigger deployment; observe 10-ft clearance from electrical lines"
+    control_measures: "Full body harness with 6-ft shock-absorbing lanyard; verify ground stability and outrigger deployment; observe 10-ft clearance from electrical lines",
   },
   {
     id: "tpl-15",
     category: "Working at Heights",
     step_description: "Working from 8ft-12ft fiberglass stepladders",
     potential_hazards: "Ladder slip, overreaching, foot slipping on rungs",
-    control_measures: "Maintain 3-point contact; do not stand on top two rungs; fully lock spreader bars; assign ground spotter when working over 8 feet"
+    control_measures: "Maintain 3-point contact; do not stand on top two rungs; fully lock spreader bars; assign ground spotter when working over 8 feet",
   },
   {
     id: "tpl-16",
     category: "Pipefitting & Alignment",
     step_description: "Beveling and facing pipe joints using angle grinders",
     potential_hazards: "Flying abrasive particles, wheel explosion, kickback, high noise",
-    control_measures: "Verify grinding disc RPM exceeds tool rating; wheel guard installed and positioned; face shield over safety glasses; leather welding jacket"
+    control_measures: "Verify grinding disc RPM exceeds tool rating; wheel guard installed and positioned; face shield over safety glasses; leather welding jacket",
   },
   {
     id: "tpl-17",
     category: "Pipefitting & Alignment",
     step_description: "Aligning pipe flanges and fittings using pipe clamps, pins, and wedges",
     potential_hazards: "Heavy pinch points, hammer flying fragments, strain injury",
-    control_measures: "Use flange alignment pins; never place fingers inside bolt holes; use brass or dead-blow hammers to prevent spark and shrapnel"
+    control_measures: "Use flange alignment pins; never place fingers inside bolt holes; use brass or dead-blow hammers to prevent spark and shrapnel",
   },
   {
     id: "tpl-18",
     category: "Pipefitting & Alignment",
     step_description: "Drilling structural base plates with magnetic drill press (mag drill)",
     potential_hazards: "Rotating cutter snag, drill motor falling if power is lost, metal chips",
-    control_measures: "Attach safety lanyard to mag drill body; verify clean magnetic contact on steel; clear swarf with brush, never bare hands; unplug during cutter changes"
+    control_measures: "Attach safety lanyard to mag drill body; verify clean magnetic contact on steel; clear swarf with brush, never bare hands; unplug during cutter changes",
   },
   {
     id: "tpl-19",
     category: "Pipefitting & Alignment",
     step_description: "Threading carbon/galvanized pipe using power pipe threader",
     potential_hazards: "Rotating die entanglement, hot cutting oil splash, sharp spiral shavings",
-    control_measures: "Keep foot on emergency foot pedal; no loose clothing, jewelry, or frayed gloves near rotating spindle; catch cutting oil in chip tray"
+    control_measures: "Keep foot on emergency foot pedal; no loose clothing, jewelry, or frayed gloves near rotating spindle; catch cutting oil in chip tray",
   },
   {
     id: "tpl-20",
     category: "Welding Operations",
     step_description: "GTAW (TIG) welding on stainless sanitary / utility piping",
     potential_hazards: "Arc eye flash, ergonomic strain, argon purge asphyxiation in enclosed spaces",
-    control_measures: "Welding helmet shade 10-12; notify nearby workers; ensure room air circulation during continuous argon purge; wear fire-resistant goat skin gloves"
+    control_measures: "Welding helmet shade 10-12; notify nearby workers; ensure room air circulation during continuous argon purge; wear fire-resistant goat skin gloves",
   },
   {
     id: "tpl-21",
     category: "Welding Operations",
     step_description: "SMAW (Stick) / GMAW (MIG) welding on heavy carbon structural and pipe",
     potential_hazards: "Hot slag spatter, electric shock in damp areas, fire hazards, toxic fumes",
-    control_measures: "Inspect stinger lead insulation; dry welding gloves; use portable fume extractor; position spark containment curtains around joint"
+    control_measures: "Inspect stinger lead insulation; dry welding gloves; use portable fume extractor; position spark containment curtains around joint",
   },
   {
     id: "tpl-22",
     category: "Welding Operations",
     step_description: "Back-purging piping with argon or nitrogen gas",
     potential_hazards: "Asphyxiation from displacement of breathable oxygen in high-point traps",
-    control_measures: "Vent purge gas outdoors or into well-ventilated areas; verify purge bungs are seated; do not stick head into pipe opening"
+    control_measures: "Vent purge gas outdoors or into well-ventilated areas; verify purge bungs are seated; do not stick head into pipe opening",
   },
   {
     id: "tpl-23",
     category: "Pressure Testing",
     step_description: "Hydrostatic pressure testing of completed piping systems",
     potential_hazards: "Catastrophic rupture, high-pressure liquid jet, gasket blowout",
-    control_measures: "Barricade test boundary with warning tape; install certified relief valve set to 110% of test pressure; bleed all air before pressurizing; inspect from safe distance"
+    control_measures: "Barricade test boundary with warning tape; install certified relief valve set to 110% of test pressure; bleed all air before pressurizing; inspect from safe distance",
   },
   {
     id: "tpl-24",
     category: "Pressure Testing",
     step_description: "Pneumatic leak check with soapy water solution",
     potential_hazards: "Compressed gas explosion risk, flying gauge fragments",
-    control_measures: "Never exceed 15 PSI for initial pneumatic soap test; test slowly in small increments; wear full eye and face protection"
+    control_measures: "Never exceed 15 PSI for initial pneumatic soap test; test slowly in small increments; wear full eye and face protection",
   },
   {
     id: "tpl-25",
     category: "Housekeeping & Closeout",
     step_description: "Slag chipping, wire wheeling, and weld pickle/passivation cleanup",
     potential_hazards: "Eye injury, chemical acid burns, respiratory irritation",
-    control_measures: "Full face shield; chemical acid gloves (nitrile/butyl) for pickling paste; neutralize wash water; dispose in compliant waste drum"
+    control_measures: "Full face shield; chemical acid gloves (nitrile/butyl) for pickling paste; neutralize wash water; dispose in compliant waste drum",
   },
   {
     id: "tpl-26",
     category: "Housekeeping & Closeout",
     step_description: "End-of-shift cleanup, lead coiling, and lock removal",
     potential_hazards: "Trips, slips, premature line re-energization",
-    control_measures: "Coil and store all welding leads and extension cords; sweep metal shavings; remove technician personal LOTO padlocks only after verifying all crew is accounted for"
-  }
+    control_measures: "Coil and store all welding leads and extension cords; sweep metal shavings; remove technician personal LOTO padlocks only after verifying all crew is accounted for",
+  },
 ];
 
 export default function DailyJhaManager({
@@ -317,20 +322,20 @@ export default function DailyJhaManager({
   locations,
 }: DailyJhaManagerProps) {
   const [mounted, setMounted] = useState(false);
-  
+
   // Job Stores
   const [allOpenRecords, setAllOpenRecords] = useState<DailyJhaRecord[]>([]);
   const [archivedJhas, setArchivedJhas] = useState<DailyJhaRecord[]>([]);
   const [templates, setTemplates] = useState<JhaStepTemplate[]>(MASTER_JHA_TEMPLATES);
   const [isBuilderOpen, setIsBuilderOpen] = useState(false);
   const [isCatalogPickerOpen, setIsCatalogPickerOpen] = useState(false);
-  
+
   // Review & Edit States
   const [selectedJhaForReview, setSelectedJhaForReview] = useState<DailyJhaRecord | null>(null);
   const [activeAcks, setActiveAcks] = useState<JhaAcknowledgmentRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Form State (Used for both Create and Edit)
+  // Form State
   const [editingJhaId, setEditingJhaId] = useState<string | null>(null);
   const [title, setTitle] = useState("");
   const [jobLocation, setJobLocation] = useState(
@@ -372,7 +377,6 @@ export default function DailyJhaManager({
     setMounted(true);
   }, []);
 
-  // Background scroll lock when modals are active
   useEffect(() => {
     if (isBuilderOpen || selectedJhaForReview || isCatalogPickerOpen || isBatchModalOpen) {
       document.body.style.overflow = "hidden";
@@ -387,7 +391,7 @@ export default function DailyJhaManager({
   const refreshJhas = async () => {
     setIsLoading(true);
     const loc = selectedLocation === "ALL" ? "Nestle Springville" : selectedLocation;
-    
+
     let openQuery = supabase
       .from("daily_jhas")
       .select("*")
@@ -428,7 +432,6 @@ export default function DailyJhaManager({
     refreshJhas();
   }, [supabase, selectedLocation]);
 
-  // Client-Side Split into 3 Operational Stages
   const { activeJhas, pausedJhas, onHoldJhas } = useMemo(() => {
     const todayStr = new Date().toISOString().split("T")[0];
     const active: DailyJhaRecord[] = [];
@@ -682,7 +685,8 @@ export default function DailyJhaManager({
     }
   };
 
-  const handleCloseOutJob = async (jhaId: string) => {
+  const handleCloseOutJob = async (jhaId: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
     if (!confirm("Are you sure you want to close out this JHA? This will archive the task.")) return;
     await handleTransitionJha(jhaId, { status: "CLOSED" });
   };
@@ -700,20 +704,20 @@ export default function DailyJhaManager({
 
   const handleReleaseHoldNow = async (jhaId: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
-    await handleTransitionJha(jhaId, { 
-      status: "ACTIVE", 
-      is_manual_activation: false, 
-      activation_date: new Date().toISOString().split("T")[0] 
+    await handleTransitionJha(jhaId, {
+      status: "ACTIVE",
+      is_manual_activation: false,
+      activation_date: new Date().toISOString().split("T")[0],
     });
   };
 
   const handleReopenArchivedJob = async (jhaId: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     if (!confirm("Reopen this past JHA back onto the active job floor?")) return;
-    await handleTransitionJha(jhaId, { 
-      status: "ACTIVE", 
-      is_manual_activation: false, 
-      activation_date: new Date().toISOString().split("T")[0] 
+    await handleTransitionJha(jhaId, {
+      status: "ACTIVE",
+      is_manual_activation: false,
+      activation_date: new Date().toISOString().split("T")[0],
     });
   };
 
@@ -744,7 +748,7 @@ export default function DailyJhaManager({
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
   }, [archivedJhas, archivedSearch]);
 
-  const formatDateTime = (dateString: string) => {
+  const formatDateTimeDisplay = (dateString: string) => {
     if (!dateString) return "--";
     const d = new Date(dateString);
     if (isNaN(d.getTime())) return "--";
@@ -758,199 +762,15 @@ export default function DailyJhaManager({
     });
   };
 
-  // --- INDIVIDUAL PRINT ENGINE ---
-  const handlePrintJha = (jha: DailyJhaRecord, acks: JhaAcknowledgmentRecord[], mode: "TODAY_ONLY" | "MASTER_HISTORY") => {
-    const todayStr = new Date().toISOString().split("T")[0];
-    
-    const rosterToPrint = mode === "TODAY_ONLY"
-      ? acks.filter((a) => {
-          const aDate = a.signed_at ? new Date(a.signed_at).toISOString().split("T")[0] : "";
-          return aDate === todayStr;
-        })
-      : acks;
-
-    const reportTitle = mode === "TODAY_ONLY"
-      ? "Daily Pre-Task Plan & Shift Attendance"
-      : "Complete Job Hazard Analysis (Master Project History)";
-
-    const printDocHTML = `
-      <!DOCTYPE html>
-      <html lang="en">
-      <head>
-        <meta charset="utf-8">
-        <title>IMC JHA - ${jha.title}</title>
-        <style>
-          @page { size: letter portrait; margin: 0.5in; }
-          * { box-sizing: border-box; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-          body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; color: #111827; background: #fff; margin: 0; padding: 0; font-size: 8.5pt; line-height: 1.35; }
-          .header-table { width: 100%; border-bottom: 2.5px solid #0f172a; padding-bottom: 10px; margin-bottom: 12px; }
-          .logo { height: 36px; width: auto; }
-          .company-title { font-size: 14pt; font-weight: 900; text-transform: uppercase; margin: 0; color: #0f172a; }
-          .report-subtitle { font-size: 9.5pt; font-weight: 700; text-transform: uppercase; color: #334155; margin: 2px 0 0 0; }
-          .meta-box { font-family: monospace; font-size: 7.5pt; text-align: right; line-height: 1.4; }
-          .meta-grid { width: 100%; border-collapse: collapse; margin-bottom: 14px; border: 1px solid #cbd5e1; font-size: 8pt; }
-          .meta-grid td { padding: 5px 8px; border: 1px solid #cbd5e1; }
-          .meta-label { font-weight: 800; text-transform: uppercase; background-color: #f8fafc; width: 18%; color: #334155; }
-          .meta-value { font-weight: 600; width: 32%; }
-          .pill { display: inline-block; padding: 1px 6px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 2px; font-size: 7pt; font-weight: 700; margin: 1px 3px 1px 0; text-transform: uppercase; }
-          table.jha-table { width: 100%; border-collapse: collapse; border: 1px solid #cbd5e1; margin-bottom: 16px; font-size: 8pt; }
-          table.jha-table th { background-color: #0f172a; color: #fff; border: 1px solid #0f172a; padding: 6px 8px; text-align: left; font-weight: 800; text-transform: uppercase; font-size: 7.5pt; }
-          table.jha-table td { border: 1px solid #cbd5e1; padding: 6px 8px; vertical-align: top; }
-          table.jha-table tr:nth-child(even) { background-color: #fafafa; }
-          .roster-title { font-size: 8.5pt; font-weight: 900; text-transform: uppercase; margin: 16px 0 6px 0; padding-bottom: 3px; border-bottom: 1.5px solid #0f172a; display: flex; justify-content: space-between; }
-          table.roster-table { width: 100%; border-collapse: collapse; border: 1px solid #cbd5e1; font-size: 8pt; }
-          table.roster-table th { background-color: #f1f5f9; border: 1px solid #cbd5e1; padding: 5px 8px; text-align: left; font-weight: 800; text-transform: uppercase; font-size: 7.5pt; }
-          table.roster-table td { border: 1px solid #cbd5e1; padding: 4px 8px; }
-          .signoff-section { margin-top: 24px; padding-top: 12px; border-top: 1.5px solid #0f172a; page-break-inside: avoid; }
-          .attestation { font-size: 7pt; font-family: monospace; color: #475569; text-transform: uppercase; margin-bottom: 16px; line-height: 1.35; }
-          .sig-row { display: flex; justify-content: space-between; gap: 20px; }
-          .sig-col { flex: 1; }
-          .sig-line { border-bottom: 1.5px solid #0f172a; height: 26px; margin-bottom: 4px; }
-          .sig-label { font-size: 7.5pt; font-weight: 800; text-transform: uppercase; }
-        </style>
-      </head>
-      <body>
-        <table class="header-table" cellpadding="0" cellspacing="0">
-          <tr>
-            <td style="width: 140px; vertical-align: top;"><img src="/imclogo.svg" alt="IMC Logo" class="logo" /></td>
-            <td style="vertical-align: top; padding-left: 12px;">
-              <h1 class="company-title">Interwest Mechanical Contractors</h1>
-              <div class="report-subtitle">${reportTitle}</div>
-              <div style="font-size: 7.5pt; font-family: monospace; font-weight: 700; color: #475569; margin-top: 2px;">
-                OSHA 29 CFR 1926.21 & Site Environmental Health & Safety Standard
-              </div>
-            </td>
-            <td class="meta-box" style="vertical-align: top;">
-              <div><strong>AUDIT SCOPE:</strong> ${mode === "TODAY_ONLY" ? "DAILY SHIFT ONLY" : "FULL PROJECT HISTORY"}</div>
-              <div><strong>WORKSITE:</strong> ${jha.location.toUpperCase()}</div>
-              <div><strong>PROJECT STATUS:</strong> ${jha.status}</div>
-            </td>
-          </tr>
-        </table>
-
-        <table class="meta-grid">
-          <tr>
-            <td class="meta-label">Task / Job Scope:</td>
-            <td class="meta-value" style="font-weight: 800; text-transform: uppercase;">${jha.title}</td>
-            <td class="meta-label">Designated Supervisor:</td>
-            <td class="meta-value">${jha.supervisor}</td>
-          </tr>
-          <tr>
-            <td class="meta-label">Required Training:</td>
-            <td class="meta-value">${(jha.training_required || []).map((t) => `<span class="pill">${t}</span>`).join("") || "--"}</td>
-            <td class="meta-label">Permits Required:</td>
-            <td class="meta-value">${(jha.permits_required || []).map((p) => `<span class="pill">${p}</span>`).join("") || "--"}</td>
-          </tr>
-          <tr>
-            <td class="meta-label">Equipment Used:</td>
-            <td class="meta-value">${(jha.equipment_used || []).map((e) => `<span class="pill">${e}</span>`).join("") || "--"}</td>
-            <td class="meta-label">Certifications Tracked:</td>
-            <td class="meta-value">${(jha.certifications_required || []).map((c) => `<span class="pill">${c}</span>`).join("") || "--"}</td>
-          </tr>
-        </table>
-
-        <table class="jha-table">
-          <thead>
-            <tr>
-              <th style="width: 6%; text-align: center;">Seq</th>
-              <th style="width: 32%;">Work Step Sequence</th>
-              <th style="width: 31%;">Potential Hazards</th>
-              <th style="width: 31%;">Hazard Control Measures</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${(jha.steps || [])
-              .map(
-                (s, idx) => `
-              <tr>
-                <td style="text-align: center; font-weight: 800; font-family: monospace;">${idx + 1}</td>
-                <td style="font-weight: 700;">${s.step}</td>
-                <td style="color: #991b1b;">${s.hazards}</td>
-                <td style="color: #065f46; font-weight: 600;">${s.controls}</td>
-              </tr>
-            `
-              )
-              .join("")}
-          </tbody>
-        </table>
-
-        <div class="roster-title">
-          <span>${mode === "TODAY_ONLY" ? "Today's Verified Crew Attendance Roster" : "Master Project Signature & Shift History"} (${rosterToPrint.length} Sign-Offs Logged)</span>
-          <span>${mode === "TODAY_ONLY" ? `Shift Date: ${todayStr}` : `Initiated: ${jha.date}`}</span>
-        </div>
-        <table class="roster-table">
-          <thead>
-            <tr>
-              <th style="width: 6%; text-align: center;">#</th>
-              <th style="width: 36%;">Employee Legal Name</th>
-              <th style="width: 24%;">Assigned Worksite</th>
-              <th style="width: 34%; text-align: right;">Verified Date & Time Stamp</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${
-              rosterToPrint.length > 0
-                ? rosterToPrint
-                    .map(
-                      (a, idx) => `
-              <tr>
-                <td style="text-align: center; font-family: monospace;">${idx + 1}</td>
-                <td style="font-weight: 700; text-transform: uppercase;">${a.employee_name}</td>
-                <td style="font-family: monospace; font-size: 7.5pt; text-transform: uppercase;">${a.location}</td>
-                <td style="text-align: right; font-family: monospace; font-size: 8pt; font-weight: 700; color: #0f172a;">
-                  ${formatDateTime(a.signed_at)}
-                </td>
-              </tr>
-            `
-                    )
-                    .join("")
-                : `<tr><td colspan="4" style="text-align: center; font-family: monospace; padding: 10px;">[ NO CREW SIGN-OFFS RECORDED FOR THIS SCOPE ]</td></tr>`
-            }
-          </tbody>
-        </table>
-
-        <div class="signoff-section">
-          <div class="attestation">
-            Attestation Statement: All personnel listed above have reviewed and acknowledged the specific hazards, controls, and scope of work identified in this Job Hazard Analysis prior to starting work.
-          </div>
-          <div class="sig-row">
-            <div class="sig-col" style="flex: 2;">
-              <div class="sig-line"></div>
-              <div class="sig-label">Supervisor / Lead Signature: ${jha.supervisor}</div>
-            </div>
-            <div class="sig-col">
-              <div class="sig-line"></div>
-              <div class="sig-label">Execution Date</div>
-            </div>
-          </div>
-        </div>
-      </body>
-      </html>
-    `;
-
-    const iframe = document.createElement("iframe");
-    iframe.style.position = "fixed";
-    iframe.style.right = "0";
-    iframe.style.bottom = "0";
-    iframe.style.width = "0";
-    iframe.style.height = "0";
-    iframe.style.border = "0";
-    document.body.appendChild(iframe);
-
-    const doc = iframe.contentWindow?.document;
-    if (!doc) return;
-    doc.open();
-    doc.write(printDocHTML);
-    doc.close();
-
-    iframe.contentWindow?.focus();
-    setTimeout(() => {
-      iframe.contentWindow?.print();
-      setTimeout(() => document.body.removeChild(iframe), 1000);
-    }, 400);
+  // --- REPORT EXPORTERS DELEGATED TO HELPER ---
+  const handlePrintJha = (
+    jha: DailyJhaRecord,
+    acks: JhaAcknowledgmentRecord[],
+    mode: "TODAY_ONLY" | "MASTER_HISTORY"
+  ) => {
+    printSingleJhaReport({ jha, acks, mode });
   };
 
-  // --- BULK PRINT ENGINE (ALL OPEN/ACTIVE JHAs FOR TODAY) ---
   const handlePrintAllActiveJhas = async () => {
     if (activeJhas.length === 0) {
       alert("No active JHAs available to print.");
@@ -970,10 +790,12 @@ export default function DailyJhaManager({
       })
     );
 
-    executeBatchPrint(jhaReportsData, `Bulk Daily Shift Report (${todayStr})`);
+    printBatchJhaReport({
+      reports: jhaReportsData,
+      reportTitle: `Bulk Daily Shift Report (${todayStr})`,
+    });
   };
 
-  // --- BATCH TIMEFRAME PRINT ENGINE (WINDOWED SIGNATURE FILTER) ---
   const handleExecuteBatchReport = async () => {
     setIsGeneratingBatch(true);
 
@@ -988,11 +810,16 @@ export default function DailyJhaManager({
         cutoff.setDate(now.getDate() - 365);
       }
 
-      const timeframeLabel = batchTimeframe === "WEEK" ? "Past 7 Days" : batchTimeframe === "MONTH" ? "Past 30 Days" : "Past 365 Days";
+      const timeframeLabel =
+        batchTimeframe === "WEEK"
+          ? "Past 7 Days"
+          : batchTimeframe === "MONTH"
+          ? "Past 30 Days"
+          : "Past 365 Days";
+
       let reportsToPrint: { jha: DailyJhaRecord; acks: JhaAcknowledgmentRecord[] }[] = [];
 
       if (batchReportScope === "CLOSED_ONLY") {
-        // Filter closed JHAs within cutoff
         const eligibleClosed = archivedJhas.filter((jha) => {
           const targetDate = jha.closed_at ? new Date(jha.closed_at) : new Date(jha.created_at);
           return !isNaN(targetDate.getTime()) && targetDate >= cutoff;
@@ -1001,7 +828,6 @@ export default function DailyJhaManager({
         reportsToPrint = await Promise.all(
           eligibleClosed.map(async (jha) => {
             const acks = await getJhaAcknowledgments(supabase, jha.id);
-            // Windowed signatures only
             const windowedAcks = acks.filter((a) => {
               if (!a.signed_at) return false;
               const sDate = new Date(a.signed_at);
@@ -1011,13 +837,11 @@ export default function DailyJhaManager({
           })
         );
       } else {
-        // ALL categories combined - ONLY include if signed in the timeframe window
         const pool = [...allOpenRecords, ...archivedJhas];
 
         const evaluated = await Promise.all(
           pool.map(async (jha) => {
             const acks = await getJhaAcknowledgments(supabase, jha.id);
-            // Filter strictly inside the timeframe window
             const windowedAcks = acks.filter((a) => {
               if (!a.signed_at) return false;
               const sDate = new Date(a.signed_at);
@@ -1027,7 +851,6 @@ export default function DailyJhaManager({
           })
         );
 
-        // Discard any JHA with 0 signers in this window
         reportsToPrint = evaluated.filter((item) => item.acks.length > 0);
       }
 
@@ -1037,209 +860,16 @@ export default function DailyJhaManager({
         return;
       }
 
-      executeBatchPrint(
-        reportsToPrint, 
-        `${batchReportScope === "CLOSED_ONLY" ? "Closed Archives" : "Activity Audit"} (${timeframeLabel})`
-      );
+      printBatchJhaReport({
+        reports: reportsToPrint,
+        reportTitle: `${batchReportScope === "CLOSED_ONLY" ? "Closed Archives" : "Activity Audit"} (${timeframeLabel})`,
+      });
       setIsBatchModalOpen(false);
     } catch (err: any) {
       alert(`Failed to generate batch report: ${err?.message || err}`);
     } finally {
       setIsGeneratingBatch(false);
     }
-  };
-
-  const executeBatchPrint = (
-    reports: { jha: DailyJhaRecord; acks: JhaAcknowledgmentRecord[] }[],
-    reportTitle: string
-  ) => {
-    const todayStr = new Date().toISOString().split("T")[0];
-
-    const printDocHTML = `
-      <!DOCTYPE html>
-      <html lang="en">
-      <head>
-        <meta charset="utf-8">
-        <title>IMC - ${reportTitle}</title>
-        <style>
-          @page { size: letter portrait; margin: 0.5in; }
-          * { box-sizing: border-box; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-          body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; color: #111827; background: #fff; margin: 0; padding: 0; font-size: 8.5pt; line-height: 1.35; }
-          .page-container { page-break-after: always; padding-bottom: 20px; }
-          .page-container:last-child { page-break-after: avoid; }
-          .header-table { width: 100%; border-bottom: 2.5px solid #0f172a; padding-bottom: 10px; margin-bottom: 12px; }
-          .logo { height: 36px; width: auto; }
-          .company-title { font-size: 14pt; font-weight: 900; text-transform: uppercase; margin: 0; color: #0f172a; }
-          .report-subtitle { font-size: 9.5pt; font-weight: 700; text-transform: uppercase; color: #334155; margin: 2px 0 0 0; }
-          .meta-box { font-family: monospace; font-size: 7.5pt; text-align: right; line-height: 1.4; }
-          .meta-grid { width: 100%; border-collapse: collapse; margin-bottom: 14px; border: 1px solid #cbd5e1; font-size: 8pt; }
-          .meta-grid td { padding: 5px 8px; border: 1px solid #cbd5e1; }
-          .meta-label { font-weight: 800; text-transform: uppercase; background-color: #f8fafc; width: 18%; color: #334155; }
-          .meta-value { font-weight: 600; width: 32%; }
-          .pill { display: inline-block; padding: 1px 6px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 2px; font-size: 7pt; font-weight: 700; margin: 1px 3px 1px 0; text-transform: uppercase; }
-          table.jha-table { width: 100%; border-collapse: collapse; border: 1px solid #cbd5e1; margin-bottom: 16px; font-size: 8pt; }
-          table.jha-table th { background-color: #0f172a; color: #fff; border: 1px solid #0f172a; padding: 6px 8px; text-align: left; font-weight: 800; text-transform: uppercase; font-size: 7.5pt; }
-          table.jha-table td { border: 1px solid #cbd5e1; padding: 6px 8px; vertical-align: top; }
-          table.jha-table tr:nth-child(even) { background-color: #fafafa; }
-          .roster-title { font-size: 8.5pt; font-weight: 900; text-transform: uppercase; margin: 16px 0 6px 0; padding-bottom: 3px; border-bottom: 1.5px solid #0f172a; display: flex; justify-content: space-between; }
-          table.roster-table { width: 100%; border-collapse: collapse; border: 1px solid #cbd5e1; font-size: 8pt; }
-          table.roster-table th { background-color: #f1f5f9; border: 1px solid #cbd5e1; padding: 5px 8px; text-align: left; font-weight: 800; text-transform: uppercase; font-size: 7.5pt; }
-          table.roster-table td { border: 1px solid #cbd5e1; padding: 4px 8px; }
-          .signoff-section { margin-top: 24px; padding-top: 12px; border-top: 1.5px solid #0f172a; page-break-inside: avoid; }
-          .attestation { font-size: 7pt; font-family: monospace; color: #475569; text-transform: uppercase; margin-bottom: 16px; line-height: 1.35; }
-          .sig-row { display: flex; justify-content: space-between; gap: 20px; }
-          .sig-col { flex: 1; }
-          .sig-line { border-bottom: 1.5px solid #0f172a; height: 26px; margin-bottom: 4px; }
-          .sig-label { font-size: 7.5pt; font-weight: 800; text-transform: uppercase; }
-        </style>
-      </head>
-      <body>
-        ${reports
-          .map(
-            ({ jha, acks }) => `
-          <div class="page-container">
-            <table class="header-table" cellpadding="0" cellspacing="0">
-              <tr>
-                <td style="width: 140px; vertical-align: top;"><img src="/imclogo.svg" alt="IMC Logo" class="logo" /></td>
-                <td style="vertical-align: top; padding-left: 12px;">
-                  <h1 class="company-title">Interwest Mechanical Contractors</h1>
-                  <div class="report-subtitle">${reportTitle}</div>
-                  <div style="font-size: 7.5pt; font-family: monospace; font-weight: 700; color: #475569; margin-top: 2px;">
-                    OSHA 29 CFR 1926.21 & Site Environmental Health & Safety Standard
-                  </div>
-                </td>
-                <td class="meta-box" style="vertical-align: top;">
-                  <div><strong>PRINT DATE:</strong> ${todayStr}</div>
-                  <div><strong>WORKSITE:</strong> ${jha.location.toUpperCase()}</div>
-                  <div><strong>STATUS:</strong> ${jha.status}</div>
-                </td>
-              </tr>
-            </table>
-
-            <table class="meta-grid">
-              <tr>
-                <td class="meta-label">Task / Job Scope:</td>
-                <td class="meta-value" style="font-weight: 800; text-transform: uppercase;">${jha.title}</td>
-                <td class="meta-label">Designated Supervisor:</td>
-                <td class="meta-value">${jha.supervisor}</td>
-              </tr>
-              <tr>
-                <td class="meta-label">Required Training:</td>
-                <td class="meta-value">${(jha.training_required || []).map((t: string) => `<span class="pill">${t}</span>`).join("") || "--"}</td>
-                <td class="meta-label">Permits Required:</td>
-                <td class="meta-value">${(jha.permits_required || []).map((p: string) => `<span class="pill">${p}</span>`).join("") || "--"}</td>
-              </tr>
-              <tr>
-                <td class="meta-label">Equipment Used:</td>
-                <td class="meta-value">${(jha.equipment_used || []).map((e: string) => `<span class="pill">${e}</span>`).join("") || "--"}</td>
-                <td class="meta-label">Certifications:</td>
-                <td class="meta-value">${(jha.certifications_required || []).map((c: string) => `<span class="pill">${c}</span>`).join("") || "--"}</td>
-              </tr>
-            </table>
-
-            <table class="jha-table">
-              <thead>
-                <tr>
-                  <th style="width: 6%; text-align: center;">Seq</th>
-                  <th style="width: 32%;">Work Step Sequence</th>
-                  <th style="width: 31%;">Potential Hazards</th>
-                  <th style="width: 31%;">Hazard Control Measures</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${(jha.steps || [])
-                  .map(
-                    (s: any, idx: number) => `
-                  <tr>
-                    <td style="text-align: center; font-weight: 800; font-family: monospace;">${idx + 1}</td>
-                    <td style="font-weight: 700;">${s.step}</td>
-                    <td style="color: #991b1b;">${s.hazards}</td>
-                    <td style="color: #065f46; font-weight: 600;">${s.controls}</td>
-                  </tr>
-                `
-                  )
-                  .join("")}
-              </tbody>
-            </table>
-
-            <div class="roster-title">
-              <span>Verified Shift Sign-Offs in Selected Window (${acks.length} Sign-Offs Logged)</span>
-              <span>Scope Status: ${jha.status}</span>
-            </div>
-            <table class="roster-table">
-              <thead>
-                <tr>
-                  <th style="width: 6%; text-align: center;">#</th>
-                  <th style="width: 36%;">Employee Legal Name</th>
-                  <th style="width: 24%;">Assigned Worksite</th>
-                  <th style="width: 34%; text-align: right;">Verified Date & Time Stamp</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${
-                  acks.length > 0
-                    ? acks
-                        .map(
-                          (a: any, idx: number) => `
-                  <tr>
-                    <td style="text-align: center; font-family: monospace;">${idx + 1}</td>
-                    <td style="font-weight: 700; text-transform: uppercase;">${a.employee_name}</td>
-                    <td style="font-family: monospace; font-size: 7.5pt; text-transform: uppercase;">${a.location}</td>
-                    <td style="text-align: right; font-family: monospace; font-size: 8pt; font-weight: 700; color: #0f172a;">
-                      ${formatDateTime(a.signed_at)}
-                    </td>
-                  </tr>
-                `
-                        )
-                        .join("")
-                    : `<tr><td colspan="4" style="text-align: center; font-family: monospace; padding: 10px;">[ NO CREW SIGN-OFFS RECORDED IN THIS TIMEFRAME WINDOW ]</td></tr>`
-                }
-              </tbody>
-            </table>
-
-            <div class="signoff-section">
-              <div class="attestation">
-                Attestation Statement: All personnel listed above have reviewed and acknowledged the specific hazards, controls, and scope of work identified in this Job Hazard Analysis prior to starting work.
-              </div>
-              <div class="sig-row">
-                <div class="sig-col" style="flex: 2;">
-                  <div class="sig-line"></div>
-                  <div class="sig-label">Supervisor / Lead Signature: ${jha.supervisor}</div>
-                </div>
-                <div class="sig-col">
-                  <div class="sig-line"></div>
-                  <div class="sig-label">Execution Date</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        `
-          )
-          .join("")}
-      </body>
-      </html>
-    `;
-
-    const iframe = document.createElement("iframe");
-    iframe.style.position = "fixed";
-    iframe.style.right = "0";
-    iframe.style.bottom = "0";
-    iframe.style.width = "0";
-    iframe.style.height = "0";
-    iframe.style.border = "0";
-    document.body.appendChild(iframe);
-
-    const doc = iframe.contentWindow?.document;
-    if (!doc) return;
-    doc.open();
-    doc.write(printDocHTML);
-    doc.close();
-
-    iframe.contentWindow?.focus();
-    setTimeout(() => {
-      iframe.contentWindow?.print();
-      setTimeout(() => document.body.removeChild(iframe), 1000);
-    }, 600);
   };
 
   return (
@@ -1250,14 +880,14 @@ export default function DailyJhaManager({
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-none bg-[var(--color-brand-blue)] animate-pulse" />
             <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-brand-blue)]">
-              Task Pre-Planning & Risk Control
+              Task Pre-Planning &amp; Risk Control
             </span>
           </div>
           <h2 className="text-base sm:text-lg font-black uppercase text-slate-100 mt-1">
             Job Hazard Analysis (JHA) Console
           </h2>
           <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mt-0.5">
-            Site: <span className="text-white">{selectedLocation}</span> • Ongoing Pre-Task Plans & Master Ledgers
+            Site: <span className="text-white">{selectedLocation}</span> • Ongoing Pre-Task Plans &amp; Master Ledgers
           </p>
         </div>
 
@@ -1270,7 +900,7 @@ export default function DailyJhaManager({
             <span>⎙</span>
             <span>Export Batch Report</span>
           </button>
-          
+
           <button
             type="button"
             onClick={handleStartCreateNew}
@@ -1343,16 +973,25 @@ export default function DailyJhaManager({
                   </p>
                 </div>
 
-                <div className="pt-2 border-t border-[var(--color-brand-border)] flex justify-between items-center text-[11px]">
-                  <button
-                    type="button"
-                    onClick={(e) => handlePauseJob(jha.id, e)}
-                    className="px-2.5 py-1 text-[10px] font-bold uppercase border border-amber-500/40 bg-amber-500/10 text-amber-400 hover:bg-amber-500 hover:text-black rounded-sm cursor-pointer transition-colors"
-                  >
-                    ⏸ Pause Work
-                  </button>
+                <div className="pt-2 border-t border-[var(--color-brand-border)] flex flex-wrap justify-between items-center gap-2 text-[11px]">
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={(e) => handlePauseJob(jha.id, e)}
+                      className="px-2.5 py-1 text-[10px] font-bold uppercase border border-amber-500/40 bg-amber-500/10 text-amber-400 hover:bg-amber-500 hover:text-black rounded-sm cursor-pointer transition-colors"
+                    >
+                      ⏸ Pause Work
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => handleCloseOutJob(jha.id, e)}
+                      className="px-2.5 py-1 text-[10px] font-bold uppercase border border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white rounded-sm cursor-pointer transition-colors"
+                    >
+                      ✓ Close Job Out
+                    </button>
+                  </div>
                   <span className="text-[var(--color-brand-blue)] font-bold uppercase">
-                    Inspect & Print ↗
+                    Inspect &amp; Print ↗
                   </span>
                 </div>
               </div>
@@ -1407,14 +1046,23 @@ export default function DailyJhaManager({
                   </p>
                 </div>
 
-                <div className="pt-2 border-t border-[var(--color-brand-border)] flex justify-between items-center text-[11px]">
-                  <button
-                    type="button"
-                    onClick={(e) => handleResumeJob(jha.id, e)}
-                    className="px-3 py-1 text-[10px] font-bold uppercase border border-emerald-500/40 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500 hover:text-black rounded-sm cursor-pointer transition-colors"
-                  >
-                    ▶ Resume Work
-                  </button>
+                <div className="pt-2 border-t border-[var(--color-brand-border)] flex flex-wrap justify-between items-center gap-2 text-[11px]">
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={(e) => handleResumeJob(jha.id, e)}
+                      className="px-3 py-1 text-[10px] font-bold uppercase border border-emerald-500/40 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500 hover:text-black rounded-sm cursor-pointer transition-colors"
+                    >
+                      ▶ Resume Work
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => handleCloseOutJob(jha.id, e)}
+                      className="px-2.5 py-1 text-[10px] font-bold uppercase border border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white rounded-sm cursor-pointer transition-colors"
+                    >
+                      ✓ Close Job Out
+                    </button>
+                  </div>
                   <span className="text-slate-400 font-bold uppercase">Inspect ↗</span>
                 </div>
               </div>
@@ -1429,7 +1077,7 @@ export default function DailyJhaManager({
           <div className="flex items-center gap-2">
             <span className="text-cyan-400 text-sm">⏳</span>
             <h3 className="text-xs font-bold uppercase tracking-widest text-cyan-400">
-              Hold & Scheduled Pipeline ({onHoldJhas.length})
+              Hold &amp; Scheduled Pipeline ({onHoldJhas.length})
             </h3>
           </div>
           <span className="text-[10px] text-slate-400 uppercase font-mono">
@@ -1495,7 +1143,7 @@ export default function DailyJhaManager({
           <div>
             <h3 className="text-xs font-bold uppercase tracking-widest text-slate-300 flex items-center gap-2">
               <span>📁</span>
-              <span>Past & Closed JHA History ({filteredArchivedJhas.length})</span>
+              <span>Past &amp; Closed JHA History ({filteredArchivedJhas.length})</span>
             </h3>
             <p className="text-[10px] text-slate-400 mt-0.5 uppercase">
               Completed and archived safety task documents ordered by newest first.
@@ -1579,7 +1227,6 @@ export default function DailyJhaManager({
                     exit={{ opacity: 0, scale: 0.98 }}
                     className="w-full max-w-5xl h-[94vh] max-h-[94vh] flex flex-col border shadow-2xl rounded-sm bg-[var(--color-brand-card)] border-[var(--color-brand-border)] overflow-hidden relative"
                   >
-                    {/* Header */}
                     <div className="p-4 sm:p-5 border-b border-[var(--color-brand-border)] flex justify-between items-center bg-[var(--color-brand-bg)] shrink-0">
                       <h3 className="text-xs sm:text-sm font-black uppercase text-slate-100 flex items-center gap-2">
                         <span className="w-2 h-2 bg-[var(--color-brand-blue)] animate-pulse" />
@@ -1594,13 +1241,11 @@ export default function DailyJhaManager({
                       </button>
                     </div>
 
-                    {/* Scrollable Form Body */}
                     <form
                       onSubmit={handleSaveJha}
                       className="flex-1 flex flex-col min-h-0 overflow-hidden"
                     >
                       <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5 custom-scrollbar text-xs">
-                        
                         {/* Operational Staging Selector */}
                         <div className="p-3.5 border rounded-sm bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] space-y-2.5">
                           <div>
@@ -1638,27 +1283,21 @@ export default function DailyJhaManager({
                             </label>
                           </div>
 
- {stageRouting === "SCHEDULED" && (
-  <div className="pt-1">
-    <style>{`
-      input[type="date"]::-webkit-calendar-picker-indicator {
-        filter: invert(1);
-        cursor: pointer;
-      }
-    `}</style>
-    <label className="text-[10px] font-bold uppercase tracking-wider text-cyan-400 block mb-1">
-      Calendar Start Date (Auto-Promote)
-    </label>
-    <input
-      type="date"
-      required
-      value={scheduledStartDate}
-      onChange={(e) => setScheduledStartDate(e.target.value)}
-      style={{ colorScheme: "dark" }}
-      className="w-full min-h-[42px] px-3 bg-[var(--color-brand-card)] border border-cyan-500/40 text-slate-100 rounded-sm outline-none font-mono text-xs cursor-pointer"
-    />
-  </div>
-)}
+                          {stageRouting === "SCHEDULED" && (
+                            <div className="pt-1">
+                              <label className="text-[10px] font-bold uppercase tracking-wider text-cyan-400 block mb-1">
+                                Calendar Start Date (Auto-Promote)
+                              </label>
+                              <input
+                                type="date"
+                                required
+                                value={scheduledStartDate}
+                                onChange={(e) => setScheduledStartDate(e.target.value)}
+                                style={{ colorScheme: "dark" }}
+                                className="w-full min-h-[42px] px-3 bg-[var(--color-brand-card)] border border-cyan-500/40 text-slate-100 rounded-sm outline-none font-mono text-xs cursor-pointer"
+                              />
+                            </div>
+                          )}
                         </div>
 
                         {/* Basic Metadata */}
@@ -1893,7 +1532,7 @@ export default function DailyJhaManager({
                         <div className="space-y-3 p-3.5 border rounded-sm bg-[var(--color-brand-bg)] border-[var(--color-brand-border)]">
                           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-1 border-b border-[var(--color-brand-border)] pb-2">
                             <span className="text-xs font-bold uppercase tracking-wider text-slate-200">
-                              Equipment, Tools & Machinery Being Used ({equipmentUsed.length} Selected)
+                              Equipment, Tools &amp; Machinery Being Used ({equipmentUsed.length} Selected)
                             </span>
                             <span className="text-[10px] text-slate-400">
                               Click tools to toggle on/off or type custom items below
@@ -1977,7 +1616,7 @@ export default function DailyJhaManager({
                           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                             <div>
                               <h4 className="text-xs font-bold uppercase tracking-wider text-slate-200">
-                                Work Steps, Potential Hazards & Controls ({steps.length})
+                                Work Steps, Potential Hazards &amp; Controls ({steps.length})
                               </h4>
                               <p className="text-[10px] text-slate-400">
                                 Reorder steps, duplicate rows, or browse catalog sequences.
@@ -2257,7 +1896,7 @@ export default function DailyJhaManager({
               )}
             </AnimatePresence>
 
-            {/* MODAL 3: FULL DIGITAL DOCUMENT REVIEW & DUAL PRINT ACTION */}
+            {/* MODAL 3: REVIEW & ACTIONS */}
             <AnimatePresence>
               {selectedJhaForReview && (
                 <div className="fixed inset-0 z-[9999] flex items-center justify-center p-2 sm:p-4 bg-black/90 backdrop-blur-md font-mono text-slate-100 select-none">
@@ -2267,7 +1906,6 @@ export default function DailyJhaManager({
                     exit={{ opacity: 0, scale: 0.98 }}
                     className="w-full max-w-5xl h-[94vh] max-h-[94vh] flex flex-col border shadow-2xl rounded-sm bg-[var(--color-brand-card)] border-[var(--color-brand-border)] overflow-hidden"
                   >
-                    {/* Header Bar */}
                     <div className="p-4 sm:p-5 border-b border-[var(--color-brand-border)] flex justify-between items-start bg-[var(--color-brand-bg)] shrink-0">
                       <div>
                         <div className="flex items-center gap-2">
@@ -2306,9 +1944,7 @@ export default function DailyJhaManager({
                       </div>
                     </div>
 
-                    {/* Scrollable Document Body */}
                     <div className="p-4 sm:p-6 overflow-y-auto space-y-5 flex-1 custom-scrollbar text-xs">
-                      {/* Document Overview Metadata Grid */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] rounded-sm">
                         <div>
                           <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
@@ -2346,7 +1982,7 @@ export default function DailyJhaManager({
 
                         <div>
                           <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
-                            Equipment & Machinery Assigned:
+                            Equipment &amp; Machinery Assigned:
                           </span>
                           <div className="flex flex-wrap gap-1">
                             {(selectedJhaForReview.equipment_used || []).length > 0 ? (
@@ -2379,10 +2015,9 @@ export default function DailyJhaManager({
                         </div>
                       </div>
 
-                      {/* Work Steps Sequence Table */}
                       <div className="space-y-2.5">
                         <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-300">
-                          Work Step Sequence, Potential Hazards & Control Measures ({(selectedJhaForReview.steps || []).length} Steps)
+                          Work Step Sequence, Potential Hazards &amp; Control Measures ({(selectedJhaForReview.steps || []).length} Steps)
                         </h4>
 
                         <div className="space-y-2">
@@ -2424,7 +2059,6 @@ export default function DailyJhaManager({
                         </div>
                       </div>
 
-                      {/* Live Multi-Day Crew Sign-off Ledger */}
                       <div className="pt-3 border-t border-[var(--color-brand-border)] space-y-2">
                         <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-wider text-slate-400">
                           <span>Complete Project Crew Attendance Ledger ({activeAcks.length} Verified Sign-Offs)</span>
@@ -2452,7 +2086,7 @@ export default function DailyJhaManager({
                                 </div>
                                 <div className="text-right">
                                   <span className="font-mono text-emerald-400 text-[10px] font-bold block">
-                                    {formatDateTime(ack.signed_at)}
+                                    {formatDateTimeDisplay(ack.signed_at)}
                                   </span>
                                 </div>
                               </div>
@@ -2462,7 +2096,7 @@ export default function DailyJhaManager({
                       </div>
                     </div>
 
-                    {/* Footer Actions with Dual Print Triggers */}
+                    {/* Footer Actions */}
                     <div className="p-3.5 sm:p-4 border-t border-[var(--color-brand-border)] bg-[var(--color-brand-bg)] flex flex-col sm:flex-row justify-between items-center gap-2.5 shrink-0 sticky bottom-0 z-20">
                       <div>
                         {selectedJhaForReview.status === "ACTIVE" ? (
@@ -2542,7 +2176,6 @@ export default function DailyJhaManager({
                     </div>
 
                     <div className="space-y-4 text-xs">
-                      {/* Scope Selector */}
                       <div className="space-y-1.5">
                         <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
                           Report Category Scope
@@ -2576,7 +2209,6 @@ export default function DailyJhaManager({
                         </div>
                       </div>
 
-                      {/* Timeframe Selector */}
                       <div className="space-y-1.5">
                         <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
                           Timeframe Window (Signatures Evaluated)

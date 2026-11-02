@@ -37,6 +37,7 @@ import AddSubcontractorModal from "./_components/AddSubcontractorModal";
 import ManagerBriefingSelector from "./_components/ManagerBriefingSelector";
 import SafetyMeetingComplianceLog, { SafetyBriefingTopic, MeetingCompletionLogEntry } from "./_components/SafetyMeetingComplianceLog";
 import DailyJhaManager from "./_components/DailyJhaManager";
+import AuditFormsManager from "./_components/AuditFormsManager";
 
 const SUPER_ADMIN_EMAIL = "atwoodparkerimc@gmail.com";
 
@@ -215,6 +216,7 @@ export default function ManagerDashboard() {
   const [employees, setEmployees] = useState<UserProfile[]>([]); 
   const [allUsers, setAllUsers] = useState<UserProfile[]>([]); 
   const [currentUserId, setCurrentUserId] = useState<string>("");
+  const [currentUserProfile, setCurrentUserProfile] = useState<UserProfile | null>(null);
   const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
   const [locations, setLocations] = useState<string[]>([]);
   const [selectedLocation, setSelectedLocation] = useState<string>("ALL");
@@ -253,7 +255,9 @@ export default function ManagerDashboard() {
         setCurrentUserId(user.id);
         setCurrentUserEmail(user.email || null);
 
-        const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+        const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+        setCurrentUserProfile(profile);
+
         const role = profile?.role?.toLowerCase() || 'employee';
         const isSuperAdmin = user.email?.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase();
 
@@ -621,17 +625,25 @@ export default function ManagerDashboard() {
       { id: 'jha', label: 'Daily JHA' },
       { id: 'users', label: 'Manage Users' }, 
       { id: 'telemetry', label: 'Insights' }, 
+      { id: 'audit_forms', label: 'Audit Forms' }, // Renamed from "Tool Audits"
       { id: 'inventory', label: 'Prize Inventory' }, 
       { id: 'fulfillment', label: 'Order Fulfillment' },
       { id: 'audit', label: 'Daily Roll Call' }
     ];
 
-    // Foremen only have access to Daily JHA, Manage Users, and Insights
+    // Foremen access: Daily JHA, Manage Users, Insights, and Audit Forms
     if (isForeman) {
-      return allTabs.filter(t => t.id === 'jha' || t.id === 'users' || t.id === 'telemetry');
+      return allTabs.filter(t => t.id === 'jha' || t.id === 'users' || t.id === 'telemetry' || t.id === 'audit_forms');
     }
     return allTabs;
   }, [isForeman]);
+
+  const currentUserName = useMemo(() => {
+    if (currentUserProfile) {
+      return formatEmployeeName(currentUserProfile) || "Safety Supervisor";
+    }
+    return "Safety Supervisor";
+  }, [currentUserProfile]);
 
   if (isLoading) {
     return (
@@ -847,6 +859,15 @@ export default function ManagerDashboard() {
             />
           </div>
         )}
+
+        {/* TAB: AUDIT FORMS (Monthly Risk Prediction Audits & Tool Ledgers) */}
+        <div className={activeTab === 'audit_forms' ? 'block print:hidden space-y-4 sm:space-y-6' : 'hidden'}>
+          <AuditFormsManager
+            supabase={supabase}
+            currentUserId={currentUserId}
+            currentUserName={currentUserName}
+          />
+        </div>
 
         {/* TAB 4: INVENTORY LOGISTICS HUB (Managers only) */}
         {!isForeman && (

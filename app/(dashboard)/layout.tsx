@@ -28,7 +28,7 @@ interface RealtimePayload {
   new: NotificationRecord;
 }
 
-// 1. Full Employee / Manager Navigation
+// 1. Full Employee / Manager Navigation (Streamlined)
 const EMPLOYEE_NAV_ITEMS: NavItem[] = [
   { 
     name: "Dashboard", 
@@ -52,14 +52,15 @@ const EMPLOYEE_NAV_ITEMS: NavItem[] = [
     )
   },
   { 
-    name: "Daily Jobs", 
-    path: "/daily-jobs",
+    name: "Documents", 
+    path: "/documents",
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
-        <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
-        <path d="M9 12h6"></path>
-        <path d="M9 16h6"></path>
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+        <polyline points="14 2 14 8 20 8"></polyline>
+        <line x1="16" y1="13" x2="8" y2="13"></line>
+        <line x1="16" y1="17" x2="8" y2="17"></line>
+        <polyline points="10 9 9 9 8 9"></polyline>
       </svg>
     )
   },
@@ -85,7 +86,7 @@ const EMPLOYEE_NAV_ITEMS: NavItem[] = [
   },
 ];
 
-// 2. Focused Subcontractor Navigation (Matches employee styling, strictly limited scope)
+// 2. Focused Subcontractor Navigation
 const SUBCONTRACTOR_NAV_ITEMS: NavItem[] = [
   { 
     name: "Safety Meeting", 
@@ -97,14 +98,15 @@ const SUBCONTRACTOR_NAV_ITEMS: NavItem[] = [
     )
   },
   { 
-    name: "Daily Jobs", 
-    path: "/subcontractor/daily-jobs",
+    name: "Documents", 
+    path: "/documents",
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
-        <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
-        <path d="M9 12h6"></path>
-        <path d="M9 16h6"></path>
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+        <polyline points="14 2 14 8 20 8"></polyline>
+        <line x1="16" y1="13" x2="8" y2="13"></line>
+        <line x1="16" y1="17" x2="8" y2="17"></line>
+        <polyline points="10 9 9 9 8 9"></polyline>
       </svg>
     )
   },
@@ -223,7 +225,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         const role = profile?.role?.toLowerCase();
 
-        // Enforce route protection: redirect subcontractor users away from employee pages
         if (role === 'subcontractor' && !pathname?.startsWith("/subcontractor")) {
           router.replace("/subcontractor");
           return;
@@ -238,7 +239,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           }
         }
 
-        // Only listen for reward/peer notifications if not in subcontractor portal
         if (role !== 'subcontractor') {
           const { data: alertFeed } = await supabase
             .from('notifications')
@@ -598,7 +598,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* 3. MAIN DOCUMENT SCROLL VIEWPORT */}
       <div className="flex-1 flex flex-col min-w-0 bg-brand-bg relative">
-        
         {/* Mobile Fixed Top Header */}
         <div 
           className={`sidebar-header-bar md:hidden fixed top-0 left-0 right-0 z-30 h-16 bg-brand-card/95 backdrop-blur-md border-b border-[var(--color-brand-border)] flex items-center justify-between px-4 sm:px-6 transition-transform duration-300 ${

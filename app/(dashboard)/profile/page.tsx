@@ -16,6 +16,8 @@ import {
   UserProfile 
 } from "@/lib/db/operations";
 
+import ProfileToolboxManager from "./_components/ProfileToolboxManager";
+
 interface ActivityLogItem {
   id: string;
   label: string;
@@ -31,7 +33,7 @@ export default function ProfilePage() {
   const [certs, setCerts] = useState<EvaluatedCert[]>([]);
   const [paperworkUrl, setPaperworkUrl] = useState<string | null>(null);
 
-  const [activeTab, setActiveTab] = useState<"overview" | "history" | "security">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "toolbox" | "history" | "security">("overview");
 
   // Settings & Password States
   const [displayName, setDisplayName] = useState<string>("");
@@ -218,7 +220,8 @@ export default function ProfilePage() {
         {/* TAB NAVIGATION */}
         <div className="flex gap-2 sm:gap-4 border-b mt-4 sm:mt-6 pb-px overflow-x-auto no-scrollbar -mx-3.5 px-3.5 sm:mx-0 sm:px-0 border-[var(--color-brand-border)]">
           {[
-            { id: "overview", label: "Certifications & Tools" },
+            { id: "overview", label: "Certifications & Paperwork" },
+            { id: "toolbox", label: "Digital Toolbox & Favorites" },
             { id: "history", label: "Point Ledger Activity" },
             { id: "security", label: "Profile & Security" }
           ].map((tab) => {
@@ -325,7 +328,19 @@ export default function ProfilePage() {
         </motion.div>
       )}
 
-      {/* TAB 2: POINT LEDGER HISTORY */}
+      {/* TAB 2: DIGITAL TOOLBOX & FAVORITES */}
+      {activeTab === "toolbox" && (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="w-full">
+          {profile?.id && (
+            <ProfileToolboxManager
+              supabase={supabase}
+              userId={profile.id}
+            />
+          )}
+        </motion.div>
+      )}
+
+      {/* TAB 3: POINT LEDGER HISTORY */}
       {activeTab === "history" && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="w-full">
           <div className="w-full border p-3.5 sm:p-6 shadow-xl rounded-sm bg-[var(--color-brand-card)] border-[var(--color-brand-border)]">
@@ -358,7 +373,7 @@ export default function ProfilePage() {
         </motion.div>
       )}
 
-      {/* TAB 3: PROFILE & SECURITY SETTINGS */}
+      {/* TAB 4: PROFILE & SECURITY SETTINGS */}
       {activeTab === "security" && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="w-full space-y-4 sm:space-y-6">
           <div className="w-full border p-3.5 sm:p-6 shadow-xl rounded-sm bg-[var(--color-brand-card)] border-[var(--color-brand-border)]">
