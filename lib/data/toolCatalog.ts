@@ -13,11 +13,13 @@ export const NESTLE_SPRINGVILLE_LOCATION = "Nestle Springville";
 /**
  * Validates whether a user's assigned work location matches Nestlé Springville.
  * Used to isolate Nestlé Standard 5959-SHE-INS-0022 compliance, JHAs, and tool check workflows.
+ * Strictly checks for "nestle" and rejects "shop" locations.
  */
 export function isNestleSpringville(location?: string | null): boolean {
   if (!location) return false;
   const clean = location.trim().toLowerCase();
-  return clean.includes("springville") || clean.includes("nestle");
+  if (clean.includes("shop")) return false;
+  return clean.includes("nestle");
 }
 
 export const MONTHLY_TAPE_COLORS: Record<number, string> = {

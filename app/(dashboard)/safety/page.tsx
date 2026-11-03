@@ -1,3 +1,4 @@
+// app/(dashboard)/safety/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -42,7 +43,7 @@ export default function SafetyMeetingPage() {
   // User Profile
   const [currentUserProfile, setCurrentUserProfile] = useState<UserProfile | null>(null);
 
-  // Location isolation check
+  // Strict check: only true if location contains "nestle"
   const isSpringvilleSite = isNestleSpringville(currentUserProfile?.location);
 
   // Step 1: Briefing States
@@ -50,13 +51,13 @@ export default function SafetyMeetingPage() {
   const [showBriefingModal, setShowBriefingModal] = useState<boolean>(false);
   const [hasCompletedBriefing, setHasCompletedBriefing] = useState<boolean>(false);
 
-  // Step 2: Multi-JHA States
+  // Step 2: Multi-JHA States (Nestlé Only)
   const [activeJhas, setActiveJhas] = useState<DailyJhaRecord[]>([]);
   const [selectedJhaIds, setSelectedJhaIds] = useState<string[]>([]);
   const [inspectedJha, setInspectedJha] = useState<DailyJhaRecord | null>(null);
   const [hasSignedJhas, setHasSignedJhas] = useState<boolean>(false);
 
-  // Step 3: Tool Check States
+  // Step 3: Tool Check States (Nestlé Only)
   const [userToolbox, setUserToolbox] = useState<EmployeeToolboxItem[]>([]);
   const [inspectedToolsSummary, setInspectedToolsSummary] = useState<string[]>([]);
   const [verifiedTapeColor, setVerifiedTapeColor] = useState<string>("");
@@ -64,8 +65,9 @@ export default function SafetyMeetingPage() {
 
   // Step 4: Final Attestations
   const [ppeDefectsChecked, setPpeDefectsChecked] = useState<boolean>(false);
-  const [paperworkCertified, setPaperworkCertified] = useState<boolean>(false);
   const [fitForWorkChecked, setFitForWorkChecked] = useState<boolean>(false);
+  const [paperworkCertified, setPaperworkCertified] = useState<boolean>(false); // Nestlé only
+  const [riskPredictionChecked, setRiskPredictionChecked] = useState<boolean>(false); // Non-Nestlé (Shop)
 
   useEffect(() => {
     setMounted(true);
@@ -93,9 +95,8 @@ export default function SafetyMeetingPage() {
         setCurrentUserProfile(userProfile);
         const todayDate = new Date().toISOString().split("T")[0];
 
-        const isSpringville = isNestleSpringville(userProfile?.location);
+        const isNestle = isNestleSpringville(userProfile?.location);
 
-        // Site briefing override & data fetches
         if (userProfile?.location) {
           const safeLocation = userProfile.location.trim();
           const overrideId = await getActiveSiteBriefingId(supabase, safeLocation);
@@ -104,15 +105,15 @@ export default function SafetyMeetingPage() {
             if (siteBriefing) setDailyBriefing(siteBriefing);
           }
 
-          // Fetch active JHAs only if assigned to Springville
-          if (isSpringville) {
-            const jhaRecords = await getActiveDailyJhas(supabase, "Nestle Springville");
+          // Fetch active JHAs matching the user's specific location (only if Nestlé)
+          if (isNestle) {
+            const jhaRecords = await getActiveDailyJhas(supabase, safeLocation);
             setActiveJhas(jhaRecords);
           }
         }
 
-        // Fetch employee digital toolbox only if at Springville
-        if (isSpringville) {
+        // Fetch employee digital toolbox only if at Nestlé
+        if (isNestle) {
           const toolboxItems = await getEmployeeToolbox(supabase, user.id);
           setUserToolbox(toolboxItems);
         }
@@ -123,8 +124,9 @@ export default function SafetyMeetingPage() {
           setHasSignedJhas(true);
           setHasCompletedToolCheck(true);
           setPpeDefectsChecked(true);
-          setPaperworkCertified(true);
           setFitForWorkChecked(true);
+          setPaperworkCertified(true);
+          setRiskPredictionChecked(true);
           setCurrentStep("CHECKLIST");
         } else {
           setShowBriefingModal(true);
@@ -143,6 +145,7 @@ export default function SafetyMeetingPage() {
   const handleBriefingComplete = () => {
     setShowBriefingModal(false);
     setHasCompletedBriefing(true);
+    // Non-Nestlé routes directly to Final Checkoff
     if (isSpringvilleSite) {
       setCurrentStep("JHA");
     } else {
@@ -150,7 +153,7 @@ export default function SafetyMeetingPage() {
     }
   };
 
-  // Step 2 Multi-JHA Selection Handlers
+  // Step 2 Multi-JHA Selection Handlers (Nestlé only)
   const toggleJhaSelection = (id: string) => {
     setSelectedJhaIds((prev) =>
       prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
@@ -179,7 +182,7 @@ export default function SafetyMeetingPage() {
     setCurrentStep("TOOL_CHECK");
   };
 
-  // Step 3 Tool Check Completed Handler
+  // Step 3 Tool Check Completed Handler (Nestlé only)
   const handleToolCheckCompleted = (selectedToolNames: string[], tapeColor: string) => {
     setInspectedToolsSummary(selectedToolNames);
     setVerifiedTapeColor(tapeColor);
@@ -187,7 +190,6 @@ export default function SafetyMeetingPage() {
     setCurrentStep("CHECKLIST");
   };
 
-  // Refresh user toolbox from DB
   const refreshToolbox = async () => {
     if (currentUserProfile?.id && isSpringvilleSite) {
       const updated = await getEmployeeToolbox(supabase, currentUserProfile.id);
@@ -195,14 +197,24 @@ export default function SafetyMeetingPage() {
     }
   };
 
-  // Step 4 Final Execution & 10 Points Award
+  // Final Sign & Attestation Execution
   const handleFinalSignSubmit = async () => {
-    if (!ppeDefectsChecked || !paperworkCertified || !fitForWorkChecked) {
-      setTerminalFeedback({
-        message: "Please acknowledge all final certifications before submitting.",
-        isError: true,
-      });
-      return;
+    if (isSpringvilleSite) {
+      if (!ppeDefectsChecked || !paperworkCertified || !fitForWorkChecked) {
+        setTerminalFeedback({
+          message: "Please acknowledge all final certifications before submitting.",
+          isError: true,
+        });
+        return;
+      }
+    } else {
+      if (!ppeDefectsChecked || !fitForWorkChecked || !riskPredictionChecked) {
+        setTerminalFeedback({
+          message: "Please acknowledge PPE, Fit for Work, and Risk Prediction.",
+          isError: true,
+        });
+        return;
+      }
     }
 
     setIsSubmitting(true);
@@ -219,9 +231,9 @@ export default function SafetyMeetingPage() {
       const empName = currentUserProfile 
         ? formatEmployeeName(currentUserProfile) 
         : "IMC Employee";
-      const userLoc = currentUserProfile?.location?.trim() || "Nestle Springville";
+      const userLoc = currentUserProfile?.location?.trim() || "Springville Shop";
 
-      // 1. Batch-sign all selected JHAs (Springville only)
+      // 1. Batch-sign all selected JHAs (Nestlé only)
       if (isSpringvilleSite && selectedJhaIds.length > 0) {
         await Promise.all(
           selectedJhaIds.map((jhaId) =>
@@ -309,11 +321,11 @@ export default function SafetyMeetingPage() {
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-none bg-[var(--color-brand-blue,#0088ff)] animate-pulse" />
                 <span className="text-[10px] font-black uppercase tracking-widest text-[var(--color-brand-blue,#0088ff)]">
-                  Pre-Task Safety Pipeline {isSpringvilleSite ? "• Nestle 5959 Standard" : ""}
+                  Pre-Task Safety Pipeline {isSpringvilleSite ? "• Nestle 5959 Standard" : "• Shop Safety Standard"}
                 </span>
               </div>
               <h1 className="text-lg sm:text-2xl font-black text-slate-100 uppercase tracking-tight mt-0.5">
-                Daily Shift Verification & Sign-Off
+                Daily Shift Verification &amp; Sign-Off
               </h1>
             </div>
 
@@ -323,7 +335,7 @@ export default function SafetyMeetingPage() {
               </span>
             ) : (
               <span className="self-start sm:self-auto text-xs font-mono font-bold text-slate-400">
-                Site: <strong className="text-white">{currentUserProfile?.location || "Springville"}</strong>
+                Site: <strong className="text-white">{currentUserProfile?.location || "Springville Shop"}</strong>
               </span>
             )}
           </div>
@@ -381,7 +393,7 @@ export default function SafetyMeetingPage() {
         )}
 
         {/* =========================================================================
-            STAGE 1: DAILY BRIEFING SPOTLIGHT & REVIEW
+            STAGE 1: DAILY BRIEFING (ALL SITES)
         ========================================================================= */}
         {currentStep === "BRIEFING" && !hasCompletedToday && (
           <motion.div
@@ -433,7 +445,7 @@ export default function SafetyMeetingPage() {
         )}
 
         {/* =========================================================================
-            STAGE 2: MULTI-JHA SELECTION (NESTLÉ SPRINGVILLE ONLY)
+            STAGE 2: MULTI-JHA SELECTION (NESTLÉ ONLY)
         ========================================================================= */}
         {isSpringvilleSite && currentStep === "JHA" && !hasCompletedToday && (
           <motion.div
@@ -461,10 +473,6 @@ export default function SafetyMeetingPage() {
                 </button>
               )}
             </div>
-
-            <p className="text-xs text-slate-400">
-              Check every job you know you will touch today. You can inspect any card before proceeding:
-            </p>
 
             {activeJhas.length === 0 ? (
               <div className="p-8 border border-dashed border-[var(--color-brand-border)] text-center text-slate-500 uppercase text-xs font-bold rounded-sm space-y-2">
@@ -551,7 +559,7 @@ export default function SafetyMeetingPage() {
                   onClick={handleConfirmJhaStep}
                   className="w-1/2 sm:w-auto min-h-[44px] px-8 bg-[var(--color-brand-blue,#0088ff)] text-white hover:bg-white hover:text-black text-xs font-black uppercase rounded-sm cursor-pointer transition-all shadow-md active:scale-[0.98]"
                 >
-                  Confirm Jobs & Tool Check ➔
+                  Confirm Jobs &amp; Tool Check ➔
                 </button>
               </div>
             </div>
@@ -559,14 +567,14 @@ export default function SafetyMeetingPage() {
         )}
 
         {/* =========================================================================
-            STAGE 3: NESTLÉ 5959-SHE-INS-0022 TOOL CHECK (NESTLÉ SPRINGVILLE ONLY)
+            STAGE 3: NESTLÉ TOOL CHECK (NESTLÉ ONLY)
         ========================================================================= */}
         {isSpringvilleSite && currentStep === "TOOL_CHECK" && !hasCompletedToday && (
           <DailyToolCheckModule
             supabase={supabase}
             userId={currentUserProfile?.id || ""}
             employeeName={currentUserProfile ? (formatEmployeeName(currentUserProfile) || "IMC Employee") : "IMC Employee"}
-            userLocation="Nestle Springville"
+            userLocation={currentUserProfile?.location || "Nestle Springville"}
             toolbox={userToolbox}
             onToolboxUpdated={refreshToolbox}
             onComplete={handleToolCheckCompleted}
@@ -575,7 +583,7 @@ export default function SafetyMeetingPage() {
         )}
 
         {/* =========================================================================
-            STAGE 4: FINAL CHECKOFF & 10-POINT EXECUTION
+            STAGE 4: FINAL CHECKOFF (DYNAMIC PER LOCATION)
         ========================================================================= */}
         {(currentStep === "CHECKLIST" || hasCompletedToday) && (
           <motion.div
@@ -598,7 +606,7 @@ export default function SafetyMeetingPage() {
             </div>
 
             <div className="space-y-3">
-              {/* 1. Daily Meeting Checkbox (Auto-checked from Step 1) */}
+              {/* 1. Daily Meeting Checkbox (All locations) */}
               <div className="w-full min-h-[48px] p-3.5 border rounded-sm flex items-center gap-3.5 bg-emerald-500/10 border-emerald-500 text-emerald-300">
                 <div className="w-5 h-5 flex-shrink-0 border-2 bg-emerald-500 border-emerald-500 rounded-xs flex items-center justify-center text-black font-black text-xs">
                   ✓
@@ -608,104 +616,177 @@ export default function SafetyMeetingPage() {
                 </span>
               </div>
 
-              {/* 2. JHA Sign-Off Checkbox (Springville Only) */}
+              {/* NESTLÉ SPRINGVILLE PATH (4 STEPS) */}
               {isSpringvilleSite && (
-                <div className="w-full min-h-[48px] p-3.5 border rounded-sm flex items-center gap-3.5 bg-emerald-500/10 border-emerald-500 text-emerald-300">
-                  <div className="w-5 h-5 flex-shrink-0 border-2 bg-emerald-500 border-emerald-500 rounded-xs flex items-center justify-center text-black font-black text-xs">
-                    ✓
+                <>
+                  <div className="w-full min-h-[48px] p-3.5 border rounded-sm flex items-center gap-3.5 bg-emerald-500/10 border-emerald-500 text-emerald-300">
+                    <div className="w-5 h-5 flex-shrink-0 border-2 bg-emerald-500 border-emerald-500 rounded-xs flex items-center justify-center text-black font-black text-xs">
+                      ✓
+                    </div>
+                    <span className="text-xs sm:text-sm font-black uppercase tracking-wide">
+                      2. I have selected and signed off on today&apos;s assigned JHA documents ({selectedJhaIds.length} Selected).
+                    </span>
                   </div>
-                  <span className="text-xs sm:text-sm font-black uppercase tracking-wide">
-                    2. I have selected and signed off on today&apos;s assigned JHA documents ({selectedJhaIds.length} Selected).
-                  </span>
-                </div>
+
+                  <div className="w-full min-h-[48px] p-3.5 border rounded-sm flex items-center gap-3.5 bg-emerald-500/10 border-emerald-500 text-emerald-300">
+                    <div className="w-5 h-5 flex-shrink-0 border-2 bg-emerald-500 border-emerald-500 rounded-xs flex items-center justify-center text-black font-black text-xs">
+                      ✓
+                    </div>
+                    <span className="text-xs sm:text-sm font-black uppercase tracking-wide">
+                      3. I have verified {inspectedToolsSummary.length} tools against Nestlé 5959-SHE-INS-0022 {verifiedTapeColor ? `(${verifiedTapeColor} Tape)` : ""}.[cite: 2]
+                    </span>
+                  </div>
+
+                  <button
+                    type="button"
+                    disabled={hasCompletedToday}
+                    onClick={() => setPpeDefectsChecked((prev) => !prev)}
+                    className={`w-full min-h-[48px] p-3.5 border rounded-sm flex items-center gap-3.5 text-left transition-all cursor-pointer ${
+                      ppeDefectsChecked
+                        ? "bg-emerald-500/10 border-emerald-500 text-emerald-300"
+                        : "bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] hover:border-slate-400 text-white"
+                    }`}
+                  >
+                    <div
+                      className={`w-5 h-5 flex-shrink-0 border-2 rounded-xs flex items-center justify-center ${
+                        ppeDefectsChecked
+                          ? "bg-emerald-500 border-emerald-500 text-black font-black text-xs"
+                          : "border-[var(--color-brand-blue,#0088ff)] bg-transparent"
+                      }`}
+                    >
+                      {ppeDefectsChecked && "✓"}
+                    </div>
+                    <span className="text-xs sm:text-sm font-black uppercase tracking-wide">
+                      4. I have inspected my PPE for defects.
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={hasCompletedToday}
+                    onClick={() => setPaperworkCertified((prev) => !prev)}
+                    className={`w-full min-h-[48px] p-3.5 border rounded-sm flex items-center gap-3.5 text-left transition-all cursor-pointer ${
+                      paperworkCertified
+                        ? "bg-emerald-500/10 border-emerald-500 text-emerald-300"
+                        : "bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] hover:border-slate-400 text-white"
+                    }`}
+                  >
+                    <div
+                      className={`w-5 h-5 flex-shrink-0 border-2 rounded-xs flex items-center justify-center ${
+                        paperworkCertified
+                          ? "bg-emerald-500 border-emerald-500 text-black font-black text-xs"
+                          : "border-[var(--color-brand-blue,#0088ff)] bg-transparent"
+                      }`}
+                    >
+                      {paperworkCertified && "✓"}
+                    </div>
+                    <span className="text-xs sm:text-sm font-black uppercase tracking-wide">
+                      5. I have verified all paperwork and permits.
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={hasCompletedToday}
+                    onClick={() => setFitForWorkChecked((prev) => !prev)}
+                    className={`w-full min-h-[48px] p-3.5 border rounded-sm flex items-center gap-3.5 text-left transition-all cursor-pointer ${
+                      fitForWorkChecked
+                        ? "bg-emerald-500/10 border-emerald-500 text-emerald-300"
+                        : "bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] hover:border-slate-400 text-white"
+                    }`}
+                  >
+                    <div
+                      className={`w-5 h-5 flex-shrink-0 border-2 rounded-xs flex items-center justify-center ${
+                        fitForWorkChecked
+                          ? "bg-emerald-500 border-emerald-500 text-black font-black text-xs"
+                          : "border-[var(--color-brand-blue,#0088ff)] bg-transparent"
+                      }`}
+                    >
+                      {fitForWorkChecked && "✓"}
+                    </div>
+                    <span className="text-xs sm:text-sm font-black uppercase tracking-wide">
+                      6. I am fit for work.
+                    </span>
+                  </button>
+                </>
               )}
 
-              {/* 3. Tool Check Checkbox (Springville Only) */}
-              {isSpringvilleSite && (
-                <div className="w-full min-h-[48px] p-3.5 border rounded-sm flex items-center gap-3.5 bg-emerald-500/10 border-emerald-500 text-emerald-300">
-                  <div className="w-5 h-5 flex-shrink-0 border-2 bg-emerald-500 border-emerald-500 rounded-xs flex items-center justify-center text-black font-black text-xs">
-                    ✓
-                  </div>
-                  <span className="text-xs sm:text-sm font-black uppercase tracking-wide">
-                    3. I have verified {inspectedToolsSummary.length} tools against Nestlé 5959-SHE-INS-0022 {verifiedTapeColor ? `(${verifiedTapeColor} Tape)` : ""}.[cite: 2]
-                  </span>
-                </div>
+              {/* NON-NESTLE PATH (SPRINGVILLE SHOP & OTHERS) */}
+              {!isSpringvilleSite && (
+                <>
+                  <button
+                    type="button"
+                    disabled={hasCompletedToday}
+                    onClick={() => setPpeDefectsChecked((prev) => !prev)}
+                    className={`w-full min-h-[48px] p-3.5 border rounded-sm flex items-center gap-3.5 text-left transition-all cursor-pointer ${
+                      ppeDefectsChecked
+                        ? "bg-emerald-500/10 border-emerald-500 text-emerald-300"
+                        : "bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] hover:border-slate-400 text-white"
+                    }`}
+                  >
+                    <div
+                      className={`w-5 h-5 flex-shrink-0 border-2 rounded-xs flex items-center justify-center ${
+                        ppeDefectsChecked
+                          ? "bg-emerald-500 border-emerald-500 text-black font-black text-xs"
+                          : "border-[var(--color-brand-blue,#0088ff)] bg-transparent"
+                      }`}
+                    >
+                      {ppeDefectsChecked && "✓"}
+                    </div>
+                    <span className="text-xs sm:text-sm font-black uppercase tracking-wide">
+                      2. I have inspected my PPE for defects.
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={hasCompletedToday}
+                    onClick={() => setFitForWorkChecked((prev) => !prev)}
+                    className={`w-full min-h-[48px] p-3.5 border rounded-sm flex items-center gap-3.5 text-left transition-all cursor-pointer ${
+                      fitForWorkChecked
+                        ? "bg-emerald-500/10 border-emerald-500 text-emerald-300"
+                        : "bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] hover:border-slate-400 text-white"
+                    }`}
+                  >
+                    <div
+                      className={`w-5 h-5 flex-shrink-0 border-2 rounded-xs flex items-center justify-center ${
+                        fitForWorkChecked
+                          ? "bg-emerald-500 border-emerald-500 text-black font-black text-xs"
+                          : "border-[var(--color-brand-blue,#0088ff)] bg-transparent"
+                      }`}
+                    >
+                      {fitForWorkChecked && "✓"}
+                    </div>
+                    <span className="text-xs sm:text-sm font-black uppercase tracking-wide">
+                      3. I am fit for work.
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={hasCompletedToday}
+                    onClick={() => setRiskPredictionChecked((prev) => !prev)}
+                    className={`w-full min-h-[48px] p-3.5 border rounded-sm flex items-center gap-3.5 text-left transition-all cursor-pointer ${
+                      riskPredictionChecked
+                        ? "bg-emerald-500/10 border-emerald-500 text-emerald-300"
+                        : "bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] hover:border-slate-400 text-white"
+                    }`}
+                  >
+                    <div
+                      className={`w-5 h-5 flex-shrink-0 border-2 rounded-xs flex items-center justify-center ${
+                        riskPredictionChecked
+                          ? "bg-emerald-500 border-emerald-500 text-black font-black text-xs"
+                          : "border-[var(--color-brand-blue,#0088ff)] bg-transparent"
+                      }`}
+                    >
+                      {riskPredictionChecked && "✓"}
+                    </div>
+                    <span className="text-xs sm:text-sm font-black uppercase tracking-wide">
+                      4. Risk prediction evaluated &amp; control measures acknowledged.
+                    </span>
+                  </button>
+                </>
               )}
-
-              {/* PPE Inspection Checkbox (Manual check) */}
-              <button
-                type="button"
-                disabled={hasCompletedToday}
-                onClick={() => setPpeDefectsChecked((prev) => !prev)}
-                className={`w-full min-h-[48px] p-3.5 border rounded-sm flex items-center gap-3.5 text-left transition-all cursor-pointer ${
-                  ppeDefectsChecked
-                    ? "bg-emerald-500/10 border-emerald-500 text-emerald-300"
-                    : "bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] hover:border-slate-400 text-white"
-                }`}
-              >
-                <div
-                  className={`w-5 h-5 flex-shrink-0 border-2 rounded-xs flex items-center justify-center ${
-                    ppeDefectsChecked
-                      ? "bg-emerald-500 border-emerald-500 text-black font-black text-xs"
-                      : "border-[var(--color-brand-blue,#0088ff)] bg-transparent"
-                  }`}
-                >
-                  {ppeDefectsChecked && "✓"}
-                </div>
-                <span className="text-xs sm:text-sm font-black uppercase tracking-wide">
-                  {isSpringvilleSite ? "4." : "2."} I have inspected my PPE for defects.
-                </span>
-              </button>
-
-              {/* Paperwork Certification Checkbox (Manual check) */}
-              <button
-                type="button"
-                disabled={hasCompletedToday}
-                onClick={() => setPaperworkCertified((prev) => !prev)}
-                className={`w-full min-h-[48px] p-3.5 border rounded-sm flex items-center gap-3.5 text-left transition-all cursor-pointer ${
-                  paperworkCertified
-                    ? "bg-emerald-500/10 border-emerald-500 text-emerald-300"
-                    : "bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] hover:border-slate-400 text-white"
-                }`}
-              >
-                <div
-                  className={`w-5 h-5 flex-shrink-0 border-2 rounded-xs flex items-center justify-center ${
-                    paperworkCertified
-                      ? "bg-emerald-500 border-emerald-500 text-black font-black text-xs"
-                      : "border-[var(--color-brand-blue,#0088ff)] bg-transparent"
-                  }`}
-                >
-                  {paperworkCertified && "✓"}
-                </div>
-                <span className="text-xs sm:text-sm font-black uppercase tracking-wide">
-                  {isSpringvilleSite ? "5." : "3."} I have verified all paperwork and permits.
-                </span>
-              </button>
-
-              {/* Fit for Work Checkbox (Manual check) */}
-              <button
-                type="button"
-                disabled={hasCompletedToday}
-                onClick={() => setFitForWorkChecked((prev) => !prev)}
-                className={`w-full min-h-[48px] p-3.5 border rounded-sm flex items-center gap-3.5 text-left transition-all cursor-pointer ${
-                  fitForWorkChecked
-                    ? "bg-emerald-500/10 border-emerald-500 text-emerald-300"
-                    : "bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] hover:border-slate-400 text-white"
-                }`}
-              >
-                <div
-                  className={`w-5 h-5 flex-shrink-0 border-2 rounded-xs flex items-center justify-center ${
-                    fitForWorkChecked
-                      ? "bg-emerald-500 border-emerald-500 text-black font-black text-xs"
-                      : "border-[var(--color-brand-blue,#0088ff)] bg-transparent"
-                  }`}
-                >
-                  {fitForWorkChecked && "✓"}
-                </div>
-                <span className="text-xs sm:text-sm font-black uppercase tracking-wide">
-                  {isSpringvilleSite ? "6." : "4."} I am fit for work.
-                </span>
-              </button>
             </div>
 
             {hasCompletedToday ? (
@@ -735,7 +816,11 @@ export default function SafetyMeetingPage() {
                 <button
                   type="button"
                   onClick={handleFinalSignSubmit}
-                  disabled={!ppeDefectsChecked || !paperworkCertified || !fitForWorkChecked || isSubmitting}
+                  disabled={
+                    isSpringvilleSite
+                      ? !ppeDefectsChecked || !paperworkCertified || !fitForWorkChecked || isSubmitting
+                      : !ppeDefectsChecked || !fitForWorkChecked || !riskPredictionChecked || isSubmitting
+                  }
                   className="w-full sm:w-auto min-h-[48px] px-10 bg-[var(--color-brand-blue,#0088ff)] text-white hover:bg-white hover:text-black rounded-sm font-black uppercase text-xs cursor-pointer transition-all shadow-[0_0_20px_rgba(0,136,255,0.4)] disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98]"
                 >
                   {isSubmitting ? "Logging Shift Ledger..." : "Sign & Earn 10 Points ↗"}
@@ -747,23 +832,23 @@ export default function SafetyMeetingPage() {
 
       </div>
 
-      {/* JHA DOCUMENT INSPECTION MODAL */}
-      {mounted && createPortal(
+      {/* JHA DOCUMENT INSPECTION MODAL (NESTLÉ ONLY) */}
+      {isSpringvilleSite && mounted && createPortal(
         <AnimatePresence>
           {inspectedJha && (
-            <div className="fixed inset-0 z-[9999] flex items-center justify-center p-2 sm:p-4 bg-black/95 backdrop-blur-md font-mono text-slate-100 select-none">
+            <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-6 pb-16 sm:pb-20 bg-black/90 backdrop-blur-md font-mono text-slate-100 select-none overflow-hidden">
               <motion.div
                 initial={{ opacity: 0, scale: 0.98 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.98 }}
-                className="w-full max-w-4xl h-[92vh] max-h-[92vh] flex flex-col border shadow-2xl rounded-sm bg-[var(--color-brand-card)] border-[var(--color-brand-border)] overflow-hidden"
+                className="w-full max-w-4xl max-h-[80vh] h-[80vh] flex flex-col border shadow-2xl rounded-sm bg-[var(--color-brand-card)] border-[var(--color-brand-border)] overflow-hidden"
               >
                 <div className="p-4 sm:p-5 border-b border-[var(--color-brand-border)] flex justify-between items-start bg-[var(--color-brand-bg)] shrink-0">
                   <div>
                     <span className="text-[10px] font-black uppercase tracking-widest text-[var(--color-brand-blue,#0088ff)] block">
-                      JHA Scope & Risk Prediction Audit
+                      JHA Scope &amp; Risk Prediction Audit
                     </span>
-                    <h2 className="text-sm sm:text-lg font-black uppercase text-white mt-1">
+                    <h2 className="text-sm sm:text-base font-black uppercase text-white mt-1">
                       {inspectedJha.title}
                     </h2>
                     <p className="text-[11px] text-slate-400 font-mono mt-0.5">
@@ -780,10 +865,10 @@ export default function SafetyMeetingPage() {
                   </button>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 text-xs custom-scrollbar">
+                <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 pb-10 space-y-4 text-xs custom-scrollbar">
                   <div className="space-y-2">
                     <h3 className="text-xs font-bold uppercase tracking-wider text-slate-200">
-                      Work Sequence, Potential Hazards & Control Measures ({inspectedJha.steps.length} Steps)
+                      Work Sequence, Potential Hazards &amp; Control Measures ({inspectedJha.steps.length} Steps)
                     </h3>
                     <div className="space-y-2.5">
                       {inspectedJha.steps.map((st, idx) => (
@@ -817,7 +902,7 @@ export default function SafetyMeetingPage() {
                   </div>
                 </div>
 
-                <div className="p-4 border-t border-[var(--color-brand-border)] bg-[var(--color-brand-bg)] flex justify-between items-center shrink-0">
+                <div className="p-3.5 sm:p-4 border-t border-[var(--color-brand-border)] bg-[var(--color-brand-bg)] flex justify-between items-center shrink-0">
                   <span className="text-xs text-slate-400 font-mono">
                     Status: {selectedJhaIds.includes(inspectedJha.id) ? "Selected for Sign-Off" : "Not Selected"}
                   </span>
@@ -839,7 +924,7 @@ export default function SafetyMeetingPage() {
         document.body
       )}
 
-      {/* Celebration +10 PTS Overlay */}
+      {/* Celebration Overlay */}
       <AnimatePresence>
         {showCelebration && (
           <motion.div 
