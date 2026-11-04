@@ -274,7 +274,6 @@ export default function ProfileToolboxManager({
                     </div>
 
                     <div className="flex items-center gap-1 flex-shrink-0">
-                      {/* Enriched & Larger Favorite Star Button */}
                       <button
                         type="button"
                         onClick={() => handleToggleFavorite(tool)}
@@ -342,7 +341,6 @@ export default function ProfileToolboxManager({
                       </div>
                     </div>
 
-                    {/* Enriched & Larger Favorite Star in Favorites Tab */}
                     <button
                       type="button"
                       onClick={() => handleToggleFavorite(tool)}
@@ -362,7 +360,6 @@ export default function ProfileToolboxManager({
       {/* TAB 3: ADD FROM MASTER CATALOG + CUSTOM ADD */}
       {activeTab === "CATALOG" && (
         <div className="space-y-4">
-          {/* Custom Tool Form */}
           <form
             onSubmit={handleAddCustom}
             className="p-3 border rounded-sm bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] flex flex-col sm:flex-row gap-2"
@@ -392,7 +389,6 @@ export default function ProfileToolboxManager({
             </button>
           </form>
 
-          {/* Catalog Tool Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 max-h-[380px] overflow-y-auto custom-scrollbar p-1">
             {availableCatalog.length === 0 ? (
               <div className="col-span-full p-8 text-center text-slate-500 uppercase text-xs font-bold">

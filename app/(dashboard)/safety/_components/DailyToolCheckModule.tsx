@@ -51,24 +51,20 @@ export default function DailyToolCheckModule({
   const [complianceCertified, setComplianceCertified] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Month & Grace Period Calculations
   const currentMonthInfo = useMemo(() => getCurrentMonthTapeColor(), []);
   const fourthWorkingDayDeadline = useMemo(() => getFourthWorkingDayDeadline(), []);
   const now = new Date();
   const isPastGracePeriod = now > fourthWorkingDayDeadline;
 
-  // Filter powered equipment that actually requires monthly color tape (per isToolPowered)
   const poweredToolsInBox = useMemo(() => {
     return toolbox.filter((t) => isToolPowered(t.tool_name, t.category));
   }, [toolbox]);
 
-  // Determine if powered tools need monthly tape verification
   const needsTapeRecertification = useMemo(() => {
     if (poweredToolsInBox.length === 0) return false;
     return poweredToolsInBox.some((t) => t.last_tape_verified_month !== currentMonthInfo.monthKey);
   }, [poweredToolsInBox, currentMonthInfo.monthKey]);
 
-  // Check if any of the selected tools for today are powered
   const hasPoweredToolsSelected = useMemo(() => {
     return selectedTools.some((toolName) => {
       const inBox = toolbox.find((t) => t.tool_name.toLowerCase() === toolName.toLowerCase());
@@ -78,13 +74,10 @@ export default function DailyToolCheckModule({
     });
   }, [selectedTools, toolbox]);
 
-  // Lockout occurs only after the 4th working day AND only if powered tools remain uncertified
   const isLockedOut = needsTapeRecertification && isPastGracePeriod && hasPoweredToolsSelected;
 
-  // Filtered Toolbox lists
   const favoriteTools = useMemo(() => toolbox.filter((t) => t.is_favorite), [toolbox]);
 
-  // Items currently selected for today's shift (pulls metadata from toolbox or catalog)
   const shiftSelectedItems = useMemo(() => {
     return selectedTools
       .map((name) => {
@@ -128,7 +121,6 @@ export default function DailyToolCheckModule({
     });
   }, [existingToolNames, categoryFilter, catalogSearch]);
 
-  // Daily tool selection toggle
   const toggleSelectTool = (name: string) => {
     setSelectedTools((prev) =>
       prev.includes(name) ? prev.filter((n) => n !== name) : [...prev, name]
@@ -141,7 +133,6 @@ export default function DailyToolCheckModule({
       return;
     }
     const favNames = favoriteTools.map((t) => t.tool_name);
-    // Merge favorites with whatever is already selected so nothing gets overwritten
     setSelectedTools((prev) => Array.from(new Set([...prev, ...favNames])));
     setComplianceCertified(true);
     setErrorMessage(null);
@@ -172,7 +163,6 @@ export default function DailyToolCheckModule({
 
   const handleAddFromCatalog = async (name: string, category: "Hand Tools" | "Power Tools" | "Rigging & Access" | "Shop Tools") => {
     await addToolToToolbox(supabase, userId, name, category, false);
-    // Immediately check this tool into today's active shift
     setSelectedTools((prev) => (prev.includes(name) ? prev : [...prev, name]));
     await onToolboxUpdated();
   };
@@ -240,7 +230,6 @@ export default function DailyToolCheckModule({
 
   return (
     <div className="border p-4 sm:p-6 rounded-sm bg-[var(--color-brand-card)] border-[var(--color-brand-border)] space-y-5 font-mono shadow-2xl">
-      
       {/* HEADER BAR */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 border-b border-[var(--color-brand-border)] pb-4">
         <div>
@@ -316,7 +305,6 @@ export default function DailyToolCheckModule({
       {/* TAB NAVIGATION & ACTION BAR */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-[var(--color-brand-border)] pb-2.5">
         <div className="flex gap-2">
-          {/* TAB 1: ALL TOOLS CHECKED FOR TODAY */}
           <button
             type="button"
             onClick={() => setActiveTab("SELECTED_TODAY")}
@@ -334,7 +322,6 @@ export default function DailyToolCheckModule({
             </span>
           </button>
 
-          {/* TAB 2: FULL TOOLBOX */}
           <button
             type="button"
             onClick={() => setActiveTab("MY_TOOLBOX")}
@@ -347,7 +334,6 @@ export default function DailyToolCheckModule({
             🧰 All My Tools ({toolbox.length})
           </button>
 
-          {/* TAB 3: MASTER CATALOG */}
           <button
             type="button"
             onClick={() => setActiveTab("CATALOG_ADD")}
@@ -361,7 +347,6 @@ export default function DailyToolCheckModule({
           </button>
         </div>
 
-        {/* FAST-PASS ACTIONS */}
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <button
             type="button"
@@ -424,7 +409,7 @@ export default function DailyToolCheckModule({
         </div>
       </div>
 
-      {/* TAB 1: TODAY'S ACTIVE SELECTION (EVERY TOOL CHECKED FOR TODAY) */}
+      {/* TAB 1: TODAY'S ACTIVE SELECTION */}
       {activeTab === "SELECTED_TODAY" && (
         <div className="space-y-3">
           {selectedTools.length === 0 ? (
@@ -469,7 +454,6 @@ export default function DailyToolCheckModule({
                     </div>
 
                     <div className="flex items-center gap-1 flex-shrink-0">
-                      {/* Star reflects if it is saved in permanent favorites; unstarred if one-off */}
                       <button
                         type="button"
                         onClick={(e) => handleToggleFavorite(t, e)}
@@ -500,7 +484,7 @@ export default function DailyToolCheckModule({
                 [ Your Digital Toolbox Is Empty ]
               </p>
               <p className="text-[11px] text-slate-500 font-sans max-w-sm mx-auto">
-                Click &quot;+ Add Tools To Box&quot; above to select tools from the master catalog of 130+ mechanical trade tools.
+                Click &quot;+ Add Tools To Box&quot; above to select tools from the master catalog of trade tools[cite: 4273].
               </p>
             </div>
           ) : (
@@ -636,7 +620,7 @@ export default function DailyToolCheckModule({
         </div>
       )}
 
-      {/* NESTLÉ STANDARD 5959-SHE-INS-0022 COMPLIANCE ATTESTATION CARD */}
+      {/* NESTLÉ COMPLIANCE ATTESTATION CARD */}
       <div className="p-3.5 sm:p-4 rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] space-y-2.5">
         <div className="flex items-center gap-2">
           <span className="text-[10px] font-black uppercase text-[var(--color-brand-blue,#0088ff)]">
@@ -693,7 +677,6 @@ export default function DailyToolCheckModule({
           </button>
         </div>
       </div>
-
     </div>
   );
 }

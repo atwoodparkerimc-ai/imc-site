@@ -6,6 +6,7 @@ import MonthlyRiskPredictionAudit from "./MonthlyRiskPredictionAudit";
 import DailySafetyCheckManager from "./DailySafetyCheckManager";
 import EmployeeInspectionsHub from "./EmployeeInspectionsHub";
 import GrinderInspectionManager from "./GrinderInspectionManager";
+import MasterComplianceBinder from "./MasterComplianceBinder";
 
 interface AuditFormsManagerProps {
   supabase: any;
@@ -23,13 +24,14 @@ export default function AuditFormsManager({
   locations = ["Nestle Springville", "Springville Shop"],
 }: AuditFormsManagerProps) {
   const [activeFormTab, setActiveFormTab] = useState<
-    "risk_prediction" | "safety_checks" | "employee_inspections" | "grinder"
+    "risk_prediction" | "safety_checks" | "employee_inspections" | "grinder" | "master_binder"
   >("risk_prediction");
 
   return (
     <div className="space-y-4 sm:space-y-6 font-mono text-slate-100 select-none pb-12">
       {/* AUDIT FORMS NAVIGATION BAR */}
       <div className="border p-2 sm:p-2.5 rounded-sm bg-[var(--color-brand-card)] border-[var(--color-brand-border)] flex items-center gap-2 overflow-x-auto no-scrollbar">
+        {/* TAB 1 */}
         <button
           type="button"
           onClick={() => setActiveFormTab("risk_prediction")}
@@ -42,6 +44,7 @@ export default function AuditFormsManager({
           1. Risk Prediction Audit
         </button>
 
+        {/* TAB 2 */}
         <button
           type="button"
           onClick={() => setActiveFormTab("safety_checks")}
@@ -54,7 +57,7 @@ export default function AuditFormsManager({
           2. Daily Safety Checks
         </button>
 
-        {/* TAB 3: ALL EMPLOYEE INSPECTIONS */}
+        {/* TAB 3 */}
         <button
           type="button"
           onClick={() => setActiveFormTab("employee_inspections")}
@@ -67,6 +70,7 @@ export default function AuditFormsManager({
           3. All Employee Inspections
         </button>
 
+        {/* TAB 4 */}
         <button
           type="button"
           onClick={() => setActiveFormTab("grinder")}
@@ -77,6 +81,19 @@ export default function AuditFormsManager({
           }`}
         >
           4. Grinder Safety Audits
+        </button>
+
+        {/* TAB 5: MASTER COMPLIANCE BINDER */}
+        <button
+          type="button"
+          onClick={() => setActiveFormTab("master_binder")}
+          className={`min-h-[40px] px-3.5 sm:px-4 py-2 text-xs font-black uppercase tracking-wider rounded-sm transition-all whitespace-nowrap cursor-pointer border ${
+            activeFormTab === "master_binder"
+              ? "bg-emerald-500 border-emerald-400 text-black font-black shadow-lg shadow-emerald-500/20"
+              : "border-emerald-500/30 text-emerald-300 hover:border-emerald-400 hover:text-white"
+          }`}
+        >
+          📑 5. Master Compliance Binder
         </button>
       </div>
 
@@ -114,6 +131,17 @@ export default function AuditFormsManager({
           supabase={supabase}
           currentUserId={currentUserId}
           currentUserName={currentUserName}
+        />
+      )}
+
+      {/* FORM 5: MASTER COMPLIANCE BINDER */}
+      {activeFormTab === "master_binder" && (
+        <MasterComplianceBinder
+          supabase={supabase}
+          currentUserId={currentUserId}
+          currentUserName={currentUserName}
+          selectedLocation={selectedLocation}
+          locations={locations}
         />
       )}
     </div>
