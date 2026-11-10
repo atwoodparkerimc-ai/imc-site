@@ -210,14 +210,14 @@ export default function MonthlyRiskPredictionAudit({
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-none bg-[var(--color-brand-blue,#0088ff)] animate-pulse" />
             <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-brand-blue,#0088ff)]">
-              Quality Compliance Roster[cite: 4]
+              Quality Compliance Roster
             </span>
           </div>
           <h2 className="text-base sm:text-lg font-black uppercase text-white">
-            Monthly Risk Prediction Paperwork Quality Audit[cite: 4]
+            Monthly Risk Prediction Paperwork Quality Audit
           </h2>
           <p className="text-xs text-slate-400 font-sans mt-0.5">
-            Conduct and record monthly evaluations for all personnel working at Nestlé Springville.[cite: 4]
+            Conduct and record monthly evaluations for all personnel working at Nestlé Springville.
           </p>
         </div>
 
@@ -366,13 +366,13 @@ export default function MonthlyRiskPredictionAudit({
               <div className="p-4 border-b border-[var(--color-brand-border)] bg-[var(--color-brand-bg)] flex justify-between items-start shrink-0">
                 <div>
                   <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-brand-blue,#0088ff)] block">
-                    Quality Audit Evaluation[cite: 4]
+                    Quality Audit Evaluation
                   </span>
                   <h3 className="text-sm sm:text-base font-black uppercase text-white">
-                    Monthly Risk Prediction Paperwork Quality Audit[cite: 4]
+                    Monthly Risk Prediction Paperwork Quality Audit
                   </h3>
                   <p className="text-xs text-slate-400 font-sans mt-0.5">
-                    Target Employee: <strong className="text-white">{targetEmployee.name}</strong>[cite: 4]
+                    Target Employee: <strong className="text-white">{targetEmployee.name}</strong>
                   </p>
                 </div>
                 <button
@@ -394,7 +394,7 @@ export default function MonthlyRiskPredictionAudit({
                 {/* DETAILS GRID */}
                 <div className="p-3 rounded-sm bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Audit Date[cite: 4]</label>
+                    <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Audit Date</label>
                     <input
                       type="date"
                       value={auditDate}
@@ -404,7 +404,7 @@ export default function MonthlyRiskPredictionAudit({
                   </div>
 
                   <div>
-                    <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Target Work Date Audited[cite: 4]</label>
+                    <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Target Work Date Audited</label>
                     <input
                       type="date"
                       value={targetWorkDate}
@@ -414,7 +414,7 @@ export default function MonthlyRiskPredictionAudit({
                   </div>
 
                   <div>
-                    <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Auditor Name[cite: 4]</label>
+                    <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Auditor Name</label>
                     <input
                       type="text"
                       value={auditorSignature}
@@ -424,7 +424,7 @@ export default function MonthlyRiskPredictionAudit({
                   </div>
 
                   <div>
-                    <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Audited Location / Area[cite: 4]</label>
+                    <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Audited Location / Area</label>
                     <input
                       type="text"
                       value={auditedLocation}
@@ -437,12 +437,12 @@ export default function MonthlyRiskPredictionAudit({
                 {/* PART 1 */}
                 <div className="space-y-4">
                   <h4 className="text-xs font-black uppercase text-amber-300 border-b border-[var(--color-brand-border)] pb-1">
-                    PART 1: DAILY RISK PREDICTION QUALITY AUDIT[cite: 4]
+                    PART 1: DAILY RISK PREDICTION QUALITY AUDIT
                   </h4>
 
                   {/* 1. Basic Info */}
                   <div className="space-y-2">
-                    <span className="font-bold uppercase text-white block">1. Basic Information & Pre-Checks[cite: 4]</span>
+                    <span className="font-bold uppercase text-white block">1. Basic Information & Pre-Checks</span>
                     <label className="flex items-start gap-2 cursor-pointer text-slate-300 font-sans">
                       <input
                         type="checkbox"
@@ -450,7 +450,7 @@ export default function MonthlyRiskPredictionAudit({
                         onChange={(e) => setPreChecksSelected(e.target.checked)}
                         className="mt-0.5 rounded-none cursor-pointer"
                       />
-                      <span><strong>Pre-Checks Selected (Required *):</strong> LOTO, evacuation routes, safety shower, required tools verified.[cite: 4]</span>
+                      <span><strong>Pre-Checks Selected (Required *):</strong> LOTO, evacuation routes, safety shower, required tools verified.</span>
                     </label>
 
                     <label className="flex items-start gap-2 cursor-pointer text-slate-300 font-sans">
@@ -460,7 +460,7 @@ export default function MonthlyRiskPredictionAudit({
                         onChange={(e) => setCompletedByLocation(e.target.checked)}
                         className="mt-0.5 rounded-none cursor-pointer"
                       />
-                      <span><strong>Risk Prediction Completed By & Location (Required *):</strong> Name and site/room accurately recorded.[cite: 4]</span>
+                      <span><strong>Risk Prediction Completed By & Location (Required *):</strong> Name and site/room accurately recorded.</span>
                     </label>
 
                     <label className="flex items-start gap-2 cursor-pointer text-slate-300 font-sans">
@@ -470,13 +470,13 @@ export default function MonthlyRiskPredictionAudit({
                         onChange={(e) => setOthersInvolved(e.target.checked)}
                         className="mt-0.5 rounded-none cursor-pointer"
                       />
-                      <span><strong>Others Involved in Risk Prediction:</strong> Names of coworkers/crew members listed if working in teams.[cite: 4]</span>
+                      <span><strong>Others Involved in Risk Prediction:</strong> Names of coworkers/crew members listed if working in teams.</span>
                     </label>
                   </div>
 
                   {/* 2. Alignment */}
                   <div className="space-y-2 pt-2 border-t border-[var(--color-brand-border)]">
-                    <span className="font-bold uppercase text-white block">2. Initial Hazards & Precautions Alignment[cite: 4]</span>
+                    <span className="font-bold uppercase text-white block">2. Initial Hazards & Precautions Alignment</span>
                     <label className="flex items-start gap-2 cursor-pointer text-slate-300 font-sans">
                       <input
                         type="checkbox"
@@ -484,7 +484,7 @@ export default function MonthlyRiskPredictionAudit({
                         onChange={(e) => setSpecificHazards(e.target.checked)}
                         className="mt-0.5 rounded-none cursor-pointer"
                       />
-                      <span><strong>Specific Hazards Identified (Required *):</strong> Hazards checked match the actual work environment and task.[cite: 4]</span>
+                      <span><strong>Specific Hazards Identified (Required *):</strong> Hazards checked match the actual work environment and task.</span>
                     </label>
 
                     <label className="flex items-start gap-2 cursor-pointer text-slate-300 font-sans">
@@ -494,18 +494,18 @@ export default function MonthlyRiskPredictionAudit({
                         onChange={(e) => setPrecautionsChecked(e.target.checked)}
                         className="mt-0.5 rounded-none cursor-pointer"
                       />
-                      <span><strong>Precautions Checked (Required *):</strong> Specific PPE and controls checked directly correspond to the selected hazards.[cite: 4]</span>
+                      <span><strong>Precautions Checked (Required *):</strong> Specific PPE and controls checked directly correspond to the selected hazards.</span>
                     </label>
                   </div>
 
                   {/* 3. Mandatory Sections */}
                   <div className="space-y-3 pt-2 border-t border-[var(--color-brand-border)]">
-                    <span className="font-bold uppercase text-white block">3. Mandatory Sections[cite: 4]</span>
-                    <p className="text-[11px] text-slate-400 font-sans">Evaluate the depth and quality of written mitigation strategies:[cite: 4]</p>
+                    <span className="font-bold uppercase text-white block">3. Mandatory Sections</span>
+                    <p className="text-[11px] text-slate-400 font-sans">Evaluate the depth and quality of written mitigation strategies:</p>
 
                     <div className="p-3 bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] rounded-sm space-y-2">
                       <span className="font-bold text-white text-[11px] block">
-                        &quot;Eliminate Hazard by (identify additional precautions to control hazards identified above)&quot;:[cite: 4]
+                        &quot;Eliminate Hazard by (identify additional precautions to control hazards identified above)&quot;:
                       </span>
                       <div className="flex flex-wrap gap-3 text-[11px]">
                         {(["Complete & Detailed", "Vague / Generic", "Blank (Non-Compliant)"] as const).map((opt) => (
@@ -516,7 +516,7 @@ export default function MonthlyRiskPredictionAudit({
                               checked={eliminateHazardStatus === opt}
                               onChange={() => setEliminateHazardStatus(opt)}
                             />
-                            <span>{opt}[cite: 4]</span>
+                            <span>{opt}</span>
                           </label>
                         ))}
                       </div>
@@ -524,14 +524,14 @@ export default function MonthlyRiskPredictionAudit({
                         type="text"
                         value={eliminateHazardNotes}
                         onChange={(e) => setEliminateHazardNotes(e.target.value)}
-                        placeholder="Notes / Comments...[cite: 4]"
+                        placeholder="Notes / Comments..."
                         className="w-full px-2.5 py-1 bg-[var(--color-brand-card)] border border-[var(--color-brand-border)] text-white text-xs rounded-sm outline-none"
                       />
                     </div>
 
                     <div className="p-3 bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] rounded-sm space-y-2">
                       <span className="font-bold text-white text-[11px] block">
-                        &quot;ADDITIONAL THOUGHTS&quot;:[cite: 4]
+                        &quot;ADDITIONAL THOUGHTS&quot;:
                       </span>
                       <div className="flex flex-wrap gap-3 text-[11px]">
                         {(["Meaningful Context Provided", "Minimal / One-word", "Blank (Non-Compliant)"] as const).map((opt) => (
@@ -542,7 +542,7 @@ export default function MonthlyRiskPredictionAudit({
                               checked={additionalThoughtsStatus === opt}
                               onChange={() => setAdditionalThoughtsStatus(opt)}
                             />
-                            <span>{opt}[cite: 3]</span>
+                            <span>{opt}</span>
                           </label>
                         ))}
                       </div>
@@ -550,7 +550,7 @@ export default function MonthlyRiskPredictionAudit({
                         type="text"
                         value={additionalThoughtsNotes}
                         onChange={(e) => setAdditionalThoughtsNotes(e.target.value)}
-                        placeholder="Notes / Comments...[cite: 3]"
+                        placeholder="Notes / Comments..."
                         className="w-full px-2.5 py-1 bg-[var(--color-brand-card)] border border-[var(--color-brand-border)] text-white text-xs rounded-sm outline-none"
                       />
                     </div>
@@ -559,7 +559,7 @@ export default function MonthlyRiskPredictionAudit({
                   {/* 4. Detailed Breakdown */}
                   <div className="space-y-3 pt-2 border-t border-[var(--color-brand-border)]">
                     <span className="font-bold uppercase text-white block">
-                      4. Detailed Job Task Breakdown (Specific Hazards & Precautions)[cite: 3]
+                      4. Detailed Job Task Breakdown (Specific Hazards & Precautions)
                     </span>
                     <label className="flex items-start gap-2 cursor-pointer text-slate-300 font-sans">
                       <input
@@ -568,7 +568,7 @@ export default function MonthlyRiskPredictionAudit({
                         onChange={(e) => setJobDescRequired(e.target.checked)}
                         className="mt-0.5 rounded-none cursor-pointer"
                       />
-                      <span><strong>Job Description For Above (Required *):</strong> Detailed scope of the day&apos;s work (not just 1-2 words).[cite: 3]</span>
+                      <span><strong>Job Description For Above (Required *):</strong> Detailed scope of the day&apos;s work (not just 1-2 words).</span>
                     </label>
 
                     <label className="flex items-start gap-2 cursor-pointer text-slate-300 font-sans">
@@ -578,7 +578,7 @@ export default function MonthlyRiskPredictionAudit({
                         onChange={(e) => setTask1Breakdown(e.target.checked)}
                         className="mt-0.5 rounded-none cursor-pointer"
                       />
-                      <span><strong>Job Task #1 Breakdown (Required *):</strong> High-hazard task named with specific hazards/precautions (1a, 1b, 1c).[cite: 3]</span>
+                      <span><strong>Job Task #1 Breakdown (Required *):</strong> High-hazard task named with specific hazards/precautions (1a, 1b, 1c).</span>
                     </label>
 
                     <label className="flex items-start gap-2 cursor-pointer text-slate-300 font-sans">
@@ -588,7 +588,7 @@ export default function MonthlyRiskPredictionAudit({
                         onChange={(e) => setTask2Breakdown(e.target.checked)}
                         className="mt-0.5 rounded-none cursor-pointer"
                       />
-                      <span><strong>Job Task #2 Breakdown:</strong> Clear secondary task defined with corresponding hazard/precaution entries.[cite: 3]</span>
+                      <span><strong>Job Task #2 Breakdown:</strong> Clear secondary task defined with corresponding hazard/precaution entries.</span>
                     </label>
 
                     <label className="flex items-start gap-2 cursor-pointer text-slate-300 font-sans">
@@ -598,12 +598,12 @@ export default function MonthlyRiskPredictionAudit({
                         onChange={(e) => setTask3Breakdown(e.target.checked)}
                         className="mt-0.5 rounded-none cursor-pointer"
                       />
-                      <span><strong>Job Task #3 Breakdown:</strong> Third high-hazard task detailed if applicable to full shift scope.[cite: 3]</span>
+                      <span><strong>Job Task #3 Breakdown:</strong> Third high-hazard task detailed if applicable to full shift scope.</span>
                     </label>
 
                     <div className="pt-1">
                       <span className="text-[10px] font-bold uppercase text-slate-400 block mb-1">
-                        Specificity Score:[cite: 3]
+                        Specificity Score:
                       </span>
                       <div className="flex flex-wrap gap-3">
                         {(["High Detail (Actionable)", "Moderate Detail", "Unacceptable (Check-the-box only)"] as const).map((sc) => (
@@ -614,7 +614,7 @@ export default function MonthlyRiskPredictionAudit({
                               checked={specificityScore === sc}
                               onChange={() => setSpecificityScore(sc)}
                             />
-                            <span>{sc}[cite: 3]</span>
+                            <span>{sc}</span>
                           </label>
                         ))}
                       </div>
@@ -624,7 +624,7 @@ export default function MonthlyRiskPredictionAudit({
                   {/* 5. STOP & RE-EVALUATE */}
                   <div className="space-y-3 pt-2 border-t border-[var(--color-brand-border)]">
                     <span className="font-bold uppercase text-white block">
-                      5. Prompts to STOP and RE-EVALUATE[cite: 3]
+                      5. Prompts to STOP and RE-EVALUATE
                     </span>
                     <label className="flex items-start gap-2 cursor-pointer text-slate-300 font-sans">
                       <input
@@ -633,12 +633,12 @@ export default function MonthlyRiskPredictionAudit({
                         onChange={(e) => setUnexpectedEvents(e.target.checked)}
                         className="mt-0.5 rounded-none cursor-pointer"
                       />
-                      <span><strong>2-3 Unexpected Events Identified (Required *):</strong> Realistic scenarios checked (e.g., stuck, rush, line of fire).[cite: 3]</span>
+                      <span><strong>2-3 Unexpected Events Identified (Required *):</strong> Realistic scenarios checked (e.g., stuck, rush, line of fire).</span>
                     </label>
 
                     <div className="p-3 bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] rounded-sm space-y-2">
                       <span className="font-bold text-white text-[11px] block">
-                        &quot;Now list how you will react to each prompt you checked&quot; (Required *):[cite: 3]
+                        &quot;Now list how you will react to each prompt you checked&quot; (Required *):
                       </span>
                       <div className="flex gap-4">
                         {(["Specific, actionable response detailed", "Incomplete / Vague"] as const).map((st) => (
@@ -649,7 +649,7 @@ export default function MonthlyRiskPredictionAudit({
                               checked={reactPromptStatus === st}
                               onChange={() => setReactPromptStatus(st)}
                             />
-                            <span>{st}[cite: 3]</span>
+                            <span>{st}</span>
                           </label>
                         ))}
                       </div>
@@ -657,14 +657,14 @@ export default function MonthlyRiskPredictionAudit({
                         type="text"
                         value={reactPromptNotes}
                         onChange={(e) => setReactPromptNotes(e.target.value)}
-                        placeholder="Notes...[cite: 3]"
+                        placeholder="Notes..."
                         className="w-full px-2.5 py-1 bg-[var(--color-brand-card)] border border-[var(--color-brand-border)] text-white text-xs rounded-sm outline-none"
                       />
                     </div>
 
                     <div className="pt-1">
                       <span className="text-[10px] font-bold uppercase text-slate-400 block mb-1">
-                        Audit Quality Score:[cite: 3]
+                        Audit Quality Score:
                       </span>
                       <div className="flex flex-wrap gap-3">
                         {(["Meets Standards (Detailed & Complete)", "Needs Improvement", "Unsatisfactory"] as const).map((qs) => (
@@ -675,7 +675,7 @@ export default function MonthlyRiskPredictionAudit({
                               checked={auditQualityScore === qs}
                               onChange={() => setAuditQualityScore(qs)}
                             />
-                            <span>{qs}[cite: 3]</span>
+                            <span>{qs}</span>
                           </label>
                         ))}
                       </div>
@@ -686,44 +686,44 @@ export default function MonthlyRiskPredictionAudit({
                 {/* PART 2 */}
                 <div className="space-y-4 pt-2 border-t border-[var(--color-brand-border)]">
                   <h4 className="text-xs font-black uppercase text-amber-300 border-b border-[var(--color-brand-border)] pb-1">
-                    PART 2: EMPLOYEE FEEDBACK & COACHING[cite: 3]
+                    PART 2: EMPLOYEE FEEDBACK & COACHING
                   </h4>
 
                   <div className="space-y-1.5">
                     <span className="font-bold text-white block">
-                      1. What the Employee Did Well (Quality Strengths)[cite: 3]
+                      1. What the Employee Did Well (Quality Strengths)
                     </span>
                     <p className="text-[11px] text-slate-400 font-sans">
-                      Highlight strong areas of detail, thorough task breakdown, or proactive risk thinking:[cite: 3]
+                      Highlight strong areas of detail, thorough task breakdown, or proactive risk thinking:
                     </p>
                     <textarea
                       rows={2}
                       value={strengthsNotes}
                       onChange={(e) => setStrengthsNotes(e.target.value)}
-                      placeholder="Enter strengths observed...[cite: 3]"
+                      placeholder="Enter strengths observed..."
                       className="w-full p-2 bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] text-white rounded-sm outline-none"
                     />
                   </div>
 
                   <div className="space-y-1.5">
                     <span className="font-bold text-white block">
-                      2. Areas for Improvement (Missing Fields & Detail Gaps)[cite: 3]
+                      2. Areas for Improvement (Missing Fields & Detail Gaps)
                     </span>
                     <p className="text-[11px] text-slate-400 font-sans">
-                      Address vague descriptions, unchecked required items, or omitted custom fields:[cite: 3]
+                      Address vague descriptions, unchecked required items, or omitted custom fields:
                     </p>
                     <textarea
                       rows={2}
                       value={improvementsNotes}
                       onChange={(e) => setImprovementsNotes(e.target.value)}
-                      placeholder="Enter coaching notes and gaps...[cite: 3]"
+                      placeholder="Enter coaching notes and gaps..."
                       className="w-full p-2 bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] text-white rounded-sm outline-none"
                     />
                   </div>
 
                   <div className="space-y-2 pt-1">
                     <span className="text-[10px] font-bold uppercase text-slate-400 block">
-                      Corrective Action / Coaching Required:[cite: 3]
+                      Corrective Action / Coaching Required:
                     </span>
                     <div className="flex flex-wrap gap-4">
                       <label className="flex items-center gap-2 cursor-pointer font-sans">
@@ -733,7 +733,7 @@ export default function MonthlyRiskPredictionAudit({
                           onChange={(e) => setCoachingCompleted(e.target.checked)}
                           className="rounded-none cursor-pointer"
                         />
-                        <span>Paperwork Coaching Completed During Audit[cite: 3]</span>
+                        <span>Paperwork Coaching Completed During Audit</span>
                       </label>
 
                       <label className="flex items-center gap-2 cursor-pointer font-sans">
@@ -743,7 +743,7 @@ export default function MonthlyRiskPredictionAudit({
                           onChange={(e) => setReAuditScheduled(e.target.checked)}
                           className="rounded-none cursor-pointer"
                         />
-                        <span>Re-audit Scheduled Within 7 Days[cite: 3]</span>
+                        <span>Re-audit Scheduled Within 7 Days</span>
                       </label>
                     </div>
                   </div>
@@ -751,7 +751,7 @@ export default function MonthlyRiskPredictionAudit({
                   {/* SIGNATURES */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t border-[var(--color-brand-border)]">
                     <div className="p-2.5 bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] space-y-1.5">
-                      <label className="text-[10px] uppercase font-bold text-slate-400 block">Employee Signature:[cite: 3]</label>
+                      <label className="text-[10px] uppercase font-bold text-slate-400 block">Employee Signature:</label>
                       <input
                         type="text"
                         value={employeeSignature}
@@ -767,7 +767,7 @@ export default function MonthlyRiskPredictionAudit({
                     </div>
 
                     <div className="p-2.5 bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] space-y-1.5">
-                      <label className="text-[10px] uppercase font-bold text-slate-400 block">Auditor Signature:[cite: 3]</label>
+                      <label className="text-[10px] uppercase font-bold text-slate-400 block">Auditor Signature:</label>
                       <input
                         type="text"
                         value={auditorSignature}

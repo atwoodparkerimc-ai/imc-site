@@ -1611,7 +1611,9 @@ export async function signSubcontractorDailyJha(
   }
 }
 
-// --- TOOLBOX & TOOL INSPECTION OPERATIONS ---
+// ==========================================
+// 11. TOOLBOX & TOOL INSPECTION OPERATIONS
+// ==========================================
 
 export interface EmployeeToolboxItem {
   id: string;
@@ -1634,7 +1636,7 @@ export interface DailyToolInspectionRecord {
   signed_at: string;
 }
 
-// 1. Fetch user's personal digital toolbox
+/** Fetch user's personal digital toolbox */
 export async function getEmployeeToolbox(supabase: any, userId: string): Promise<EmployeeToolboxItem[]> {
   if (!userId) {
     console.warn("getEmployeeToolbox called without valid userId.");
@@ -1659,7 +1661,7 @@ export async function getEmployeeToolbox(supabase: any, userId: string): Promise
   return data || [];
 }
 
-// 2. Add tool to toolbox
+/** Add tool to personal digital toolbox */
 export async function addToolToToolbox(
   supabase: any,
   userId: string,
@@ -1696,7 +1698,7 @@ export async function addToolToToolbox(
   return { success: true, item: data };
 }
 
-// 3. Remove tool from toolbox
+/** Remove tool from toolbox */
 export async function removeToolFromToolbox(supabase: any, id: string): Promise<boolean> {
   if (!id) return false;
 
@@ -1717,7 +1719,7 @@ export async function removeToolFromToolbox(supabase: any, id: string): Promise<
   return true;
 }
 
-// 4. Toggle favorite status
+/** Toggle favorite status for 1-click morning check-ins */
 export async function toggleToolFavorite(supabase: any, id: string, isFavorite: boolean): Promise<boolean> {
   if (!id) return false;
 
@@ -1738,65 +1740,7 @@ export async function toggleToolFavorite(supabase: any, id: string, isFavorite: 
   return true;
 }
 
-// 5. Batch-verify monthly inspection tape on all POWER TOOLS and SHOP TOOLS in toolbox
-export async function verifyMonthlyToolboxTape(
-  supabase: any,
-  userId: string,
-  monthKey: string
-): Promise<boolean> {
-  if (!userId || !monthKey) return false;
-
-  // Apply monthly tape verification strictly to Power Tools and Shop Tools
-  const { error } = await supabase
-    .from("employee_toolboxes")
-    .update({ last_tape_verified_month: monthKey })
-    .eq("user_id", userId)
-    .in("category", ["Power Tools", "Shop Tools"]);
-
-  if (error) {
-    console.error("Error verifying monthly powered tool tape:", {
-      message: error.message,
-      details: error.details,
-      hint: error.hint,
-      code: error.code,
-    });
-    return false;
-  }
-  return true;
-}
-
-// 5b. Check if employee has certified powered equipment (Power Tools & Shop Tools) for the specified month
-export async function hasCertifiedPowerToolsForMonth(
-  supabase: any,
-  userId: string,
-  monthKey: string
-): Promise<boolean> {
-  if (!userId || !monthKey) return false;
-
-  const { data, error } = await supabase
-    .from("employee_toolboxes")
-    .select("id, last_tape_verified_month")
-    .eq("user_id", userId)
-    .in("category", ["Power Tools", "Shop Tools"])
-    .limit(1);
-
-  if (error) {
-    console.error("Error checking monthly powered tool certification:", {
-      message: error.message,
-      details: error.details,
-      hint: error.hint,
-      code: error.code,
-    });
-    return false;
-  }
-
-  // If the user has no power or shop tools registered in their kit, they aren't blocked
-  if (!data || data.length === 0) return true;
-
-  return data[0].last_tape_verified_month === monthKey;
-}
-
-// 6. Record daily tool inspection (Morning initialization)
+/** Record or update daily tool inspection (Safe for morning routine, re-entry, and location transfers) */
 export async function recordDailyToolInspection(
   supabase: any,
   payload: {
@@ -1807,32 +1751,65 @@ export async function recordDailyToolInspection(
     toolsInspected: string[];
   }
 ): Promise<{ success: boolean; error?: string }> {
-  const today = new Date().toISOString().split("T")[0];
+  try {
+    const today = new Date().toISOString().split("T")[0];
+    const nowIso = new Date().toISOString();
 
-  const { error } = await supabase
-    .from("daily_tool_inspections")
-    .insert({
-      user_id: payload.userId,
-      employee_name: payload.employeeName,
-      location: payload.location,
-      inspection_date: today,
-      tape_color_verified: payload.tapeColorVerified,
-      tools_inspected: payload.toolsInspected,
-    });
+    // 1. Check if user already has an active inspection for today
+    const { data: existing, error: fetchErr } = await supabase
+      .from("daily_tool_inspections")
+      .select("id, tools_inspected")
+      .eq("user_id", payload.userId)
+      .eq("inspection_date", today)
+      .order("signed_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
-  if (error) {
-    console.error("Error recording daily tool inspection log:", {
-      message: error.message,
-      details: error.details,
-      hint: error.hint,
-      code: error.code,
-    });
-    return { success: false, error: error.message || "Failed to record tool inspection." };
+    if (fetchErr) throw fetchErr;
+
+    if (existing) {
+      // Merge unique tools so previously inspected tools are preserved
+      const existingTools: string[] = Array.isArray(existing.tools_inspected) ? existing.tools_inspected : [];
+      const mergedSet = new Set([...existingTools, ...payload.toolsInspected]);
+      const mergedList = Array.from(mergedSet);
+
+      const { error: updateError } = await supabase
+        .from("daily_tool_inspections")
+        .update({
+          employee_name: payload.employeeName,
+          location: payload.location,
+          tape_color_verified: payload.tapeColorVerified,
+          tools_inspected: mergedList,
+          signed_at: nowIso,
+        })
+        .eq("id", existing.id);
+
+      if (updateError) throw updateError;
+      return { success: true };
+    }
+
+    // 2. No record exists today yet -> create fresh inspection
+    const { error: insertError } = await supabase
+      .from("daily_tool_inspections")
+      .insert({
+        user_id: payload.userId,
+        employee_name: payload.employeeName,
+        location: payload.location,
+        inspection_date: today,
+        tape_color_verified: payload.tapeColorVerified,
+        tools_inspected: payload.toolsInspected,
+        signed_at: nowIso,
+      });
+
+    if (insertError) throw insertError;
+    return { success: true };
+  } catch (err: any) {
+    console.error("Error recording/updating daily tool inspection:", err);
+    return { success: false, error: err?.message || "Failed to record tool inspection." };
   }
-  return { success: true };
 }
 
-// 7. Check if user has completed daily tool inspection today
+/** Check if user has completed daily tool inspection today */
 export async function hasCompletedToolInspectionToday(supabase: any, userId: string): Promise<boolean> {
   if (!userId) return false;
 
@@ -1857,7 +1834,7 @@ export async function hasCompletedToolInspectionToday(supabase: any, userId: str
   return Boolean(data && data.length > 0);
 }
 
-// 8. Fetch today's active tool inspection record for a specific user
+/** Fetch today's active tool inspection record for a specific user */
 export async function getTodayToolInspection(
   supabase: any,
   userId: string
@@ -1887,66 +1864,97 @@ export async function getTodayToolInspection(
   return data;
 }
 
-// 9. Midday Tool Checkout: Append new tools to today's active inspection
+/** 
+ * Midday Tool Checkout: Append new tools or auto-create if no morning record exists.
+ * Never throws "No active tool check found" error for visiting workers.
+ */
 export async function appendToolsToTodayInspection(
   supabase: any,
   userId: string,
-  newTools: string[]
+  newTools: string[],
+  locationFallback: string = "Nestle Springville"
 ): Promise<{ success: boolean; updatedTools?: string[]; error?: string }> {
   if (!userId || newTools.length === 0) {
     return { success: false, error: "Missing required userId or tools list." };
   }
 
-  const today = new Date().toISOString().split("T")[0];
+  try {
+    const today = new Date().toISOString().split("T")[0];
+    const nowIso = new Date().toISOString();
 
-  // 1. Fetch current inspection
-  const { data: existing, error: fetchErr } = await supabase
-    .from("daily_tool_inspections")
-    .select("id, tools_inspected")
-    .eq("user_id", userId)
-    .eq("inspection_date", today)
-    .order("signed_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+    // 1. Fetch current inspection for today
+    const { data: existing, error: fetchErr } = await supabase
+      .from("daily_tool_inspections")
+      .select("id, tools_inspected")
+      .eq("user_id", userId)
+      .eq("inspection_date", today)
+      .order("signed_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
-  if (fetchErr) {
-    return { success: false, error: fetchErr.message };
-  }
-
-  if (!existing) {
-    return { success: false, error: "No active tool check record found for today. Complete shift safety check first." };
-  }
-
-  // 2. Merge tool lists without duplicate names
-  const existingTools: string[] = Array.isArray(existing.tools_inspected) ? existing.tools_inspected : [];
-  const existingLower = new Set(existingTools.map((t) => t.toLowerCase()));
-  const merged = [...existingTools];
-
-  for (const tool of newTools) {
-    if (!existingLower.has(tool.toLowerCase().trim())) {
-      merged.push(tool.trim());
-      existingLower.add(tool.toLowerCase().trim());
+    if (fetchErr) {
+      return { success: false, error: fetchErr.message };
     }
+
+    // 2. If an inspection ALREADY exists -> merge and update
+    if (existing) {
+      const existingTools: string[] = Array.isArray(existing.tools_inspected) ? existing.tools_inspected : [];
+      const existingLower = new Set(existingTools.map((t) => t.toLowerCase().trim()));
+      const merged = [...existingTools];
+
+      for (const tool of newTools) {
+        if (!existingLower.has(tool.toLowerCase().trim())) {
+          merged.push(tool.trim());
+          existingLower.add(tool.toLowerCase().trim());
+        }
+      }
+
+      const { error: updateErr } = await supabase
+        .from("daily_tool_inspections")
+        .update({
+          tools_inspected: merged,
+          signed_at: nowIso,
+        })
+        .eq("id", existing.id);
+
+      if (updateErr) throw updateErr;
+      return { success: true, updatedTools: merged };
+    }
+
+    // 3. If NO inspection exists yet (visiting worker) -> Auto-create the initial record for today
+    const { data: profile } = await supabase
+      .from("user_profiles")
+      .select("first_name, last_name, location")
+      .eq("id", userId)
+      .maybeSingle();
+
+    const empName = profile 
+      ? `${profile.first_name || ""} ${profile.last_name || ""}`.trim() || "IMC Employee"
+      : "IMC Employee";
+
+    const activeLocation = profile?.location || locationFallback;
+
+    const { error: insertErr } = await supabase
+      .from("daily_tool_inspections")
+      .insert({
+        user_id: userId,
+        employee_name: empName,
+        location: activeLocation,
+        inspection_date: today,
+        tape_color_verified: "ORANGE & YELLOW",
+        tools_inspected: newTools.map((t) => t.trim()),
+        signed_at: nowIso,
+      });
+
+    if (insertErr) throw insertErr;
+    return { success: true, updatedTools: newTools };
+  } catch (err: any) {
+    console.error("Error in appendToolsToTodayInspection:", err);
+    return { success: false, error: err?.message || "Failed to log tools." };
   }
-
-  // 3. Update row with merged array & new digital timestamp
-  const { error: updateErr } = await supabase
-    .from("daily_tool_inspections")
-    .update({
-      tools_inspected: merged,
-      signed_at: new Date().toISOString(),
-    })
-    .eq("id", existing.id);
-
-  if (updateErr) {
-    console.error("Error appending tools to inspection:", updateErr);
-    return { success: false, error: updateErr.message };
-  }
-
-  return { success: true, updatedTools: merged };
 }
 
-// 10. Fetch inspection ledger batch (Restricted strictly to Nestlé Springville pilot)
+/** Fetch inspection ledger batch (Scoped to facility audit date window) */
 export async function getToolInspectionsLedger(
   supabase: any,
   startDate: string,
@@ -1955,7 +1963,6 @@ export async function getToolInspectionsLedger(
 ): Promise<DailyToolInspectionRecord[]> {
   if (!startDate || !endDate) return [];
 
-  // Enforce Springville scope: even if "ALL" or empty is passed, lock to Springville
   const enforcedLocation = (!location || location === "ALL") 
     ? "Nestle Springville" 
     : location.trim();
@@ -1979,4 +1986,4 @@ export async function getToolInspectionsLedger(
   }
 
   return data || [];
-} 
+}

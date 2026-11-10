@@ -8,7 +8,6 @@ import {
   addToolToToolbox,
   removeToolFromToolbox,
   toggleToolFavorite,
-  verifyMonthlyToolboxTape,
 } from "@/lib/db/operations";
 import {
   MASTER_TOOL_LIST,
@@ -107,20 +106,6 @@ export default function ProfileToolboxManager({
     }
   };
 
-  const handleVerifyTapeAll = async () => {
-    if (
-      !confirm(
-        `Certify that all active Power Tools and powered Shop Tools in your possession bear the active ${currentMonth.monthName} tape (${currentMonth.color})? Non-powered tools and rigging do not require tape.`
-      )
-    )
-      return;
-
-    await verifyMonthlyToolboxTape(supabase, userId, currentMonth.monthKey);
-    await loadToolbox();
-    setFeedback(`Certified all powered tools for ${currentMonth.monthName} (${currentMonth.color}).`);
-    setTimeout(() => setFeedback(null), 3000);
-  };
-
   return (
     <div className="border rounded-sm bg-[var(--color-brand-card)] border-[var(--color-brand-border)] p-4 sm:p-6 space-y-5 font-mono shadow-xl">
       {/* HEADER */}
@@ -140,23 +125,27 @@ export default function ProfileToolboxManager({
           </p>
         </div>
 
-        {/* POWERED EQUIPMENT TAPE STATUS */}
-        <div className="flex items-center gap-2.5 p-2 sm:px-3 sm:py-2 border rounded-sm bg-[var(--color-brand-bg)] border-[var(--color-brand-border)]">
-          <div className="text-right">
-            <span className="text-[9px] uppercase font-bold text-slate-400 block">
-              {currentMonth.monthName} Powered Tape
+        {/* ACTIVE MONTH TAPE COLOR BADGE (CLEAN HORIZONTAL PILL) */}
+        <div className="flex items-center gap-3 px-3.5 py-2 border rounded-sm bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] shrink-0 shadow-inner">
+          <div className="flex flex-col items-start sm:items-end">
+            <span className="text-[9px] uppercase font-bold tracking-wider text-slate-400">
+              {currentMonth.monthName} Tape Code
             </span>
-            <span className="text-xs font-black uppercase text-amber-300">
+            <span className="text-xs font-black uppercase tracking-wide text-amber-300 whitespace-nowrap">
               {currentMonth.color}
             </span>
           </div>
-          <button
-            type="button"
-            onClick={handleVerifyTapeAll}
-            className="text-[10px] font-bold uppercase px-2.5 py-1.5 bg-amber-400/10 border border-amber-400/40 text-amber-300 hover:bg-amber-400 hover:text-black rounded-sm cursor-pointer transition-colors"
-          >
-            ✓ Certify Powered Tape
-          </button>
+
+          <div className="flex items-center gap-1.5 px-2 py-1 rounded-xs bg-slate-900/90 border border-slate-700/80">
+            <span
+              className="w-3 h-3 rounded-full bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.7)]"
+              title="Orange"
+            />
+            <span
+              className="w-3 h-3 rounded-full bg-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.7)]"
+              title="Yellow"
+            />
+          </div>
         </div>
       </div>
 

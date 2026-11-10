@@ -1,19 +1,17 @@
 // app/(dashboard)/safety/_components/DailyToolCheckModule.tsx
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   EmployeeToolboxItem,
   addToolToToolbox,
   removeToolFromToolbox,
   toggleToolFavorite,
-  verifyMonthlyToolboxTape,
   recordDailyToolInspection,
 } from "@/lib/db/operations";
 import {
   MASTER_TOOL_LIST,
   getCurrentMonthTapeColor,
-  getFourthWorkingDayDeadline,
   isToolPowered,
 } from "@/lib/data/toolCatalog";
 
@@ -50,31 +48,27 @@ export default function DailyToolCheckModule({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [complianceCertified, setComplianceCertified] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [showMonthlyTapeModal, setShowMonthlyTapeModal] = useState(false);
 
   const currentMonthInfo = useMemo(() => getCurrentMonthTapeColor(), []);
-  const fourthWorkingDayDeadline = useMemo(() => getFourthWorkingDayDeadline(), []);
-  const now = new Date();
-  const isPastGracePeriod = now > fourthWorkingDayDeadline;
 
-  const poweredToolsInBox = useMemo(() => {
-    return toolbox.filter((t) => isToolPowered(t.tool_name, t.category));
-  }, [toolbox]);
+  // Once-per-month reminder check using localStorage
+  useEffect(() => {
+    if (!userId || typeof window === "undefined") return;
+    const storageKey = `imc_tape_ack_${userId}_${currentMonthInfo.monthKey}`;
+    const alreadySeen = localStorage.getItem(storageKey);
+    if (!alreadySeen) {
+      setShowMonthlyTapeModal(true);
+    }
+  }, [userId, currentMonthInfo.monthKey]);
 
-  const needsTapeRecertification = useMemo(() => {
-    if (poweredToolsInBox.length === 0) return false;
-    return poweredToolsInBox.some((t) => t.last_tape_verified_month !== currentMonthInfo.monthKey);
-  }, [poweredToolsInBox, currentMonthInfo.monthKey]);
-
-  const hasPoweredToolsSelected = useMemo(() => {
-    return selectedTools.some((toolName) => {
-      const inBox = toolbox.find((t) => t.tool_name.toLowerCase() === toolName.toLowerCase());
-      if (inBox) return isToolPowered(toolName, inBox.category);
-      const inCatalog = MASTER_TOOL_LIST.find((m) => m.name.toLowerCase() === toolName.toLowerCase());
-      return isToolPowered(toolName, inCatalog?.category);
-    });
-  }, [selectedTools, toolbox]);
-
-  const isLockedOut = needsTapeRecertification && isPastGracePeriod && hasPoweredToolsSelected;
+  const handleAcknowledgeMonthlyTape = () => {
+    if (typeof window !== "undefined") {
+      const storageKey = `imc_tape_ack_${userId}_${currentMonthInfo.monthKey}`;
+      localStorage.setItem(storageKey, "true");
+    }
+    setShowMonthlyTapeModal(false);
+  };
 
   const favoriteTools = useMemo(() => toolbox.filter((t) => t.is_favorite), [toolbox]);
 
@@ -177,27 +171,7 @@ export default function DailyToolCheckModule({
     await onToolboxUpdated();
   };
 
-  const handleVerifyTapeColorsNow = async () => {
-    if (
-      !confirm(
-        `Certify that all active Power Tools and powered Shop Tools in your possession have been inspected and taped with the designated ${currentMonthInfo.monthName} tape (${currentMonthInfo.color})? Non-powered tools do not require tape.`
-      )
-    )
-      return;
-
-    await verifyMonthlyToolboxTape(supabase, userId, currentMonthInfo.monthKey);
-    await onToolboxUpdated();
-    setErrorMessage(null);
-  };
-
   const handleConfirmDailyInspection = async () => {
-    if (isLockedOut) {
-      setErrorMessage(
-        `MONTHLY AUDIT LOCKOUT: The 4-day grace window has passed. You must certify your powered tools bear ${currentMonthInfo.color} tape before logging them.`
-      );
-      return;
-    }
-
     if (selectedTools.length === 0) {
       setErrorMessage("Please select at least one tool you are using today, or click 'Confirm All Favorites'.");
       return;
@@ -229,7 +203,51 @@ export default function DailyToolCheckModule({
   };
 
   return (
-    <div className="border p-4 sm:p-6 rounded-sm bg-[var(--color-brand-card)] border-[var(--color-brand-border)] space-y-5 font-mono shadow-2xl">
+    <div className="relative border p-4 sm:p-6 rounded-sm bg-[var(--color-brand-card)] border-[var(--color-brand-border)] space-y-5 font-mono shadow-2xl">
+      {/* MONTHLY TAPE REMINDER MODAL (ONCE PER MONTH) */}
+      {showMonthlyTapeModal && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-[var(--color-brand-card)] border-2 border-amber-400 p-6 rounded-sm max-w-md w-full shadow-[0_0_30px_rgba(251,191,36,0.25)] space-y-4">
+            <div className="flex items-center gap-2 border-b border-[var(--color-brand-border)] pb-3">
+              <span className="text-xl">⚠️</span>
+              <h3 className="text-sm sm:text-base font-black uppercase text-white tracking-wider">
+                Monthly Tool Tape Reminder
+              </h3>
+            </div>
+
+            <div className="space-y-3 font-sans text-xs text-slate-300 leading-relaxed">
+              <p>
+                Welcome to a new month! Per site safety guidelines, all active power tools (corded, battery, pneumatic) and powered shop equipment must be marked with the current inspection color before operation.
+              </p>
+
+              <div className="p-3 border rounded-sm bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] flex items-center justify-between font-mono">
+                <div>
+                  <span className="text-[10px] text-slate-400 block uppercase font-bold">
+                    {currentMonthInfo.monthName} Tape Requirement:
+                  </span>
+                  <span className="text-base font-black uppercase text-amber-300">
+                    {currentMonthInfo.color}
+                  </span>
+                </div>
+                <span className="w-5 h-5 rounded-full border-2 border-amber-300 bg-amber-400/20" />
+              </div>
+
+              <p className="text-[11px] text-slate-400">
+                Non-powered hand tools do not require color tape. This notice only displays on your first tool signoff of the month.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleAcknowledgeMonthlyTape}
+              className="w-full min-h-[44px] px-4 bg-amber-400 hover:bg-white text-black font-black uppercase text-xs rounded-sm cursor-pointer transition-all shadow-md active:scale-[0.98]"
+            >
+              ✓ Understood &amp; Verified
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* HEADER BAR */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 border-b border-[var(--color-brand-border)] pb-4">
         <div>
@@ -260,41 +278,6 @@ export default function DailyToolCheckModule({
           <span className="w-4 h-4 rounded-full border-2 border-amber-300/80 bg-amber-400/20" />
         </div>
       </div>
-
-      {/* MONTHLY POWERED TOOL RETAPING BANNER */}
-      {needsTapeRecertification && (
-        <div
-          className={`p-3.5 sm:p-4 rounded-sm border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 ${
-            isPastGracePeriod
-              ? "bg-red-500/10 border-red-500/50 text-red-300"
-              : "bg-amber-500/10 border-amber-500/40 text-amber-200"
-          }`}
-        >
-          <div>
-            <span className="text-xs font-black uppercase tracking-wider block">
-              {isPastGracePeriod 
-                ? "⛔ POWERED TOOL TAPE RECERTIFICATION OVERDUE (LOCKOUT ACTIVE)" 
-                : "⚠ MONTHLY POWERED TOOL RETAPING WINDOW (DAYS 1–4 ACTIVE)"}
-            </span>
-            <p className="text-[11px] font-sans mt-0.5 leading-relaxed">
-              Verify all power tools (corded, battery, pneumatic) and powered shop equipment bear the <strong className="font-mono text-white">{currentMonthInfo.color}</strong> tape. Non-powered tools are exempt.
-              {!isPastGracePeriod && ` Grace window closes after the 4th working day (${fourthWorkingDayDeadline.toLocaleDateString()}).`}
-            </p>
-          </div>
-
-          <button
-            type="button"
-            onClick={handleVerifyTapeColorsNow}
-            className={`min-h-[40px] px-4 rounded-sm text-xs font-black uppercase tracking-wider cursor-pointer transition-all whitespace-nowrap shadow-md ${
-              isPastGracePeriod
-                ? "bg-red-500 hover:bg-white text-white hover:text-black"
-                : "bg-amber-400 hover:bg-white text-black"
-            }`}
-          >
-            ✓ Certify Powered Tools Taped
-          </button>
-        </div>
-      )}
 
       {errorMessage && (
         <div className="p-3 bg-red-500/10 border border-red-500/40 text-red-300 text-xs font-bold uppercase rounded-sm">
@@ -484,7 +467,7 @@ export default function DailyToolCheckModule({
                 [ Your Digital Toolbox Is Empty ]
               </p>
               <p className="text-[11px] text-slate-500 font-sans max-w-sm mx-auto">
-                Click &quot;+ Add Tools To Box&quot; above to select tools from the master catalog of trade tools[cite: 4273].
+                Click &quot;+ Add Tools To Box&quot; above to select tools from the master catalog of trade tools.
               </p>
             </div>
           ) : (
@@ -669,7 +652,7 @@ export default function DailyToolCheckModule({
 
           <button
             type="button"
-            disabled={isSubmitting || selectedTools.length === 0 || !complianceCertified || isLockedOut}
+            disabled={isSubmitting || selectedTools.length === 0 || !complianceCertified}
             onClick={handleConfirmDailyInspection}
             className="w-full sm:w-auto min-h-[46px] px-8 bg-[var(--color-brand-blue,#0088ff)] text-white hover:bg-white hover:text-black rounded-sm font-black uppercase text-xs cursor-pointer transition-all shadow-[0_0_15px_rgba(0,136,255,0.35)] disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98]"
           >

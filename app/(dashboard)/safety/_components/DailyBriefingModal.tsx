@@ -1,6 +1,7 @@
+// app/(dashboard)/safety/_components/DailyBriefingModal.tsx
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { createPortal } from "react-dom";
 import { SafetyBriefing, BriefingSection } from "@/lib/data/safetyBriefings";
@@ -11,15 +12,10 @@ interface DailyBriefingModalProps {
   onComplete: () => void;
 }
 
-const REQUIRED_READ_SECONDS = 60;
-
 export default function DailyBriefingModal({ briefing, isOpen, onComplete }: DailyBriefingModalProps) {
   const [mounted, setMounted] = useState<boolean>(false);
-  const [secondsRemaining, setSecondsRemaining] = useState<number>(REQUIRED_READ_SECONDS);
-  const [isTabActive, setIsTabActive] = useState<boolean>(true);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [answerState, setAnswerState] = useState<"unanswered" | "correct" | "incorrect">("unanswered");
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Ensure Portal only renders on the client side
   useEffect(() => {
@@ -38,32 +34,7 @@ export default function DailyBriefingModal({ briefing, isOpen, onComplete }: Dai
     };
   }, [isOpen]);
 
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      setIsTabActive(document.visibilityState === "visible");
-    };
-
-    window.addEventListener("visibilitychange", handleVisibilityChange);
-    return () => window.removeEventListener("visibilitychange", handleVisibilityChange);
-  }, []);
-
-  useEffect(() => {
-    if (!isOpen) return;
-
-    if (isTabActive && secondsRemaining > 0) {
-      timerRef.current = setTimeout(() => {
-        setSecondsRemaining((prev) => prev - 1);
-      }, 1000);
-    }
-
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
-  }, [isOpen, isTabActive, secondsRemaining]);
-
   if (!isOpen || !mounted) return null;
-
-  const isTimerComplete = secondsRemaining === 0;
 
   const handleSelectOption = (index: number) => {
     setSelectedOption(index);
@@ -72,12 +43,6 @@ export default function DailyBriefingModal({ briefing, isOpen, onComplete }: Dai
     } else {
       setAnswerState("incorrect");
     }
-  };
-
-  const formatTimer = (sec: number): string => {
-    const mins = Math.floor(sec / 60);
-    const secs = sec % 60;
-    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
   const renderBullet = (bullet: string) => {
@@ -137,20 +102,15 @@ export default function DailyBriefingModal({ briefing, isOpen, onComplete }: Dai
             </div>
           </div>
 
-          {/* Dynamic Status Timer Pill */}
+          {/* Quick Status Pill */}
           <div className="flex items-center gap-2 font-mono self-start sm:self-center shrink-0">
-            {!isTabActive && (
-              <span className="text-[10px] sm:text-[11px] text-[#eab308] font-bold uppercase tracking-wider animate-pulse border border-[#eab308]/40 bg-[#eab308]/10 px-2 py-1 rounded-sm">
-                ⚠ PAUSED
-              </span>
-            )}
             <div className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-sm border text-[10px] sm:text-xs font-bold uppercase tracking-wider flex items-center gap-2 ${
-              isTimerComplete 
+              answerState === "correct"
                 ? "bg-[var(--color-brand-green,#00ff9d)]/10 border-[var(--color-brand-green,#00ff9d)]/50 text-[var(--color-brand-green,#00ff9d)] shadow-[0_0_10px_rgba(0,255,157,0.2)]" 
                 : "bg-[var(--color-brand-card)] border-[var(--color-brand-border)] text-slate-300"
             }`}>
-              <span className={`w-2 h-2 rounded-full ${isTimerComplete ? "bg-[var(--color-brand-green,#00ff9d)]" : "bg-[#eab308] animate-pulse"}`} />
-              {isTimerComplete ? "VERIFIED" : `READ LOCK: ${formatTimer(secondsRemaining)}`}
+              <span className={`w-2 h-2 rounded-full ${answerState === "correct" ? "bg-[var(--color-brand-green,#00ff9d)]" : "bg-[var(--color-brand-blue,#0088ff)]"}`} />
+              {answerState === "correct" ? "VERIFIED" : "BRIEFING READY"}
             </div>
           </div>
         </div>
@@ -204,25 +164,16 @@ export default function DailyBriefingModal({ briefing, isOpen, onComplete }: Dai
             ))}
           </div>
 
-          {/* Comprehension Check Section */}
+          {/* Comprehension Check Section (Immediate Access) */}
           <div className="pt-4 border-t border-[var(--color-brand-border)] font-mono">
             <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-1 mb-2.5">
               <h4 className="text-xs font-black uppercase tracking-widest text-slate-200 flex items-center gap-2">
                 <span className="w-1.5 h-1.5 bg-[var(--color-brand-blue,#0088ff)] flex-shrink-0" />
                 Comprehension Verification
               </h4>
-              {!isTimerComplete && (
-                <span className="text-[10px] sm:text-[11px] text-[#eab308] font-bold uppercase tracking-wider">
-                  Unlocks in {formatTimer(secondsRemaining)}
-                </span>
-              )}
             </div>
 
-            <div className={`p-3.5 sm:p-5 rounded-sm border transition-all ${
-              isTimerComplete 
-                ? "bg-[var(--color-brand-bg)] border-[var(--color-brand-blue,#0088ff)]/40 shadow-lg" 
-                : "bg-black/30 border-[var(--color-brand-border)] opacity-50 pointer-events-none"
-            }`}>
+            <div className="p-3.5 sm:p-5 rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-blue,#0088ff)]/40 shadow-lg">
               <p className="font-sans font-bold text-xs sm:text-sm text-white mb-3.5 leading-relaxed">
                 {briefing.question.prompt}
               </p>
@@ -243,7 +194,6 @@ export default function DailyBriefingModal({ briefing, isOpen, onComplete }: Dai
                     <button
                       key={oIdx}
                       type="button"
-                      disabled={!isTimerComplete}
                       onClick={() => handleSelectOption(oIdx)}
                       className={`w-full min-h-[48px] text-left p-3 rounded-sm border text-[16px] sm:text-sm transition-all flex items-center justify-between cursor-pointer gap-3 active:scale-[0.98] touch-manipulation focus:outline-none ${optionClasses}`}
                     >
@@ -267,7 +217,7 @@ export default function DailyBriefingModal({ briefing, isOpen, onComplete }: Dai
               {answerState === "incorrect" && (
                 <div className="mt-3 p-3 bg-[var(--color-brand-red,#ff3b5c)]/10 border border-[var(--color-brand-red,#ff3b5c)]/40 rounded-sm text-xs font-sans text-red-200 flex items-start gap-2">
                   <span className="font-mono text-sm font-black text-[var(--color-brand-red,#ff3b5c)]">⚠</span>
-                  <span>Incorrect selection. Review the policy above and choose the correct answer to unlock the checklist.</span>
+                  <span>Incorrect selection. Review the policy above and choose the correct answer to proceed.</span>
                 </div>
               )}
 
@@ -289,19 +239,17 @@ export default function DailyBriefingModal({ briefing, isOpen, onComplete }: Dai
 
           <button
             type="button"
-            disabled={!isTimerComplete || answerState !== "correct"}
+            disabled={answerState !== "correct"}
             onClick={onComplete}
             className={`w-full sm:w-auto min-h-[48px] px-6 py-2.5 rounded-sm text-xs font-bold uppercase tracking-wider transition-all duration-200 active:scale-[0.98] touch-manipulation focus:outline-none ${
-              isTimerComplete && answerState === "correct"
+              answerState === "correct"
                 ? "bg-[var(--color-brand-blue,#0088ff)] hover:bg-white hover:text-black text-white shadow-[0_0_15px_rgba(0,136,255,0.35)] cursor-pointer"
                 : "bg-[var(--color-brand-card)] border border-[var(--color-brand-border)] text-slate-500 cursor-not-allowed opacity-50"
             }`}
           >
             {answerState === "correct" 
-              ? "Continue To Checklist ↗" 
-              : !isTimerComplete 
-              ? `Read Required (${secondsRemaining}s)` 
-              : "Answer Verification"}
+              ? "Continue To Checklist ➔" 
+              : "Select Correct Answer ➔"}
           </button>
         </div>
 

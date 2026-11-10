@@ -105,24 +105,40 @@ export default function SafetyMeetingPage() {
             if (siteBriefing) setDailyBriefing(siteBriefing);
           }
 
-          // Fetch active JHAs matching the user's specific location (only if Nestlé)
           if (isNestle) {
             const jhaRecords = await getActiveDailyJhas(supabase, safeLocation);
             setActiveJhas(jhaRecords);
           }
         }
 
-        // Fetch employee digital toolbox only if at Nestlé
-        if (isNestle) {
-          const toolboxItems = await getEmployeeToolbox(supabase, user.id);
-          setUserToolbox(toolboxItems);
+        // Fetch employee digital toolbox
+        const toolboxItems = await getEmployeeToolbox(supabase, user.id);
+        setUserToolbox(toolboxItems);
+
+        // Fetch existing inspection for today (if previously submitted)
+        try {
+          const { data: existingToolCheck } = await supabase
+            .from("daily_tool_inspections")
+            .select("tools_inspected, monthly_tape_color")
+            .eq("user_id", user.id)
+            .eq("inspection_date", todayDate)
+            .order("signed_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          if (existingToolCheck) {
+            setInspectedToolsSummary(existingToolCheck.tools_inspected || []);
+            setVerifiedTapeColor(existingToolCheck.monthly_tape_color || "");
+            setHasCompletedToolCheck(true);
+          }
+        } catch (e) {
+          // Non-blocking fallback
         }
 
         if (userProfile?.last_safety_check === todayDate) {
           setHasCompletedToday(true);
           setHasCompletedBriefing(true);
           setHasSignedJhas(true);
-          setHasCompletedToolCheck(true);
           setPpeDefectsChecked(true);
           setFitForWorkChecked(true);
           setPaperworkCertified(true);
@@ -145,7 +161,6 @@ export default function SafetyMeetingPage() {
   const handleBriefingComplete = () => {
     setShowBriefingModal(false);
     setHasCompletedBriefing(true);
-    // Non-Nestlé routes directly to Final Checkoff
     if (isSpringvilleSite) {
       setCurrentStep("JHA");
     } else {
@@ -182,16 +197,24 @@ export default function SafetyMeetingPage() {
     setCurrentStep("TOOL_CHECK");
   };
 
-  // Step 3 Tool Check Completed Handler (Nestlé only)
+  // Step 3 Tool Check Completed Handler
   const handleToolCheckCompleted = (selectedToolNames: string[], tapeColor: string) => {
     setInspectedToolsSummary(selectedToolNames);
     setVerifiedTapeColor(tapeColor);
     setHasCompletedToolCheck(true);
+
+    if (hasCompletedToday) {
+      setTerminalFeedback({
+        message: `Shift tool inspection updated (${selectedToolNames.length} items logged).`,
+        isError: false,
+      });
+    }
+
     setCurrentStep("CHECKLIST");
   };
 
   const refreshToolbox = async () => {
-    if (currentUserProfile?.id && isSpringvilleSite) {
+    if (currentUserProfile?.id) {
       const updated = await getEmployeeToolbox(supabase, currentUserProfile.id);
       setUserToolbox(updated);
     }
@@ -233,7 +256,6 @@ export default function SafetyMeetingPage() {
         : "IMC Employee";
       const userLoc = currentUserProfile?.location?.trim() || "Springville Shop";
 
-      // 1. Batch-sign all selected JHAs (Nestlé only)
       if (isSpringvilleSite && selectedJhaIds.length > 0) {
         await Promise.all(
           selectedJhaIds.map((jhaId) =>
@@ -242,7 +264,6 @@ export default function SafetyMeetingPage() {
         );
       }
 
-      // 2. Log Daily Safety Briefing & Award 10 Points
       const activeBriefingId = dailyBriefing?.id || "briefing-001";
       const activeBriefingTitle = dailyBriefing?.title || "Daily Safety Briefing";
 
@@ -278,7 +299,6 @@ export default function SafetyMeetingPage() {
     }
   };
 
-  // Define steps dynamically based on location
   const stepsList: { key: WorkflowStep; label: string; number: number }[] = isSpringvilleSite
     ? [
         { key: "BRIEFING", label: "Meeting Briefing", number: 1 },
@@ -345,8 +365,8 @@ export default function SafetyMeetingPage() {
             isSpringvilleSite ? "grid-cols-2 sm:grid-cols-4" : "grid-cols-2"
           }`}>
             {stepsList.map((step, idx) => {
-              const isPast = idx < currentStepIndex || hasCompletedToday;
-              const isCurrent = idx === currentStepIndex && !hasCompletedToday;
+              const isPast = idx < currentStepIndex || (hasCompletedToday && currentStep !== step.key);
+              const isCurrent = idx === currentStepIndex;
 
               return (
                 <div
@@ -567,9 +587,9 @@ export default function SafetyMeetingPage() {
         )}
 
         {/* =========================================================================
-            STAGE 3: NESTLÉ TOOL CHECK (NESTLÉ ONLY)
+            STAGE 3: TOOL CHECK (ACCESSIBLE TO ANYONE, AT ANY TIME)
         ========================================================================= */}
-        {isSpringvilleSite && currentStep === "TOOL_CHECK" && !hasCompletedToday && (
+        {currentStep === "TOOL_CHECK" && (
           <DailyToolCheckModule
             supabase={supabase}
             userId={currentUserProfile?.id || ""}
@@ -578,14 +598,22 @@ export default function SafetyMeetingPage() {
             toolbox={userToolbox}
             onToolboxUpdated={refreshToolbox}
             onComplete={handleToolCheckCompleted}
-            onBack={() => setCurrentStep("JHA")}
+            onBack={() => {
+              if (hasCompletedToday) {
+                setCurrentStep("CHECKLIST");
+              } else if (isSpringvilleSite) {
+                setCurrentStep("JHA");
+              } else {
+                setCurrentStep("BRIEFING");
+              }
+            }}
           />
         )}
 
         {/* =========================================================================
-            STAGE 4: FINAL CHECKOFF (DYNAMIC PER LOCATION)
+            STAGE 4: FINAL CHECKOFF (AND POST-COMPLETION DASHBOARD)
         ========================================================================= */}
-        {(currentStep === "CHECKLIST" || hasCompletedToday) && (
+        {currentStep === "CHECKLIST" && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -594,15 +622,36 @@ export default function SafetyMeetingPage() {
             <div className="flex justify-between items-center border-b border-[var(--color-brand-border)] pb-3">
               <div>
                 <span className="text-[10px] font-bold uppercase text-emerald-400 tracking-wider">
-                  Step {stepsList.length} of {stepsList.length} • Final Shift Attestation
+                  {hasCompletedToday ? "Verified & On-Duty" : `Step ${stepsList.length} of ${stepsList.length} • Final Shift Attestation`}
                 </span>
                 <h2 className="text-sm sm:text-base font-black uppercase text-white mt-0.5">
-                  Confirm Daily Verifications
+                  {hasCompletedToday ? "Today's Verified Safety Record" : "Confirm Daily Verifications"}
                 </h2>
               </div>
               <span className="text-xs font-mono font-bold text-emerald-400 uppercase">
-                Award: +10 PTS
+                {hasCompletedToday ? "Status: Active" : "Award: +10 PTS"}
               </span>
+            </div>
+
+            {/* UNLOCKED TOOL CHECK ACCESS (WORKS FOR ANY WORKER, ANY LOCATION, ANY TIME) */}
+            <div className="p-4 rounded-sm border border-[var(--color-brand-blue,#0088ff)] bg-[var(--color-brand-blue,#0088ff)]/10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+              <div>
+                <span className="text-xs font-black uppercase text-white block">
+                  🔧 Daily Equipment &amp; Tool Inspection Ledger
+                </span>
+                <p className="text-[11px] text-slate-300 font-sans mt-0.5">
+                  {inspectedToolsSummary.length > 0 
+                    ? `${inspectedToolsSummary.length} tools verified for this shift. Click to add more tools or update your signoff.`
+                    : "Need to sign off tools for this location? Click here to verify tools at any point during your shift."}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setCurrentStep("TOOL_CHECK")}
+                className="min-h-[40px] px-5 bg-[var(--color-brand-blue,#0088ff)] text-white hover:bg-white hover:text-black font-black uppercase text-xs rounded-sm cursor-pointer whitespace-nowrap transition-all shadow-md active:scale-[0.98]"
+              >
+                {inspectedToolsSummary.length > 0 ? "Edit / Add Shift Tools ➔" : "Inspect Shift Tools ➔"}
+              </button>
             </div>
 
             <div className="space-y-3">
@@ -633,7 +682,7 @@ export default function SafetyMeetingPage() {
                       ✓
                     </div>
                     <span className="text-xs sm:text-sm font-black uppercase tracking-wide">
-                      3. I have verified {inspectedToolsSummary.length} tools against Nestlé 5959-SHE-INS-0022 {verifiedTapeColor ? `(${verifiedTapeColor} Tape)` : ""}.[cite: 2]
+                      3. I have verified {inspectedToolsSummary.length} tools against Nestlé 5959-SHE-INS-0022 {verifiedTapeColor ? `(${verifiedTapeColor} Tape)` : ""}.
                     </span>
                   </div>
 
@@ -790,8 +839,17 @@ export default function SafetyMeetingPage() {
             </div>
 
             {hasCompletedToday ? (
-              <div className="w-full min-h-[48px] py-3.5 font-bold uppercase tracking-widest text-xs flex justify-center items-center rounded-sm border bg-[var(--color-brand-bg)] border-[var(--color-brand-border)] text-slate-400">
-                ✓ ALL VERIFICATIONS LOGGED FOR TODAY
+              <div className="flex flex-col sm:flex-row justify-between items-center gap-3 pt-3 border-t border-[var(--color-brand-border)]">
+                <span className="text-xs text-slate-400 font-mono">
+                  All daily requirements verified. You are clear for work.
+                </span>
+                <button
+                  type="button"
+                  onClick={() => router.push("/dashboard")}
+                  className="w-full sm:w-auto min-h-[44px] px-6 bg-[var(--color-brand-bg)] border border-[var(--color-brand-border)] hover:border-white text-white rounded-sm text-xs font-bold uppercase cursor-pointer transition-colors"
+                >
+                  Return to Dashboard ➔
+                </button>
               </div>
             ) : (
               <div className="flex flex-col sm:flex-row justify-between items-center gap-3 pt-3 border-t border-[var(--color-brand-border)]">
@@ -967,4 +1025,3 @@ export default function SafetyMeetingPage() {
     </div>
   );
 }
-

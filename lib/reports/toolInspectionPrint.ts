@@ -137,7 +137,7 @@ export function renderToolInspectionHtml(r: DailyToolInspectionRecord): string {
         </table>
       </div>
 
-      <!-- BOTTOM ATTESTATION & COMPLIANCE FOOTER -->
+      <!-- BOTTOM ATTESTATION & COMPLIANCE FOOTER (Forced to follow table naturally) -->
       <div class="signoff-wrapper">
         <div class="signoff-box">
           <div class="attestation-statement">
@@ -191,6 +191,7 @@ export const TOOL_INSPECTION_PRINT_CSS = `
     page-break-before: always;
     break-before: page;
     clear: both;
+    display: block;
   }
   .document-container:first-of-type {
     page-break-before: avoid;
@@ -200,14 +201,24 @@ export const TOOL_INSPECTION_PRINT_CSS = `
   tr {
     page-break-inside: avoid;
     break-inside: avoid;
+    page-break-after: auto;
+  }
+  table.tools-table {
+    page-break-inside: auto;
+    break-inside: auto;
   }
   thead {
     display: table-header-group;
   }
+  
+  /* Forces the signoff to stay married to the final rows of the table */
   .signoff-wrapper {
+    page-break-before: auto;
     page-break-inside: avoid;
     break-inside: avoid;
     margin-top: 8px;
+    display: block;
+    width: 100%;
   }
 
   /* HARD COPY HEADER BOX */
@@ -346,6 +357,8 @@ export const TOOL_INSPECTION_PRINT_CSS = `
   /* TOOL LIST TABLE */
   .tool-list-container {
     margin-bottom: 6px;
+    display: block;
+    width: 100%;
   }
   .tool-list-title {
     font-size: 8pt;
