@@ -119,7 +119,7 @@ export default function SafetyMeetingPage() {
         try {
           const { data: existingToolCheck } = await supabase
             .from("daily_tool_inspections")
-            .select("tools_inspected, monthly_tape_color")
+            .select("tools_inspected, tape_color_verified")
             .eq("user_id", user.id)
             .eq("inspection_date", todayDate)
             .order("signed_at", { ascending: false })
@@ -128,7 +128,7 @@ export default function SafetyMeetingPage() {
 
           if (existingToolCheck) {
             setInspectedToolsSummary(existingToolCheck.tools_inspected || []);
-            setVerifiedTapeColor(existingToolCheck.monthly_tape_color || "");
+            setVerifiedTapeColor(existingToolCheck.tape_color_verified || "");
             setHasCompletedToolCheck(true);
           }
         } catch (e) {
