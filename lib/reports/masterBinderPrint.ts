@@ -1,5 +1,6 @@
 // lib/reports/masterBinderPrint.ts
 
+import { PDFDocument } from "pdf-lib";
 import { DailyJhaRecord, JhaAcknowledgmentRecord } from "@/lib/db/operations";
 import { SafetyCheckSheetRecord } from "@/lib/db/dailySafetyCheckOperations";
 import { BoomLiftInspectionRecord } from "@/lib/db/boomLiftOperations";
@@ -710,20 +711,34 @@ export async function printMasterComplianceBinder(payload: MasterBinderPayload) 
     }
   });
 
-  // Send individual documents array to server-side PDF generator
+  // Send individual documents array in small chunks to bypass Vercel's 4.5MB limit
+  // and stitch the duplex-aligned PDF chunks together in the browser
   try {
-    const res = await fetch("/api/generate-binder", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ htmlDocuments }),
-    });
+    const CHUNK_SIZE = 8;
+    const finalPdf = await PDFDocument.create();
 
-    if (!res.ok) {
-      const errData = await res.json().catch(() => ({}));
-      throw new Error(errData.error || `HTTP error ${res.status}`);
+    for (let i = 0; i < htmlDocuments.length; i += CHUNK_SIZE) {
+      const chunk = htmlDocuments.slice(i, i + CHUNK_SIZE);
+
+      const res = await fetch("/api/generate-binder", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ htmlDocuments: chunk }),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || `HTTP error ${res.status}`);
+      }
+
+      const arrayBuffer = await res.arrayBuffer();
+      const chunkPdf = await PDFDocument.load(arrayBuffer);
+      const copiedPages = await finalPdf.copyPages(chunkPdf, chunkPdf.getPageIndices());
+      copiedPages.forEach((p) => finalPdf.addPage(p));
     }
 
-    const blob = await res.blob();
+    const finalBytes = await finalPdf.save();
+    const blob = new Blob([finalBytes as BlobPart], { type: "application/pdf" });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;

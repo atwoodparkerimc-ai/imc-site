@@ -1,7 +1,10 @@
 // app/api/generate-binder/route.ts
 import { NextResponse } from "next/server";
-import puppeteer from "puppeteer";
+import puppeteer from "puppeteer-core";
+import chromium from "@sparticuz/chromium";
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
+
+export const maxDuration = 60;
 
 export async function POST(req: Request) {
   let browser = null;
@@ -15,10 +18,23 @@ export async function POST(req: Request) {
       );
     }
 
-    browser = await puppeteer.launch({
-      headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
-    });
+    const isLocal = process.env.NODE_ENV === "development";
+
+    browser = await puppeteer.launch(
+      isLocal
+        ? {
+            executablePath:
+              "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+            headless: true,
+            args: ["--no-sandbox", "--disable-setuid-sandbox"],
+          }
+        : {
+            args: chromium.args,
+            executablePath: await chromium.executablePath(),
+            headless: true,
+          }
+    );
+
     const page = await browser.newPage();
 
     const masterPdf = await PDFDocument.create();
