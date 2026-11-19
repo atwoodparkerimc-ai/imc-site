@@ -1176,6 +1176,59 @@ export const SAFETY_BRIEFINGS: SafetyBriefing[] = [
       explanation: "Every occupant of a boom lift must wear a full-body harness attached exclusively to the factory-installed engineered anchor point inside the basket. Tying off to adjacent pipes, roof steel, or external structures is strictly prohibited."
     }
   },
+
+  {
+    id: "briefing-027",
+    title: "Angle Grinder Safety Policy",
+    category: "Tools & Equipment",
+    core_reminder: "Mandatory Two-Hand Grip: Angle grinders must be operated with both hands on the tool at all times, one hand on the tool body and one on the auxiliary side handle. One-handed operation is strictly prohibited. Kickback Path Clearance: Always position your body, face, and limbs completely outside the plane of wheel rotation. Align every cut with your body out of the kickback zone.",
+    intro: "Before each use verify you are wearing the specific PPE required for your task and follow all inspection, setup, and operation standards for angle grinders.",
+    sections: [
+      {
+        heading: "1. Required Personal Protective Equipment (PPE)",
+        bullets: [
+          "Cutting (Battery): Safety Glasses, Face Shield Required, Leather Gloves, Long Sleeves.",
+          "Cutting & Heavy Grinding (Corded 120V): Safety Glasses, Face Shield Required, Leather Gloves, (FR) Shirt.",
+          "Hard Disk Grinding & Weld Beveling (Battery or Corded): Safety Glasses, Face Shield Required, Leather Gloves, Long Sleeves (FR if corded).",
+          "Wire Wheels & Cup Brushes (Battery or Corded): Safety Glasses, Face Shield Required, Leather Gloves, Long Sleeves.",
+          "Sanding & Polishing with Backing Pads (Battery or Corded): Safety Glasses, Face Shield Not Required, Leather or Mechanic Gloves, Long Sleeves.",
+          "Clothing & Entanglement: Never wear loose clothing, hanging strings, or jewelry that can become entangled in the spinning spindle."
+        ]
+      },
+      {
+        heading: "2. Pre-Use Inspection & Grinder Setup",
+        bullets: [
+          "Safety Wheel Guard: The factory wheel guard must remain installed, securely tightened, and positioned between your body and the wheel to deflect sparks and flying fragments. (Guards are only removed when using gray wheels for polishing).",
+          "Inspect Abrasive Attachments: Visually inspect cutting discs, hard wheels, and wire cups for chips, cracks, stress marks, or thrown wires. Never use a wheel that has been dropped or damaged. Verify sanding backing pads are undamaged and the center locking nut is flush or recessed.",
+          "Match Grinder & Accessory RPM: Ensure the rated maximum RPM stamped on the cutoff wheel, grinding disc, wire wheel, or backing pad meets or exceeds the maximum RPM stamped on the grinder nameplate.",
+          "Secure the Workpiece: Always clamp material securly to a stable surface with clamps or use a vice. Never hold the material your cutting with your hands.",
+          "Fire Prevention: Maintain a 35-foot clearance from all flammable and combustible materials or cover them with fire blankets. Keep a fire extinguisher within arm's reach of the grinding area."
+        ]
+      },
+      {
+        heading: "3. Safe Operation & Grinder Best Practices",
+        bullets: [
+          "Maintain Control & Stand Clear: Keep a firm, two-handed grip on the grinder body and side handle. Direct the cut so your body is completely outside the kickback zone. Never stand in line with the spinning wheel.",
+          "Straight Cutting Only: Thin cutoff discs are engineered solely for straight 90-degree cuts. Never twist, bend, or apply side pressure to a cutoff wheel, and never use the side face of a cutoff wheel for deburring or beveling.",
+          "Coast-Down Before Setting Down: Allow the grinder to come to a complete dead stop before setting it down to prevent runaway tool kickback.",
+          "Power Disconnect for Changes: Always unplug grinders or remove batteries before changing wheels, or wire brushes.",
+          "Check the Paddle/Trigger Switch: Ensure the switch releases freely and automatically shuts off power. Never tape, lock, or wedge a grinder trigger in the ON position."
+        ]
+      }
+    ],
+    question: {
+      prompt: "According to the Angle Grinder Safety Policy, how must an angle grinder be held and positioned during operation?",
+      options: [
+        "One hand on the tool body while holding the workpiece with your free hand",
+        "Both hands on the tool at all times (one on the tool body and one on the auxiliary side handle), with your body positioned completely outside the plane of wheel rotation",
+        "Two hands on the tool body, standing directly in line with the spinning wheel for leverage",
+        "One hand on the auxiliary handle when using thin cutoff discs for straight 90-degree cuts"
+      ],
+      correct_index: 1,
+      explanation: "Angle grinders must be operated with both hands on the tool at all times (one hand on the tool body and one on the auxiliary side handle), and you must always position your body, face, and limbs completely outside the plane of wheel rotation."
+    }
+  },
+  
   {
     id: "tbt-001",
     title: "Toolbox Talk 001: Hand Signals for Forklifts & Telehandlers",
